@@ -1,0 +1,7 @@
+include: "rules/train_space_gm_n_seeds.smk"
+include: "rules/train_concept_n_seeds.smk"
+include: "rules/train_best_gcl_ER_n_seeds.smk"
+include: "rules/train_best_gcl_ERless_n_seeds.smk"
+include: "rules/train_random_concept_n_seeds.smk"
+include: "rules/train_random_gcl_ER_n_seeds.smk"
+include: "rules/train_gcl_end2end.smk"

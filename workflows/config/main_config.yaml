@@ -1,0 +1,20 @@
+# Config file defining location of the data and other infromation. No / in the end of path.
+root: "/dccstor/cpath_data/datasets/GCL/jakson"
+
+# Prediction target. Must be a column present in the so.spl dataframe.
+prediction_target: "ERStatus"
+
+# Normalization strategy to be used. Supported options: "min_max", "standard" or "None" (no normalization)
+normalize_with: "min_max"
+
+# Spliting stategy to be used. Supported options must match available rules/scrips.
+# Supported options: "both_cohorts", "split_zurich_leave_basel_as_external" or "split_basel_leave_zurich_as_external"
+split_how: "split_basel_leave_zurich_as_external"
+
+# Define metrics that should be used to save checkpoints. Supported options are: balanced_accuracy, weighted_f1_score, weighted_recall, weighted_precision, loss
+follow_this_metrics:
+  - "balanced_accuracy"
+  - "weighted_f1_score"
+
+# Log frequency. The metrics will be loged into mlflow everyn epochs.
+log_frequency: 1

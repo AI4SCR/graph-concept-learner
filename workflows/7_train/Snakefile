@@ -1,0 +1,2 @@
+include: "rules/train_gcl.smk" # Train a graph concept learner
+#include: "rules/gen_train_configs.smk" # Generates a zoo of configs based on a base config for gcl pretraing.

@@ -1,0 +1,5 @@
+include: "rules/gen_rand_concept_graph_dataset.smk"
+include: "rules/gen_rand_concept_graph.smk"
+include: "rules/randomize_labels.smk"
+include: "rules/pretrain_rand_concept.smk"
+include: "rules/train_rnd_gcl.smk"

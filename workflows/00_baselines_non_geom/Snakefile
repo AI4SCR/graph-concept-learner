@@ -1,0 +1,3 @@
+include: "rules/generate_space_gm_data.smk" # Generate the Space GM dataset
+include: "rules/train_space_gm_baseline.smk" # Trai the Space GM model
+include: "rules/gen_space_gm_train_configs.smk" # Generate configs

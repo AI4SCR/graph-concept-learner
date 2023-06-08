@@ -1,0 +1,27 @@
+# Dont retry jobs if they fail
+#restart-times: 2
+
+# Specify custom job submission warpper
+cluster: "../scripts/cluster_job.py"
+
+# Specify custom job status command wrapper
+# cluster-status: "../scripts/cluster_status.py"
+
+# Dont submit/check-job-status more then x times per second
+max-jobs-per-second: 10
+max-status-checks-per-second: 10
+
+# Max number of jobs to submit at one time to queue
+jobs: 10000
+
+# Max number of cores that can be use in parallel for all rules/jobs
+local-cores: 100
+
+# Re-run all jobs the output of which is recognized as incomplete.
+rerun-incomplete: true  # recomended for cluster submissions
+
+# Stop if independen jobs fails
+keep-going: false
+
+# Only re run if the output is newr that the input
+rerun-triggers: mtime

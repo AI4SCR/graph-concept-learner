@@ -33,9 +33,9 @@ pip install mlflow
 # Local
 pip install einops
 pip install ruamel.yaml
+pip install mlflow
 pip3 install torch
 pip install torch_geometric
-pip install mlflow
 pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
 
 cd graph_copncept_learner

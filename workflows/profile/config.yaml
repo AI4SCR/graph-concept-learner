@@ -2,7 +2,8 @@
 #restart-times: 2
 
 # Specify custom job submission warpper
-cluster: "../scripts/cluster_job.py"
+# cluster: "../scripts/LSF_cluster_job.py"
+cluster: "../scripts/SLURM_cluster_job.py"
 
 # Specify custom job status command wrapper
 # cluster-status: "../scripts/cluster_status.py"

@@ -15,7 +15,7 @@ queue = job_properties["resources"]["queue"]
 log_base_path = job_properties["log"][0]
 rule_name = job_properties["rule"]
 
-# TODO: if the rule has other parameters execute alternative job
+# Call jobscript using batch system
 os.system(
     f"jbsub -name {rule_name} -cores {cores} -mem {mem} -queue {queue} -out {log_base_path}.stdout -err {log_base_path}.stderr {jobscript}"
 )

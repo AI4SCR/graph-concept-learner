@@ -34,5 +34,5 @@ else:
 
 # Call jobscript using batch system
 os.system(
-    f'sbatch --job-name="{rule_name}" --cpus-per-task={cpus} --gpus={gpus} mem-per-cpu={mem} --time={time} --output="{log_base_path}.stdout" --error="{log_base_path}.stderr" {jobscript}'
+    f'sbatch --parsable --job-name="{rule_name}" --cpus-per-task={cpus} --gpus={gpus} mem-per-cpu={mem} --time={time} --output="{log_base_path}.stdout" --error="{log_base_path}.stderr" {jobscript}'
 )

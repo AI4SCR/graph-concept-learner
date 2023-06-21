@@ -6,10 +6,10 @@
 cluster: "../scripts/SLURM_cluster_job.py"
 
 # Specify custom job status command wrapper
-# cluster-status: "../scripts/cluster_status.py"
+cluster-status: "../scripts/SLURM_cluster_status.py"
 
 # Dont submit/check-job-status more then x times per second
-max-jobs-per-second: 10
+max-jobs-per-second: 10000
 max-status-checks-per-second: 10
 
 # Max number of jobs to submit at one time to queue

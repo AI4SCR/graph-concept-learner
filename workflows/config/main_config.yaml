@@ -1,5 +1,5 @@
 # Config file defining location of the data and other infromation. No / in the end of path.
-root: "/dccstor/cpath_data/datasets/GCL/jakson"
+root: "/cluster/scratch/scastro/jackson"
 
 # Prediction target. Must be a column present in the so.spl dataframe.
 prediction_target: "ERStatus"

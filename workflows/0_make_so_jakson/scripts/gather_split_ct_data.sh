@@ -22,7 +22,7 @@ b=($b_pg,$b_mtc,$b_scl)
 sed -i".bak" 's/PhenoGraphBasel/PhenoGraph/g' $b_pg
 
 # Path to q
-q=/u/scastro/q-3.1.6/bin/q.py
+q=$HOME/q-3.1.6/bin/q.py
 
 # Iterte over lists
 for l in $z $b; do

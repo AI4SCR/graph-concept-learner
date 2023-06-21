@@ -8,7 +8,7 @@ rule standard_normalize:
         cofactor = 5
     resources:
         cores=1,
-        mem="4g",
+        mem="4G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/standard_normalize/standard_normalize"

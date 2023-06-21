@@ -10,7 +10,7 @@ rule split_basel_leave_zurich_as_external:
         split_proportions=[0.7, 0.15, 0.15] # Approximate proportions of the train test and validation splits (respectively).
     resources:
         cores=2,
-        mem="3g",
+        mem="3G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/split_basel_leave_zurich_as_external/split_basel_leave_zurich_as_external"

@@ -13,7 +13,7 @@ rule train_space_gm_baseline:
         split_strategy=split_how
     resources:
         cores="1",
-        mem="5g",
+        mem="5G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/train_space_gm_baseline/{{dataset}}/{{cfg_id}}"

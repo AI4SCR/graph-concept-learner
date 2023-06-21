@@ -10,7 +10,7 @@ rule make_so:
         f"{root}/intermediate_data/so.pkl"
     resources:
         cores=2,
-        mem="16g",
+        mem="16G",
         queue="x86_1h",
     log:
         f"{root}/logs/make_so/make_so"

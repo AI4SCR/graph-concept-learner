@@ -10,7 +10,7 @@ rule generate_space_gm_data:
         path_to_norm_ERless=f"{root}/intermediate_data/non_spatial_baseline/frequency_dataset_ERless/composition_vectors.csv"
     resources:
         cores=1,
-        mem="2g",
+        mem="2G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/generate_space_gm_data/generate_space_gm_data"

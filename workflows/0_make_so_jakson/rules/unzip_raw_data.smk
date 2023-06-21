@@ -23,7 +23,7 @@ rule unzip_raw_data:
         directory(f"{root}/raw_data/unzipped/OMEnMasks/Basel_Zuri_masks")
     resources:
         cores=10,
-        mem="1g",
+        mem="1G",
         queue="x86_1h",
     log:
         f"{root}/logs/unzip_raw_data/unzip_raw_data"

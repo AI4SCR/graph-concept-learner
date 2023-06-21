@@ -7,7 +7,7 @@ rule split_scc_data:
         directory(f"{root}/intermediate_data/scc_data")
     resources:
         cores=10,
-        mem="16g",
+        mem="16G",
         queue="x86_1h",
     log:
         f"{root}/logs/split_scc_data/split_scc_data"

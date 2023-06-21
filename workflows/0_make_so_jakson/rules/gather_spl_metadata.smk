@@ -7,7 +7,7 @@ rule gather_spl_metadata:
         f"{root}/intermediate_data/spl_meta_data.csv"
     resources:
         cores=2,
-        mem="1g",
+        mem="1G",
         queue="x86_1h",
     log:
         f"{root}/logs/gather_spl_metadata/gather_spl_metadata"

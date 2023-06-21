@@ -6,7 +6,7 @@ rule gen_space_gm_train_configs:
         protected(directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/space_gm_train_configs"))
     resources:
         cores=1,
-        mem="1g",
+        mem="1G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/gen_space_gm_train_configs/gen_space_gm_train_configs"

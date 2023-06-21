@@ -11,7 +11,7 @@ rule filter_samples:
         min_num_cells_per_type=10 # All concept graphs with less than this number of cells will be excluded.
     resources:
         cores=2,
-        mem="3g",
+        mem="3G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/filter_samples/filter_samples"

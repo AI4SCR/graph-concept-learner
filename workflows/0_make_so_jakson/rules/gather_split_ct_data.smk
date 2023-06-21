@@ -12,7 +12,7 @@ rule gather_split_ct_data:
         directory(f"{root}/intermediate_data/sct_data")
     resources:
         cores=2,
-        mem="1g",
+        mem="1G",
         queue="x86_1h",
     log:
         f"{root}/logs/gather_split_ct_data/gather_split_ct_data"

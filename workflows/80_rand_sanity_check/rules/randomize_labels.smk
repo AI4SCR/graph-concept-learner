@@ -11,7 +11,7 @@ rule randomize_labels:
         split_how=split_how
     resources:
         cores=1,
-        mem="1g",
+        mem="1G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/randomize_labels/randomize_labels"

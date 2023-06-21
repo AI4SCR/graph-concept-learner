@@ -13,7 +13,7 @@ rule gen_rand_concept_graph_dataset:
         directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/randomized_data/{{concept}}_radius/")
     resources:
         cores=2,
-        mem="6g",
+        mem="6G",
         queue="x86_24h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/gen_rand_concept_graph_dataset/{{concept}}_radius"

@@ -8,7 +8,7 @@ rule filter_samples:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/meta_data/filtered_sample_ids_and_labels.csv",
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/meta_data/label_dict.yaml"
     params:
-        min_num_cells_per_type=10 # All concept graphs with less than this number of cells will be excluded.
+        min_num_cells_per_graph=10 # All concept graphs with less than this number of nodes will be excluded.
     resources:
         cores=2,
         mem="3G",

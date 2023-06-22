@@ -15,13 +15,13 @@ from pandas.api.types import is_numeric_dtype
     cfgs_dir,
     so_file,
     preiction_target,
-    min_num_cells_per_type,
+    min_num_cells_per_graph,
     filtered_sample_ids_and_labels,
     label_dict,
 ) = sys.argv
 
 # Cast to int
-min_num_cells_per_type = int(min_num_cells_per_type)
+min_num_cells_per_graph = int(min_num_cells_per_graph)
 
 # cfgs_dir = snakemake.input[0]
 # so_file = snakemake.input[1]
@@ -76,11 +76,14 @@ for cfg in cfgs:
     # Remove incompleate or not well defined samples
     for spl in all_samples:
 
-        # Delete sampe from list if there are less than `min_num_cells_per_type` cells of this kind
+        # Delete sampe from list if there are less than `min_num_cells_per_graph` cells of this kind
+        cell_count = 0
         for label in labels:
-            cell_count = so.obs[spl][filter_col] == label
-            if cell_count.sum() <= min_num_cells_per_type:
-                all_samples = np.delete(all_samples, np.where(all_samples == spl))
+            list_of_cells = so.obs[spl][filter_col] == label
+            cell_count += list_of_cells.sum()
+
+        if cell_count <= min_num_cells_per_graph:
+            all_samples = np.delete(all_samples, np.where(all_samples == spl))
 
         # Remove sample if prediction label is np.nan
         if so.spl.loc[spl][preiction_target] is np.nan:

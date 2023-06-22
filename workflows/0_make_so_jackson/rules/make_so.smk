@@ -15,4 +15,4 @@ rule make_so:
     log:
         f"{root}/logs/make_so/make_so"
     shell:
-        "0_make_so_jakson/scripts/make_so.py {input} {output}"
+        "0_make_so_jackson/scripts/make_so.py {input} {output}"

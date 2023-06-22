@@ -12,4 +12,4 @@ rule split_scc_data:
     log:
         f"{root}/logs/split_scc_data/split_scc_data"
     shell:
-        "0_make_so_jakson/scripts/split_scc_data.sh {input} {output}"
+        "0_make_so_jackson/scripts/split_scc_data.sh {input} {output}"

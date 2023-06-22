@@ -28,4 +28,4 @@ rule unzip_raw_data:
     log:
         f"{root}/logs/unzip_raw_data/unzip_raw_data"
     shell:
-        "0_make_so_jakson/scripts/unzip_raw_data.sh {input.raw_data_dir}"
+        "0_make_so_jackson/scripts/unzip_raw_data.sh {input.raw_data_dir}"

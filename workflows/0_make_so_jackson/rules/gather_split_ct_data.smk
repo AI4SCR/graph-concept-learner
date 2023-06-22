@@ -17,4 +17,4 @@ rule gather_split_ct_data:
     log:
         f"{root}/logs/gather_split_ct_data/gather_split_ct_data"
     shell:
-        "0_make_so_jakson/scripts/gather_split_ct_data.sh {input} {output}"
+        "0_make_so_jackson/scripts/gather_split_ct_data.sh {input} {output}"

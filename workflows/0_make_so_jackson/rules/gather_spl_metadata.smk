@@ -12,4 +12,4 @@ rule gather_spl_metadata:
     log:
         f"{root}/logs/gather_spl_metadata/gather_spl_metadata"
     shell:
-        "0_make_so_jakson/scripts/gather_spl_metadata.py {input} {output}"
+        "0_make_so_jackson/scripts/gather_spl_metadata.py {input} {output}"

@@ -7,4 +7,4 @@ rule download_raw_data:
     log:
         config["raw_data_dir"] + "/download_info/download_logs"
     shell:
-        "0_make_so_jakson/scripts/download_raw_data.sh {input} {config[raw_data_dir]}"
+        "0_make_so_jackson/scripts/download_raw_data.sh {input} {config[raw_data_dir]}"

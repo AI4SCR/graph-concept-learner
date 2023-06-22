@@ -17,14 +17,15 @@ rule_name = job_properties["rule"]
 
 # Get time
 if queue == "x86_1h":
-    time="1:00:00"
+    time = "1:00:00"
 elif queue == "x86_6h":
-    time="6:00:00"
+    time = "6:00:00"
 elif queue == "x86_24h":
-    time="24:00:00"
+    time = "24:00:00"
 else:
     assert False, "Run time not well specified"
 
+cores = str(cores)
 if "+" in cores:
     cpus = cores.split("+")[0]
     gpus = cores.split("+")[1]
@@ -34,5 +35,5 @@ else:
 
 # Call jobscript using batch system
 os.system(
-    f'sbatch --parsable --job-name="{rule_name}" --cpus-per-task={cpus} --gpus={gpus} mem-per-cpu={mem} --time={time} --output="{log_base_path}.stdout" --error="{log_base_path}.stderr" {jobscript}'
+    f'sbatch --parsable --job-name="{rule_name}" --cpus-per-task={cpus} --mem-per-cpu={mem} --time={time} --output="{log_base_path}.stdout" --error="{log_base_path}.stderr" --open-mode=truncate --mail-type=NONE {jobscript}'
 )

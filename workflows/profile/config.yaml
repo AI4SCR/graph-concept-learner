@@ -25,4 +25,4 @@ rerun-incomplete: true  # recomended for cluster submissions
 keep-going: false
 
 # Only re run if the output is newr that the input
-rerun-triggers: mtime
+# rerun-triggers: mtime

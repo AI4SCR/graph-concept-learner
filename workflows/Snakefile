@@ -6,7 +6,7 @@ configfile: "./config/main_config.yaml"
 
 # Make sure the dataset exists and a workflow for creating a so object also
 supported_datasets = {
-    "jakson": "0_make_so_jakson/Snakefile"
+    "jackson": "0_make_so_jackson/Snakefile"
 }
 assert os.path.exists(config["root"])
 dataset_name = os.path.basename(config["root"])

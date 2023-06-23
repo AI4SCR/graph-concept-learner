@@ -17,7 +17,8 @@ from sklearn.model_selection import StratifiedShuffleSplit
     test,
     val,
     n_folds,
-    out_dir,
+    out_dir_folds,
+    out_dir_prop,
 ) = sys.argv
 splits = np.array([float(train), float(test), float(val)])
 
@@ -59,8 +60,14 @@ for i, fold in enumerate(split_iter):
 
     # Concat all
     df = pd.concat([df_basel, df_zuri])
-    fold_split_file = os.path.join(out_dir, "folds", f"fold_{i}.csv")
-    fold_proportions_file = os.path.join(out_dir, "propotions", f"fold_{i}.csv")
+
+    # Name output files and make dirs if absent
+    fold_split_file = os.path.join(out_dir_folds, f"fold_{i}.csv")
+    fold_proportions_file = os.path.join(out_dir_prop, f"fold_{i}.csv")
+    os.makedirs(os.path.dirname(fold_split_file), exist_ok=True)
+    os.makedirs(os.path.dirname(fold_proportions_file), exist_ok=True)
+
+    # Write files
     df.to_csv(fold_split_file, index=True)
     df.reset_index().rename(columns={"index": "core"}).groupby(
         [prediction_target, "split"]

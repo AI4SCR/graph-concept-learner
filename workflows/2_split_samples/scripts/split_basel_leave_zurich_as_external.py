@@ -4,6 +4,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import sys
+import os
 from sklearn.model_selection import StratifiedShuffleSplit
 
 # Read inputs
@@ -15,8 +16,8 @@ from sklearn.model_selection import StratifiedShuffleSplit
     train,
     test,
     val,
-    out_file,
-    metda_data,
+    n_folds,
+    out_dir,
 ) = sys.argv
 splits = np.array([float(train), float(test), float(val)])
 
@@ -43,31 +44,24 @@ df_zuri = filtered_samples_df[filtered_samples_df["cohort"] == "zurich"]
 df_zuri.loc[:, "split"] = "test"
 
 # Split train and others
-sss = StratifiedShuffleSplit(n_splits=1, train_size=splits[0], random_state=0)
+sss = StratifiedShuffleSplit(
+    n_splits=int(n_folds), train_size=splits[0], random_state=0
+)
 split_iter = sss.split(df_basel.index.values, df_basel[prediction_target])
-for fold in split_iter:
+
+# Assign labels and write sv for every fold
+for i, fold in enumerate(split_iter):
     train_idxs, val_idxs = fold
 
-# Assign label and take other
-df_basel.loc[df_basel.index.values[train_idxs], "split"] = "train"
-df_basel.loc[df_basel.index.values[val_idxs], "split"] = "val"
-# df_basel_train = df_basel[df_basel["split"] == "train"]
-# df_basel_other = df_basel[df_basel["split"] == "val_or_test"]
+    # Assign label and take other
+    df_basel.loc[df_basel.index.values[train_idxs], "split"] = "train"
+    df_basel.loc[df_basel.index.values[val_idxs], "split"] = "val"
 
-# #  Split other into val and test
-# val_proportion = splits[1] / (splits[1] + splits[2])
-# sss = StratifiedShuffleSplit(n_splits=1, train_size=val_proportion, random_state=0)
-# split_iter = sss.split(df_basel_other.index.values, df_basel_other[prediction_target])
-# for fold in split_iter:
-#     val_idxs, test_idxs = fold
-
-# # Assign label
-# df_basel_other.loc[df_basel_other.index.values[val_idxs], "split"] = "val"
-# df_basel_other.loc[df_basel_other.index.values[test_idxs], "split"] = "test"
-
-# Concat all
-df = pd.concat([df_basel, df_zuri])
-df.to_csv(out_file, index=True)
-df.reset_index().rename(columns={"index": "core"}).groupby(
-    [prediction_target, "split"]
-)["core"].count().to_csv(metda_data, index=True)
+    # Concat all
+    df = pd.concat([df_basel, df_zuri])
+    fold_split_file = os.path.join(out_dir, "folds", f"fold_{i}.csv")
+    fold_proportions_file = os.path.join(out_dir, "propotions", f"fold_{i}.csv")
+    df.to_csv(fold_split_file, index=True)
+    df.reset_index().rename(columns={"index": "core"}).groupby(
+        [prediction_target, "split"]
+    )["core"].count().to_csv(fold_proportions_file, index=True)

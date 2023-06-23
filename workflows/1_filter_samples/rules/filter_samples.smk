@@ -17,6 +17,6 @@ rule filter_samples:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/filter_samples/filter_samples"
     shell:
         "1_filter_samples/scripts/filter_samples.py "
-        "$(dirname {input.cfg_dir[0]}) {input.so} "
-        "{config[prediction_target]} {params.min_num_cells_per_type} "
+        "$(dirname {input.cfg_files[0]}) {input.so} "
+        "{config[prediction_target]} {params.min_num_cells_per_graph} "
         "{output}"

@@ -1,4 +1,5 @@
 # Gather and split single cell data regarding cell type and location
+# The output are sample level csv's, analogous to the obs df in an so object
 rule gather_split_ct_data:
     input:
         f"{root}/raw_data/unzipped/Cluster_labels/PG_zurich.csv",

@@ -1,4 +1,5 @@
-# Split single cell channel data into per sample csv's
+# Split single cell channel data into per sample csv's with the expression info
+# Analogous to the X dfs in an so object.
 rule split_scc_data:
     input:
         f"{root}/raw_data/unzipped/Data_publication/BaselTMA/SC_dat.csv",

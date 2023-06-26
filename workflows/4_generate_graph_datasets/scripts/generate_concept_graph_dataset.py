@@ -55,7 +55,10 @@ os.makedirs(output_dir, exist_ok=True)
 # %% Make graph for evry sample, turn it into pyg and save to file
 for spl in all_samples:
     # Extract centroid
-    # ath.pp.extract_centroids(so, spl, mask_key="cellmasks")
+    ath.pp.extract_centroids(so, spl, mask_key="cellmasks")
+
+    # Do not attribute
+    cfg["build_and_attribute"] = False
 
     # Build graph
     ath.graph.build_graph(
@@ -66,17 +69,9 @@ for spl in all_samples:
     for (n1, n2, d) in so.G[spl][concept_name].edges(data=True):
         d.clear()
 
-    # From netx to pyg
-    G = from_networkx(
-        G=so.G[spl][concept_name], group_node_attrs=all, group_edge_attrs=None
-    )
-
-    # Attach label
-    G.y = torch.tensor([prediction_labels[spl]])
-
     # Name file
     path_name = osp.join(output_dir, f"{spl}.pt")
 
-    # Save to file
-    torch.save(G, path_name)
-# %%
+    # Write to output
+    with open(path_name, "wb") as f:
+        pickle.dump(so.G[spl][concept_name], f)

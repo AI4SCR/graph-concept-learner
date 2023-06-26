@@ -1,21 +1,16 @@
 # Generates concept graph dataset for every concept
-if config["normalize_with"] != "None":
-    path_to_so = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/meta_data/so_norm.pkl"
-else:
-    path_to_so = f"{root}/intermediate_data/so.pkl"
-
 rule generate_concept_graph_dataset:
     input:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/meta_data/filtered_sample_ids_and_labels.csv",
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/dataset_configs/{{concept}}_radius.yaml",
-        path_to_so
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/filtered_sample_ids_and_labels.csv",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs/{{concept}}_radius.yaml",
+        f"{root}/intermediate_data/so.pkl"
     output:
-        directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/processed_data/{{concept}}_radius/")
+        directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}_radius/")
     resources:
         cores=2,
         mem="6G",
         queue="x86_24h",
     log:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/generate_concept_graph_dataset/{{concept}}_radius"
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/generate_concept_graph_dataset/{{concept}}_radius"
     shell:
         "4_generate_graph_datasets/scripts/generate_concept_graph_dataset.py {input} {output}"

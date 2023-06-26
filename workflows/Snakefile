@@ -29,7 +29,7 @@ include: "rules/helper_functions.smk"
 #include: "rules/parse_train_mlflow_runs.smk" # Parse the train runs.
 
 # Normalize data
-include: normalize_all_folds.smk
+include: "rules/normalize_all_folds.smk"
 
 # Gen datasets
 # include: "rules/gen_all_datasets.smk" # Generates all concept graph datasets.

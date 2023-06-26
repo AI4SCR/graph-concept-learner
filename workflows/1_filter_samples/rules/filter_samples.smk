@@ -1,8 +1,7 @@
 # Filters out samples without prediction label or too few cells
 rule filter_samples:
     input:
-        cfg_files=get_paths_to_dataset_configs,
-        #cfg_dir=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs/",
+        cfg_files=get_paths_to_dataset_configs, # f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs/",
         so=f"{root}/intermediate_data/so.pkl"
     output:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/filtered_sample_ids_and_labels.csv",

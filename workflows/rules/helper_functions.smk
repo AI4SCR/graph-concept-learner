@@ -317,4 +317,4 @@ def get_end_2_end_conf_mats(wildcards):
 def get_normalize_all_folds(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/"
     FOLD_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".csv"]
-    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/normalized_data/"+"{fold}.pkl", fold=FOLD_IDS)
+    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/normalized_data/"+"{fold}.pkl", fold=FOLD_IDS)

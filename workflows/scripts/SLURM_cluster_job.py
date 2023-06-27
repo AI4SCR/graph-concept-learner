@@ -35,5 +35,5 @@ else:
 
 # Call jobscript using batch system
 os.system(
-    f'sbatch --parsable --job-name="{rule_name}" --cpus-per-task={cpus} --mem-per-cpu={mem} --time={time} --output="{log_base_path}.stdout" --error="{log_base_path}.stderr" --open-mode=truncate --mail-type=NONE {jobscript}'
+    f'sbatch --parsable --job-name="{rule_name}" --cpus-per-task={cpus} --mem-per-cpu={mem} --time={time} --output="{log_base_path}.out" --error="{log_base_path}.err" --open-mode=truncate --mail-type=NONE {jobscript}'
 )

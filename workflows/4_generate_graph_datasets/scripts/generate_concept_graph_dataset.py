@@ -70,7 +70,7 @@ for spl in all_samples:
         d.clear()
 
     # Name file
-    path_name = osp.join(output_dir, f"{spl}.pt")
+    path_name = osp.join(output_dir, f"{spl}.pkl")
 
     # Write to output
     with open(path_name, "wb") as f:

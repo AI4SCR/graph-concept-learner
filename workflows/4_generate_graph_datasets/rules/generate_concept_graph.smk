@@ -5,7 +5,7 @@ rule generate_concept_graph:
         cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs/{{concept}}_contact.yaml",
         so=f"{root}/intermediate_data/so.pkl",
     output:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}_contact/{{spl_id}}.pt"
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}_contact/{{spl_id}}.pkl"
     params:
         spl_id = "{spl_id}"
     resources:

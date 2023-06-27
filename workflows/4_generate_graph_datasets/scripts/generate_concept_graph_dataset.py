@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import athena as ath
-import torch
-from torch_geometric.utils.convert import from_networkx
 import os.path as osp
 import os
 import yaml
@@ -49,6 +47,9 @@ so.G.clear()
 concept_name = cfg["concept_name"]
 builder_type = cfg["builder_type"]
 
+# Do not attribute
+cfg["build_and_attribute"] = False
+
 # Make directory where the graphs will be written
 os.makedirs(output_dir, exist_ok=True)
 
@@ -56,9 +57,6 @@ os.makedirs(output_dir, exist_ok=True)
 for spl in all_samples:
     # Extract centroid
     ath.pp.extract_centroids(so, spl, mask_key="cellmasks")
-
-    # Do not attribute
-    cfg["build_and_attribute"] = False
 
     # Build graph
     ath.graph.build_graph(

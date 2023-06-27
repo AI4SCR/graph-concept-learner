@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 
 import athena as ath
-import torch
-from torch_geometric.utils.convert import from_networkx
-import os.path as osp
 import yaml
 import sys
 import pickle
-import pandas as pd
 
 (
     prog_name,

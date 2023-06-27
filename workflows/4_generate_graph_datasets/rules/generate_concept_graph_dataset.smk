@@ -9,7 +9,7 @@ rule generate_concept_graph_dataset:
     resources:
         cores=2,
         mem="6G",
-        queue="x86_24h",
+        queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/generate_concept_graph_dataset/{{concept}}_radius"
     shell:

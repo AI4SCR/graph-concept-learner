@@ -16,4 +16,4 @@ rule randomize_labels:
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/randomize_labels/randomize_labels"
     shell:
-        "80_rand_sanity_check/scripts/randomize_labels.py {input} {params.prediction_target} {params.split_how} {output}"
+        "90_rand_sanity_check/scripts/randomize_labels.py {input} {params.prediction_target} {params.split_how} {output}"

@@ -1,4 +1,5 @@
-# Generates concept graph dataset for every concept
+# Generates concept graph dataset for every concept.
+# Resulting graphs have no attributes but centroid location.
 rule generate_concept_graph_dataset:
     input:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/filtered_sample_ids_and_labels.csv",

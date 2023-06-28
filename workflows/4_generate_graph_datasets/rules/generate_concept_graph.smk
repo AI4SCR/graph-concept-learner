@@ -1,4 +1,5 @@
-# Generates concept graph for every concept and sample in fliter samples
+# Generates concept graph for every concept and sample in fliter samples.
+# Resulting graphs have no attributes but centroid location.
 rule generate_concept_graph:
     input:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/filtered_sample_ids_and_labels.csv",

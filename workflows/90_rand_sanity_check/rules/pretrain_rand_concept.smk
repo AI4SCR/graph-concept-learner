@@ -22,7 +22,7 @@ rule pretrain_rand_concept:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/pretrain_rand_concept/{{concept}}/{{config_id}}"
     shell:
         "source scripts/setup_MLflow.sh && "
-        "5_pretrain/scripts/pretrain_concept.py "
+        "6_pretrain/scripts/pretrain_concept.py "
         "{input.cfg} {input.splits} {input.concept} "
         "{params.folder_name} {params.split_strategy} {params.run_type} "
         "{config[prediction_target]} {config[root]} {config[log_frequency]} "

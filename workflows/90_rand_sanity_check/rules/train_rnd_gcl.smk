@@ -21,7 +21,7 @@ rule train_rnd_gcl:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/train_gcl/{{config_id}}"
     shell:
         "source scripts/setup_MLflow.sh && "
-        "7_train/scripts/train_gcl.py "
+        "8_train/scripts/train_gcl.py "
         "{input.paths_to_pretrain_configs} {input.path_to_train_config} {input.path_to_datasets} {input.splits} "
         "{params.folder_name} {params.split_strategy} "
         "{config[prediction_target]} {config[root]} {config[log_frequency]} "

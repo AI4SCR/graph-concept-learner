@@ -72,17 +72,20 @@ include: "3_normalize/Snakefile"
 # Generate datasets
 include: "4_generate_graph_datasets/Snakefile"
 
+# Attribute graphs
+include: "5_attribute/Snakefile"
+
 # Pretrain gnn models for the graph concept learner and
-include: "5_pretrain/Snakefile"
+include: "6_pretrain/Snakefile"
 
 # Generate tables with results and get paths to best models
-include: "6_model_selection/Snakefile"
+include: "7_model_selection/Snakefile"
 
 # train the graph concept learner.
-include: "7_train/Snakefile"
+include: "8_train/Snakefile"
 
 # Randomization sanity check
 # include: "80_rand_sanity_check/Snakefile"
 
 # Train models with rando seed
-include: "81_train_seeds/Snakefile"
+# include: "81_train_seeds/Snakefile"

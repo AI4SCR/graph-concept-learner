@@ -16,7 +16,7 @@ rule split_run_metrics_per_concept:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/split_run_metrics_per_concept/split_run_metrics_per_concept"
     shell:
         "source scripts/setup_MLflow.sh && "
-        "6_model_selection/scripts/split_run_metrics_per_concept.py "
+        "7_model_selection/scripts/split_run_metrics_per_concept.py "
         "{input.dataset_configs_path} "
         "{params.folder_name} {params.split_strategy} "
         "{config[prediction_target]} {config[root]} "

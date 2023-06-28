@@ -17,7 +17,7 @@ rule get_best_pretrain_models:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/get_best_pretrain_models/{{er_status}}/get_best_pretrain_models"
     shell:
         "source scripts/setup_MLflow.sh && "
-        "6_model_selection/scripts/get_best_pretrain_models.py "
+        "7_model_selection/scripts/get_best_pretrain_models.py "
         "{params.metric_name} "
         "{output.path_to_best_models} {output.path_to_summary} "
         "{input.concept_run_ids} {input.baselines_run_ids}"

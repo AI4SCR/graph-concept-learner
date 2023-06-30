@@ -72,7 +72,7 @@ include: "3_normalize/Snakefile"
 # Generate datasets
 include: "4_generate_graph_datasets/Snakefile"
 
-# Attribute graphs
+# Attribute graphs and saves them as python geometric Data class objects
 include: "5_attribute/Snakefile"
 
 # Pretrain gnn models for the graph concept learner and

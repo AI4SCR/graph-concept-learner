@@ -53,7 +53,7 @@ cfg["build_and_attribute"] = False
 # Make directory where the graphs will be written
 os.makedirs(output_dir, exist_ok=True)
 
-# %% Make graph for evry sample, turn it into pyg and save to file
+# Make graph for evry sample, turn it into pyg and save to file
 for spl in all_samples:
     # Extract centroid
     ath.pp.extract_centroids(so, spl, mask_key="cellmasks")

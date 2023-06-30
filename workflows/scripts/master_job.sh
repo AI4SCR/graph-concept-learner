@@ -12,4 +12,4 @@ module purge
 module load gcc/8.2.0 python/3.8.5
 source $HOME/gcl/bin/activate
 cd $HOME/graph-concept-learner-pub/workflows
-snakemake gen_all_datasets
+snakemake gen_all_attributed_graphs

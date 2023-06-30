@@ -1,4 +1,16 @@
 ##### Helper functions #####
+def get_all_attributed_graphs(wildcards):
+    path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if os.path.splitext(f)[1] == ".yaml"]
+
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
+
+    path_to_folds = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/normalized_data"
+    FOLDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_folds) if os.path.splitext(f)[1] == ".pkl"]
+
+    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/{{concept}}_{{attribute_config}}/{{fold}}", concept=CONCEPT_NAMES, attribute_config=CONFIG_NAMES, fold=FOLDS)
+
 def get_all_graphs_and_datasets(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]

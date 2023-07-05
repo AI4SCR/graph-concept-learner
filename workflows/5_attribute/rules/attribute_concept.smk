@@ -9,8 +9,8 @@ rule attribute_concept:
     output:
         directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/{{concept}}_{{attribute_config}}/{{fold}}/")
     resources:
-        cores=2,
-        mem="6G",
+        cores=1,
+        mem="2G",
         queue="x86_1h",
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/attribute_concept/{{concept}}_{{attribute_config}}/{{fold}}"

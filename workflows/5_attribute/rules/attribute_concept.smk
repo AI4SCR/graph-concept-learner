@@ -15,4 +15,4 @@ rule attribute_concept:
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/attribute_concept/{{concept}}_{{attribute_config}}/{{fold}}"
     shell:
-        "5_attribute_concept/scripts/attribute_concept.py {input} {output}"
+        "5_attribute/scripts/attribute_concept.py {input} {output}"

@@ -41,7 +41,15 @@ def get_paths_to_pretrained_models(wildcards):
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs"
     CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
-    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{concept}}/{{cfg_id}}/best_val_{{metric_name}}.pt", concept=CONCEPT_NAMES, cfg_id=CFG_IDS, metric_name=config["follow_this_metrics"])
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/"
+    FOLD_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".csv"]
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{concept}}/{{fold}}/{{cfg_id}}/best_val_{{metric_name}}.pt",
+        fold=FOLD_IDS,
+        concept=CONCEPT_NAMES,
+        cfg_id=CFG_IDS,
+        metric_name=config["follow_this_metrics"]
+    )
 
 def get_paths_to_dataset_configs(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"

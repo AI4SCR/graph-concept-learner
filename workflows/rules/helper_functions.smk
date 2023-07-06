@@ -37,8 +37,8 @@ def get_all_graphs_for_a_concept(wildcards):
     return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/" + "{{concept}}/{spl_id}.pt", spl_id=SMAPLE_IDS)
 
 def get_paths_to_pretrained_models(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
-    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/"
+    CONCEPT_NAMES = [f for f in os.listdir(path_to_file)]
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs"
     CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/"

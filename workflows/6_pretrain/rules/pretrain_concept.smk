@@ -1,15 +1,15 @@
 # Train a GNN model specifies by a config, log results and save weights.
 rule pretrain_concept:
     input:
-        #f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/pretrain_model_configs", # Dependance on configs generation
+        #f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs", # Dependance on configs generation
         #get_all_graphs_for_a_concept, # Dependence on all graphs.
-        cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/pretrain_model_configs/{{config_id}}.yaml",
-        splits=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/meta_data/samples_splits.csv",
-        concept=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/processed_data/{{concept}}"
+        cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs/{{config_id}}.yaml",
+        splits=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/{{fold}}.csv",
+        concept=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/{{concept}}/{{fold}}"
     output:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/checkpoints/{{concept}}/{{config_id}}/test_conf_mat_from_best_val_balanced_accuracy.png",
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/checkpoints/{{concept}}/{{config_id}}/test_conf_mat_from_best_val_weighted_f1_score.png",
-        out_files=expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/checkpoints/"+"{{concept}}/{{config_id}}/best_val_{metric_name}.pt", metric_name=config["follow_this_metrics"]),
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{concept}}/{{fold}}/{{config_id}}/test_conf_mat_from_best_val_balanced_accuracy.png",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{concept}}/{{fold}}/{{config_id}}/test_conf_mat_from_best_val_weighted_f1_score.png",
+        out_files=expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/"+"{{concept}}/{{fold}}/{{config_id}}/best_val_{metric_name}.pt", metric_name=config["follow_this_metrics"]),
     params:
         folder_name=normalized_with,
         split_strategy=split_how,
@@ -20,7 +20,7 @@ rule pretrain_concept:
         mem="3G",
         queue="x86_1h",
     log:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/pretrain_concept/{{concept}}/{{config_id}}"
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/pretrain_concept/{{concept}}/{{fold}}/{{config_id}}"
     shell:
         "source scripts/setup_MLflow.sh && "
         "6_pretrain/scripts/pretrain_concept.py "

@@ -39,7 +39,7 @@ include: "rules/gen_all_datasets.smk" # Generates all concept graph datasets.
 include: "rules/gen_all_attributed_graphs.smk"
 
 # Pretrain
-# include: "rules/pretrain_all.smk" # Pretrains all models
+include: "rules/pretrain_all.smk" # Pretrains all models
 # include: "rules/pretrain_all_rnd.smk" # Pretrain selected randomly permuted models. s
 
 # Train

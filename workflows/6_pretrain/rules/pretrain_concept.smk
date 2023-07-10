@@ -15,6 +15,7 @@ rule pretrain_concept:
         split_strategy=split_how,
         run_type="pretrain_concept",
         randomize="False",
+        mlflow_on_remote_server=mlflow_on_remote_server,
     resources:
         cores="1+1",
         mem="3G",
@@ -22,7 +23,7 @@ rule pretrain_concept:
     log:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/pretrain_concept/{{concept}}/{{fold}}/{{config_id}}"
     shell:
-        "source scripts/setup_MLflow.sh && "
+        "source scripts/setup_MLflow.sh {params.mlflow_on_remote_server} && "
         "6_pretrain/scripts/pretrain_concept.py "
         "{input.cfg} {input.splits} {input.concept} "
         "{params.folder_name} {params.split_strategy} {params.run_type} {params.randomize} "

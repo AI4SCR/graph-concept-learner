@@ -18,3 +18,6 @@ follow_this_metrics:
 
 # Log frequency. The metrics will be loged into mlflow everyn epochs.
 log_frequency: 1
+
+# Low the mlflow experiemnts to a remote server or in the local file system? (False = local, True = remote)
+mlflow_on_remote_server: False

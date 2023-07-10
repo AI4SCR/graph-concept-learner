@@ -16,6 +16,7 @@ root=config["root"]
 prediction_target=config["prediction_target"]
 normalized_with=f"normalized_with_{config['normalize_with']}"
 split_how=config["split_how"]
+mlflow_on_remote_server=config["mlflow_on_remote_server"]
 
 ##### Helper functions #####
 include: "rules/helper_functions.smk"

@@ -16,7 +16,7 @@ rule pretrain_concept:
         run_type="pretrain_concept",
         randomize="False",
         mlflow_on_remote_server=mlflow_on_remote_server,
-        mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}"
+        mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns"
     resources:
         cores="1+1",
         mem="3G",

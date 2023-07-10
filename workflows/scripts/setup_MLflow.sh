@@ -1,6 +1,6 @@
 #!/bin/bash
 # If the
-if [[ $1 == "True"]]; then
+if [ $1 == "True"]; then
         export MLFLOW_TRACKING_URI=http://experiments2.traduce.zc2.ibm.com:5000
         export MLFLOW_S3_ENDPOINT_URL=http://data.digital-pathology.zc2.ibm.com:9000
 

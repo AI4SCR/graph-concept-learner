@@ -46,7 +46,7 @@ from graph_cl.utils.train_utils import (
 
 # Read config file path
 (
-    prog_name,  # NAme of the script
+    prog_name,  # Name of the script
     cfg_path,  # Path to config file
     splits_df,  # Path to df with data splits
     concept_dataset_dir,  # Path to dir with the concept dataset
@@ -54,6 +54,8 @@ from graph_cl.utils.train_utils import (
     split_strategy,  # Name of other folder
     run_type,  # Specify type of run
     randomize,  # Wehter to randomize the labes in the data
+    mlflow_on_remote_server,  # Wheather to log to remote or local
+    mlflow_uri,  # Specify path to in local file system where to save the mlflow log
     pred_target,  # Prediction target
     root,  # Path to the dir with all the data (used to specify mlflow experiment)
     log_frequency,  # Frequency with which the model is loged
@@ -121,6 +123,9 @@ criterion = torch.nn.CrossEntropyLoss()
 scheduler = build_scheduler(cfg, optimizer)
 
 # Define mlflow experiment
+if mlflow_on_remote_server == "False":
+    mlflow.set_tracking_uri(mlflow_uri)
+
 start_mlflow_run(root, pred_target, out_dir)
 
 # Add additional information to config st it is logged

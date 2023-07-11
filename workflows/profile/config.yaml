@@ -13,7 +13,7 @@ max-jobs-per-second: 10000
 max-status-checks-per-second: 10
 
 # Max number of jobs to submit at one time to queue
-jobs: 10000
+jobs: 1000
 
 # Max number of cores that can be use in parallel for all rules/jobs
 local-cores: 100

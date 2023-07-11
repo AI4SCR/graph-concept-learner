@@ -1,5 +1,5 @@
 # Dont retry jobs if they fail
-#restart-times: 2
+restart-times: 2
 
 # Specify custom job submission warpper
 # cluster: "../scripts/LSF_cluster_job.py"

@@ -3,12 +3,12 @@ import pandas as pd
 
 ##### Set up #####
 configfile: "./config/main_config.yaml"
+include: "rules/make_folder_structure.smk"
 
 # Make sure the dataset exists and a workflow for creating a so object also
 supported_datasets = {
     "jackson": "0_make_so_jackson/Snakefile"
 }
-assert os.path.exists(config["root"])
 dataset_name = os.path.basename(config["root"])
 
 ##### Define path variables form config #####

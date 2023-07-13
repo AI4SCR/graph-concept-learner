@@ -3,7 +3,6 @@ import pandas as pd
 
 ##### Set up #####
 configfile: "./config/main_config.yaml"
-include: "rules/make_folder_structure.smk"
 
 # Make sure the dataset exists and a workflow for creating a so object also
 supported_datasets = {
@@ -22,7 +21,10 @@ mlflow_on_remote_server=config["mlflow_on_remote_server"]
 include: "rules/helper_functions.smk"
 
 ##### Load other rules #####
-# Usefule when wnting to run the workflow in chunks.
+# Usefule when wanting to run the workflow in chunks.
+
+# Make folder structure and default config files
+include: "rules/make_folder_structure.smk"
 
 # MLflow
 #include: "rules/delete_mlflow_runs.smk" # Delete some mlflow run. Dont use unless you know what you are donig.

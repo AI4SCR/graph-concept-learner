@@ -1,0 +1,60 @@
+### Training parameters ###
+# Batch size
+batch_size:
+  - 8
+
+# Learning rate for the aggreagator
+agg_lr:
+  - 0.001
+
+# Learning rate for the concept gnn's
+gnns_lr:
+  - 0.00001
+
+# Optimizer (str).
+# Only Adam and SGD are supported.
+optim:
+  - "Adam"
+
+# Number of epochs
+n_epoch:
+  - 200
+
+# Learning rate decay strategy to use.
+# For ExponentialLR, the second value in the list corresponds to the gamma parameter.
+# For LambdaLR, the second value in the list corresponds to the divisor by which the lr is devided each every x epochs,
+# where x is the third value in the list. Only these two strategies are supported.
+scheduler:
+  - ["ExponentialLR", 0.98]
+
+# Seed. Specifying multiple seeds will result in multiple runs with the smae configuration but different initialization.
+seed:
+  - 1
+
+### Agregator parameters ###
+# Type of agregator. str: (transformer, concat, linear)
+aggregator:
+  - "transformer"
+
+# Number of layes in the final mlp calssifier
+mlp_num_layers:
+  - 2
+
+# String representation of the activation function to use in the final mlp calssifier. str (relu, tanh)
+mlp_act_key:
+  - "relu"
+
+### Parameters for transformer ###
+# If aggregator != "transformer" then these are ignored
+# Number or MultiHeadAttention heads.
+n_heads:
+  - 8
+
+# Number of staked TransformerEncoderLayer stacked.
+depth:
+  - 1
+
+# Define a scalar that computes the dimension of the feedforward network model, s.t.
+# scaler * output_graph_embedding = dim_feedforward
+scaler:
+  - 4

@@ -1,0 +1,38 @@
+# Name of the concept
+concept_name: <name_of_concept>
+
+# Type of algorithm to use for grpah constructuon. Supported options: "contact", "radius" and "knn"
+builder_type: knn
+
+# Depending on the builder_type choosen there will be a need to specify different building parameters. These here are the ones for the "contact" option.
+builder_params:
+  radius: 30
+  mode: connectivity
+  metric: minkowski
+  p: 2
+  metric_params:
+  include_self: false
+  n_jobs: -1
+
+# Name of the columns in the so.obs[<spl>] which hold the spatial location of the cell centroid.
+coordinate_keys:
+- location_center_x
+- location_center_y
+
+# Key in so.masks[<spl>][<mask_key>] indicating the type of cell masks to use for the graph construction.
+mask_key: cellmasks
+
+# Boolean flag indicating wheather the graphs will be constructed on all of the cells (false) or on a subset (true).
+# Set to true and specify all cell types to avoid including cells without marker infromation.
+build_concept_graph: true
+
+# Parameters for susbet graph construction. Only relevant if build_concept_graph is true.
+concept_params:
+  # Column name in so.obs[<spl>] to use to select the subset of the cell to be included in the graph
+  filter_col: cell_class
+  # Labels in the entries of so.obs[<spl>][<filter_col>] to include in the graph
+  labels:
+  - Vessel
+  - Immune
+  - Stroma
+  - Tumor

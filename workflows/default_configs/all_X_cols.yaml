@@ -1,0 +1,14 @@
+# Type of attributes to add to nodes in the graph. Supported options: "so"
+attrs_type: so
+
+# How to attribute the graph?
+attrs_params:
+  # Add attributes from so.obs[<spl>]?
+  from_obs: false
+  # If from_obs is true, which columns (specify list of column names) from so.obs[<spl>] to add as attributes.
+  obs_cols:
+
+  # Add attributes from so.X[<spl>]?
+  from_X: true
+  # If from_X is true, which columns (specify list of column names) from so.X[<spl>] to add as attributes.
+  X_cols: all

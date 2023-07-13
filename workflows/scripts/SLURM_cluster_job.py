@@ -17,7 +17,7 @@ rule_name = job_properties["rule"]
 
 # Get time
 if queue == "x86_1h":
-    time = "59:99"
+    time = "1:00:00"
 elif queue == "x86_6h":
     time = "6:00:00"
 elif queue == "x86_24h":

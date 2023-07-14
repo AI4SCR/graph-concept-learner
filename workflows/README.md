@@ -14,7 +14,7 @@ These are specified through configuration files and once these are set, executio
 
 ## Setting up the Environment
 
-Create a virtual environment with Python 3.8 and activate it (e.g. `conda create -n gal python=3.8 && conda activate gcl`). Then install the following packages:
+Create a virtual environment with Python 3.8 and activate it (e.g. `conda create -n gcl python=3.8 && conda activate gcl`). Then install the following packages:
 
 ```bash
 # Varia
@@ -27,7 +27,7 @@ pip install ai4scr-spatial-omics
 pip snakemake
 ```
 
-If you have GPUs available for execution install this:
+If you have GPUs available install this:
 
 ```bash
 pip install pyg_lib torch_scatter torch_sparse -f https://data.pyg.org/whl/torch-1.12.0+cu117.html
@@ -41,7 +41,7 @@ pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -
 
 Additionally, this workflow makes use of two packages that are not publically available so they need to be installed "manually".
 
-Clone these two repos, or copy them into your home directory (here denoted as `$HOME`). If `$HOME`does not exist in your system you can just replace it with the absolute path to your home directory.
+Clone these two repos, or copy them into your home directory (here denoted as `$HOME`). If `$HOME` does not exist in your system you can just replace it with the absolute path to your home directory.
 
 ```bash
 cd $HOME
@@ -109,7 +109,7 @@ The workflow takes care of gathering the raw data into a single object with all 
 
 The `SpatialOmics` class is implemented in ATHENA and allows us to conveniently and efficiently store the data in the same object for downstream preprocessing and graph construction. The relevant attributes of the `SpatialOmics` object that should be filled with the corresponding raw data are the following.
 
-- The `X` attribute, a dictionary where every key-value pair corresponds to the sample id, and a pandas data frame where rows represent cells in the sample, and columns represent markers [48, 49].
+- The `X` attribute, a dictionary where every key-value pair corresponds to the sample id, and a pandas data frame where rows represent cells in the sample, and columns represent markers.
 - The `obs` attribute, a dictionary where every key-value pair corresponds to the sample id, and a pandas data frame where rows represent cells in the sample and columns represent additional information about the cells (e.g. location, cell type).
 - The `spl` attribute, a pandas data frame containing sample metadata (including the prediction labels for the intended prediction task).
 - and `masks`, a nested dictionary supporting different types of segmentation cell masks. Each entry in the outer dictionary corresponds to a type of mask, and each key-value pair in the inner dictionary corresponds to the sample ID and binary numpy array, the mask.
@@ -152,7 +152,7 @@ Before we actually put the inputs where they are expected by the workflow we nee
 
 ```bash
 cd <path_to_local_graph_cl_dev_package>/workflows
-snakemake make_folder_structure.py
+snakemake make_folder_structure
 ```
 
 This will create the following folder structure with some example config files that must be adapted according to the user's needs. Folders names enclosed in `<>` represent fields that are specified in the `main_config.yaml`.
@@ -177,6 +177,8 @@ This will create the following folder structure with some example config files t
                         ├── concept_2_knn.yaml
                         └── concept_3_contact.yaml
 ```
+
+The default config files provide the user with an easy way to get started, however depending on the dataset that will be used the `dataset_configs` might not be compatible. Therefore they do not provide a fail safe minimal working example. For the Jackson dataset they are in deed a minimal working example.
 
 ### Input 1: The Dataset.
 
@@ -203,7 +205,7 @@ supported_datasets = {
 
 Notably, the key in this dictionary must be the name for the last directory in `<root>`.
 
-### Input 2: The concepts.
+### Input 2: The Concepts
 
 Each concept is fully defined by a config file. These configs should be placed in `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/dataset_configs`. The reason for this name is that each config will define a concept dataset, a collection of graphs constructed with a specific construction algorithm and a subset of the cells.
 
@@ -227,7 +229,7 @@ coordinate_keys:
 - location_center_x
 - location_center_y
 
-# Key in so.masks[<spl>][<mask_key>] indicating the type of cell masks to use for the graph construction.
+# Key in so.masks[<spl>] indicating the type of cell masks to use for the graph construction.
 mask_key: cellmasks
 
 # Boolean flag indicating whether the graphs will be constructed on all of the cells (false) or on a subset (true).
@@ -272,7 +274,7 @@ builder_params:
   n_jobs: -1
 ```
 
-### Input 3: The Attribution config
+### Input 3: The Attribution Configs
 
 Because the graph construction takes a considerable amount of time, it is more practical to first create the graphs and in a second step attribute them. This is especially useful in case one wishes to use cross-validation in which case, the attributes will be normalized separately for each fold leading to graph datasets with different attributes but the same connectivity in the individual graphs.
 
@@ -299,7 +301,7 @@ attrs_params:
 
 In the example above nodes would have two attributes, namely the expression from marker "Ir193" and "Yb174", information which is contained in the (fold-wise-normalized) `so.X[<spl>]`. Alternatively one can use all columns from either `so.obs` or `so.X` by setting `obs_cols: all` and `X_cols: all` respectively.
 
-### Input 4: Pretraining models and hyperparameters
+### Input 4: Pretraining Models and Hyperparameters
 
 Before training a full GCL model individual GNNs are pretrained. This serves a double purpose; on one hand, we can define a zoo of models-hyperparameter combinations and choose the best-performing ones for our GCL. On the other hand, by saving checkpoints of these models we can train our GCL models with the best performing-pretrained GNN models, and finetune them while training the aggregator from scratch. This was shown to improve performance.
 
@@ -389,7 +391,7 @@ seed:
 
 Each field must have at least one non-empty entry (except for `jk` which accepts an empty entry as shown above). The cross product of all options specified is computed (automatically by the workflow) and a config for each combination is generated and stored as `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/pretrain_configs/<confgi_id>.yaml`.
 
-### Input 5: Training models and hyperparameters
+### Input 5: Training Models and Hyperparameters
 
 Similar to the way we specified `pretrain_models_base_config.yaml` we must specify a `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/base_configs/train_models_base_config.yaml`. The cross product of all options specified will be computed (automatically by the workflow) generating a config file for each model-hyperparameter combination to be trained. Here is an example base config file.
 
@@ -461,7 +463,7 @@ scaler:
 
 Once all of the inputs are set, we are ready to run the workflow.
 
-## Running the workflow
+## Running the Workflow
 
 Simply run:
 
@@ -470,11 +472,12 @@ cd <path_to_local_graph_concept_learner_package>/workflows
 snakemake all
 ```
 
-Depending on the number of models you are testing and comparing and the computational resources you have available this might take from a few days to more than a week. One can also run specific parts of the workflow individually, which might be useful for debugging.
+Depending on the size of the dataset, the type of graphs you are building, the number of models you are testing, and the computational resources you have available this might take from a few days to more than a week. One can also run specific parts of the workflow individually, which might be useful for debugging.
 
 Replace `<rule>` in the code below with one of the following.
 
 - Make `so` object: `make_so`
+- Filter out ill defined images: `filter_samples`
 - Normalize data: `normalize_all_folds`
 - Generates all concept graph datasets.: `gen_all_datasets`
 - Attribute graphs: `gen_all_attributed_graphs`

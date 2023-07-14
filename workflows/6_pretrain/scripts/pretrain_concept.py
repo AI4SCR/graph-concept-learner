@@ -50,7 +50,7 @@ from graph_cl.utils.train_utils import (
     cfg_path,  # Path to config file
     splits_df,  # Path to df with data splits
     concept_dataset_dir,  # Path to dir with the concept dataset
-    folder_name,  # Name of the folder
+    normalized_with,  # Name of the folder
     split_strategy,  # Name of other folder
     run_type,  # Specify type of run
     randomize,  # Wehter to randomize the labes in the data
@@ -132,7 +132,7 @@ start_mlflow_run(root, pred_target, out_dir)
 cfg_file_name = os.path.basename(cfg_path)
 cfg_id = os.path.splitext(cfg_file_name)[0]
 cfg["run_type"] = run_type
-cfg["folder_name"] = folder_name
+cfg["folder_name"] = normalized_with
 cfg["split_strategy"] = split_strategy
 cfg["cfg_id"] = cfg_id
 cfg["concept"] = os.path.basename(concept_dataset_dir)

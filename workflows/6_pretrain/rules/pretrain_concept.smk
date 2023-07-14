@@ -11,7 +11,7 @@ rule pretrain_concept:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{concept}}/{{fold}}/{{config_id}}/test_conf_mat_from_best_val_weighted_f1_score.png",
         out_files=expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/"+"{{concept}}/{{fold}}/{{config_id}}/best_val_{metric_name}.pt", metric_name=config["follow_this_metrics"]),
     params:
-        folder_name=normalized_with,
+        normalized_with=normalized_with,
         split_strategy=split_how,
         run_type="pretrain_concept",
         randomize="False",
@@ -27,7 +27,7 @@ rule pretrain_concept:
         "source scripts/setup_MLflow.sh {params.mlflow_on_remote_server} && "
         "6_pretrain/scripts/pretrain_concept.py "
         "{input.cfg} {input.splits} {input.concept} "
-        "{params.folder_name} {params.split_strategy} {params.run_type} {params.randomize} "
+        "{params.normalized_with} {params.split_strategy} {params.run_type} {params.randomize} "
         "{params.mlflow_on_remote_server} {params.mlflow_uri} "
         "{config[prediction_target]} {config[root]} {config[log_frequency]} "
         "{output.out_files}"

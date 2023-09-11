@@ -1,6 +1,6 @@
 # Graph Concept Learner
 
-Learning using concept graphs for general prediction tasks. 
+Learning using concept graphs for general prediction tasks.
 
 ## Environment
 Using a virtual environment for all commands in this guide is strongly recommended.
@@ -23,7 +23,7 @@ pre-commit install
 ```
 
 ## Usage
-...
+Check workflow [README.md](.github/workflows/README.md).
 
 ## Contributing
 
@@ -32,6 +32,3 @@ Check [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 ## Getting support
 
 Check [SUPPORT.md](.github/SUPPORT.md).
-
-## Credits
-This project was created using https://github.ibm.com/HCLS-innersource/python-blueprint.

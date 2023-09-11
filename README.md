@@ -23,12 +23,12 @@ pre-commit install
 ```
 
 ## Usage
-Check workflow [README.md](.github/workflows/README.md).
+Check workflow [README.md](./workflows/README.md).
 
 ## Contributing
 
-Check [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+Check [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Getting support
 
-Check [SUPPORT.md](.github/SUPPORT.md).
+Check [SUPPORT.md](./SUPPORT.md).

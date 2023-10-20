@@ -1,5 +1,5 @@
 # Config file defining location of the data and other infromation. No / in the end of path.
-root: "/cluster/scratch/scastro/jackson"
+root: "/Users/adrianomartinelli/data/graph-concept-learning/jackson"
 
 # Prediction target. Must be a column present in the so.spl dataframe.
 prediction_target: "ERStatus"

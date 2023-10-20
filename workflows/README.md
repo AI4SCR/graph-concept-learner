@@ -24,7 +24,7 @@ pip install mlflow
 pip3 install torch
 pip install torch_geometric
 pip install ai4scr-spatial-omics
-pip snakemake
+pip install snakemake
 ```
 
 If you have GPUs available install this:
@@ -76,7 +76,11 @@ Note that `graph-concept-learner` also exists as `graph-concept-learner-pub`. Yo
 
 ### Your .bashrc
 
-Add the following to your `$HOME/.bashrc`:
+You can run the workflow either on a cluster setup or on you local machine.
+For local runs no further configuration is required except for running the snakemake commands with the `--cores N` flag, where `N` is the number of cores you want to use on your local machine
+
+If you want to run the workflow on a cluster you need to configure the submission of the cluster runs in a profile.
+An example profile is provided in `$HOME/graph-concept-learner/workflows/profile`.  Adding the following to your `$HOME/.bashrc` will enable cluster execution:
 
 ```bash
 export SNAKEMAKE_PROFILE=$HOME/graph-concept-learner/workflows/profile

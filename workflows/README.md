@@ -23,6 +23,7 @@ pip install ruamel.yaml
 pip install mlflow
 pip3 install torch
 pip install torch_geometric
+pip install ai4scr-athena
 pip install ai4scr-spatial-omics
 pip install snakemake
 ```
@@ -39,24 +40,20 @@ Otherwise this:
 pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
 ```
 
-Additionally, this workflow makes use of two packages that are not publically available so they need to be installed "manually".
-
-Clone these two repos, or copy them into your home directory (here denoted as `$HOME`). If `$HOME` does not exist in your system you can just replace it with the absolute path to your home directory.
+Additionally, this workflow makes use of the `graph-concept-learner` packages that is not available through pip or conda so you need to be installed "manually". Clone this repo, or copy them into your home directory (here denoted as `$HOME`). If `$HOME` does not exist in your system you can just replace it with the absolute path to your home directory.
 
 ```bash
 cd $HOME
-git clone <adress_to_ATHNEA_dev_package>
-git clone <addres_to_graph_cl_dev_package>
+git clone <address_to_graph_concept-learner_package>
 ```
 or
 
 ```bash
 cd $HOME
-scp -r <path_to_local_ATHNEA_dev_package> <path_to_$HOME_in_cluster>
 scp -r <path_to_local_graph_concept_learner_package> <path_to_$HOME_in_cluster>
 ```
 
-Then proceed to install them.
+Then proceed to install it.
 
 ```bash
 cd $HOME/graph-concept-learner
@@ -66,13 +63,99 @@ pip install -e .
 pre-commit install # In case you want to make commits and PRs
 ```
 
+TODO: erase this comment when the repo name is changed `graph-concept-learner`
+Note that `graph-concept-learner` also exists as `graph-concept-learner-pub`. You may have to adjust the above and below code correspondingly.
+
+## Cluster set-up
+**Read Additional software section even if you only intend to run things locally.**
+
+### Additional software
+You need to install `q` a CLT that is used to pre-process the Jackson dataset. It is only available through brew or as a zip file. Zip file is the way to go if you want to install it in the cluster where brew is often not available. In your local machine...
+
 ```bash
-cd $HOME/ATHENA
-pip install -r requirements.txt
-pip install -e .
+wget https://github.com/harelba/q/archive/refs/tags/v3.1.6.tar.gz
 ```
 
-Note that `graph-concept-learner` also exists as `graph-concept-learner-pub`. You may have to adjust the above and below code correspondingly.
+Unzip it and then
+
+```bash
+scp -r q-3.1.6 <path_to_$HOME_in_cluster>
+```
+
+On the other hand, if you will only run things locally (not in the cluster) you can simply
+
+```bash
+brew install harelba/q/q
+```
+
+Then modify the `workflows/0_make_so_jackson/scripts/gather_split_ct_data.sh` to the following:
+
+```bash
+#!/bin/bash
+
+# Unpack input
+z_pg=$1
+b_pg=$2
+z_mtc=$3
+b_mtc=$4
+z_scl=$5
+b_scl=$6
+map=$7
+out=$8
+
+# Mkdir outdir and cd into it
+mkdir -p $out
+cd $out
+
+# Make two lists, one for each cohort, and sample specifi files
+z=($z_pg,$z_mtc,$z_scl)
+b=($b_pg,$b_mtc,$b_scl)
+
+# Change header of b_pg
+sed -i".bak" 's/PhenoGraphBasel/PhenoGraph/g' $b_pg
+
+# Path to q
+#q=$HOME/q-3.1.6/bin/q.py
+
+# Iterte over lists
+for l in $z $b; do
+    # Unpack paths
+    pg=$(echo $l | cut -d "," -f 1)
+    mtc=$(echo $l | cut -d "," -f 2)
+    scl=$(echo $l | cut -d "," -f 3)
+
+    # Preprocces map then join cell id with cell type data, and the with cell location data
+    sed 's/;/,/g' $map |
+    sed -E 's/[[:blank:]]+/_/g' |
+    q -O -H -d',' "SELECT mtc.id,mtc.cluster,map.Cell_Type,map.Class FROM $mtc mtc JOIN - map ON (mtc.cluster = map.Metacluster_)" |
+    q -O -H -d',' "SELECT pg.id,mtc.cluster,mtc.Cell_Type,mtc.Class,pg.PhenoGraph FROM $pg pg LEFT JOIN - mtc ON (pg.id = mtc.id)" |
+    q -O -H -d',' "SELECT scl.core,scl.ObjectNumber_renamed,scl.id,mc.cluster,mc.Cell_Type,mc.Class,mc.PhenoGraph,scl.Location_Center_X,scl.Location_Center_Y FROM $scl scl LEFT JOIN - mc ON (mc.id = scl.id) ORDER BY scl.core" |
+    awk -F ',' '
+        BEGIN {
+            file_name="core"
+        }
+        {
+            if(file_name==$1) {
+                print > $1
+            }
+            else {
+                close(file_name)
+                file_name=$1
+                print > $1
+            }
+        }
+    '
+done
+
+# Rename with csv extension
+for f in $(ls); do
+	mv $f $f.csv
+done
+```
+
+As you can see the only changes is that q is no longer runs by referencing a local file (`$HOME/q-3.1.6/bin/q.py`) but a program available through the command line (simply `q`).
+
+**The rest of the set-up is only for cluster use. Omit in case you want to run things in your local machine.**
 
 ### Your .bashrc
 
@@ -155,13 +238,13 @@ All the inputs, outputs, and intermediate files will be created inside the `root
 Before we actually put the inputs where they are expected by the workflow we need to create a folder structure according to the `main_config.yaml`. To do, after you have modified the `main_config.yaml` according to your needs, run:
 
 ```bash
-cd <path_to_local_graph_cl_dev_package>/workflows
+cd <path_to_local_graph_concept-learner_package>/workflows
 snakemake make_folder_structure
 ```
 
 This will create the following folder structure with some example config files that must be adapted according to the user's needs. Folders names enclosed in `<>` represent fields that are specified in the `main_config.yaml`.
 
-```
+```bash
 .
 └── <root>
     ├── raw_data
@@ -192,7 +275,7 @@ From here onwards we will also refer to the `<root>/intermediate_data/so.pkl` ob
 
 In case one wants to apply the workflow to a new dataset one needs to add a sub-workflow analogous to  `$HOME/graph-concept-learner/workflows/0_make_so_jackson` such that it produced a `<root>/intermediate_data/so.pkl` file with the specifications described at the beginning of this section. Once created the `$HOME/graph-concept-learner/workflows/Snakefile` must be modified such that the correct sub-workflow is loaded. Namely, add the sub-workflow to the Python dictionary in `$HOME/graph-concept-learner/workflows/Snakefile`:
 
-```
+```python
 import os
 import pandas as pd
 

@@ -269,7 +269,20 @@ The default config files provide the user with an easy way to get started, howev
 
 ### Input 1: The Dataset.
 
+Download the Jackson dataset from [here](https://zenodo.org/records/4607374).
+The dataset is distributed as a single zip file. Unzip it and place the contents in `<root>/raw_data/zipped/`. The folder structure should look like this:
+
+```bash
+.
+├── 4607374.zip
+├── TumorStroma_masks.zip
+├── singlecell_cluster_labels.zip
+└── singlecell_locations.zip
+
+```
+
 Assuming that the workflow supports the gathering of the data for a given dataset, all a user needs to do is place the data into the `<root>/raw_data/zipped/` directory. The workflow will then take care of unzipping the data (and placing it into the `<root>/raw_data/unzipped/` directory), and gathering it into a `SpatialOmics` object which will be placed in a folder that will be created by the workflow, namely `<root>/intermediate_data/so.pkl`.
+
 
 From here onwards we will also refer to the `<root>/intermediate_data/so.pkl` object as `so`.
 
@@ -577,3 +590,4 @@ snakemake <rule>
 ```
 
 Take a look at the `<path_to_local_graph_concept_learner_package>/workflows/rules` for additional rules which might be useful.
+

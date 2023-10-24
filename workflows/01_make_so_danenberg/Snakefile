@@ -1,5 +1,0 @@
-include: "rules/unzip_raw_data.smk" # Unzip raw data form the Jackson papaer.
-include: "rules/gather_spl_metadata.smk" # Gather the common metadata between the two cohorts and write it to a df.
-include: "rules/split_scc_data.smk" # Split single cell channel data into per sample csv's.
-include: "rules/gather_split_ct_data.smk" # Gather and split single cell data regarding cell type and location.
-include: "rules/make_so.smk" # Make so object from the preporcessed files.

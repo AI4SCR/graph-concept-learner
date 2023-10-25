@@ -23,7 +23,8 @@ pip install ruamel.yaml
 pip install mlflow
 pip3 install torch
 pip install torch_geometric
-pip install ai4scr-athena
+pip install pre-commit
+# pip install ai4scr-athena TODO: Until release this needs to be installed manually
 pip install ai4scr-spatial-omics
 pip install snakemake
 ```
@@ -40,13 +41,12 @@ Otherwise this:
 pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
 ```
 
-Additionally, this workflow makes use of the `graph-concept-learner` packages that is not available through pip or conda so you need to be installed "manually". Clone this repo, or copy them into your home directory (here denoted as `$HOME`). If `$HOME` does not exist in your system you can just replace it with the absolute path to your home directory.
+Additionally, this workflow makes use of the `graph-concept-learner` packages that is not available through pip or conda so you need to be installed "manually". Clone this repo.
 
 ```bash
-cd $HOME
 git clone <address_to_graph_concept-learner_package>
 ```
-or
+If you want to run things on a cluster, you can scp the repo into your home directory in the remote server.
 
 ```bash
 cd $HOME
@@ -279,7 +279,7 @@ Download the Jackson dataset from [here](https://zenodo.org/records/4607374).
 The dataset is distributed as a single zip file. Unzip it and place the contents in `<root>/raw_data/zipped/`. The folder structure should look like this:
 
 ```bash
-.
+<root>/raw_data/zipped/
 ├── 4607374.zip
 ├── TumorStroma_masks.zip
 ├── singlecell_cluster_labels.zip
@@ -597,4 +597,3 @@ snakemake <rule>
 ```
 
 Take a look at the `<path_to_local_graph_concept_learner_package>/workflows/rules` for additional rules which might be useful.
-

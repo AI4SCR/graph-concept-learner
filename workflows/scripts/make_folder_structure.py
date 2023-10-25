@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ruamel import yaml
+import yaml
 import os
 import sys
 
@@ -7,7 +7,7 @@ import sys
 
 # Load main config
 with open(path_to_main_config) as file:
-    cfg = yaml.load(file, Loader=yaml.Loader)
+    cfg = yaml.safe_load(file)
 
 # Make directories
 # zipped

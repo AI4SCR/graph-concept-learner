@@ -90,6 +90,12 @@ brew install harelba/q/q
 
 Then modify the `workflows/0_make_so_jackson/scripts/gather_split_ct_data.sh` to the following:
 
+```
+TODO:
+This does not fail if `q` is not available.
+```
+
+
 ```bash
 #!/bin/bash
 

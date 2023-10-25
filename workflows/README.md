@@ -571,11 +571,16 @@ Once all of the inputs are set, we are ready to run the workflow.
 
 ## Running the Workflow
 
-Simply run:
+Simply run (replace 6 with the number of cores available or omit if running in the cluster):
 
 ```bash
 cd <path_to_local_graph_concept_learner_package>/workflows
-snakemake all
+snakemake -c 6 split_basel_leave_zurich_as_external
+snakemake -c 6 normalize_all_folds
+snakemake -c 6 gen_all_attributed_graphs
+snakemake -c 6 pretrain_all
+snakemake -c 6 get_best_pretrain_models // TODO: must adjust this step/
+snakemake -c 6 train_all
 ```
 
 Depending on the size of the dataset, the type of graphs you are building, the number of models you are testing, and the computational resources you have available this might take from a few days to more than a week. One can also run specific parts of the workflow individually, which might be useful for debugging.

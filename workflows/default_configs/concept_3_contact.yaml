@@ -27,7 +27,7 @@ concept_params:
   # Column name in so.obs[<spl>] to use to select the subset of the cell to be included in the graph
   filter_col: cell_class
   # Labels in the entries of so.obs[<spl>][<filter_col>] to include in the graph
-  labels:
+  include_labels:
   - Vessel
   - Immune
   - Stroma

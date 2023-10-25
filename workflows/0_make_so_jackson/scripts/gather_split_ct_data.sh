@@ -25,7 +25,6 @@ sed -i".bak" 's/PhenoGraphBasel/PhenoGraph/g' $b_pg
 # q=$HOME/q-3.1.6/bin/q.py
 q=$(which q)
 
-
 # Iterte over lists
 for l in $z $b; do
     # Unpack paths

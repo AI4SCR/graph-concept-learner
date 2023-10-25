@@ -60,7 +60,7 @@ for spl in all_samples:
 
     # Build graph
     ath.graph.build_graph(
-        so, spl, builder_type=builder_type, config=cfg, key_added=concept_name
+        so, spl, config=cfg, key_added=concept_name
     )
 
     # Remove edge weights

@@ -7,3 +7,7 @@ elif config["split_how"] == "split_zurich_leave_basel_as_external":
     include: "rules/split_zurich_leave_basel_as_external.smk"
 else:
     assert False, f"config['split_how'] = {config['split_how']}, not supported."
+
+# include: "rules/split_basel_leave_zurich_as_external.smk"
+# include: "rules/split_both_cohorts.smk"
+# include: "rules/split_zurich_leave_basel_as_external.smk"

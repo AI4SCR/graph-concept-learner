@@ -584,6 +584,7 @@ Replace `<rule>` in the code below with one of the following.
 
 - Make `so` object: `make_so`
 - Filter out ill defined images: `filter_samples`
+- Split samples `split_basel_leave_zurich_as_external` | `split_both_cohorts` | `split_zurich_leave_basel_as_external`
 - Normalize data: `normalize_all_folds`
 - Generates all concept graph datasets.: `gen_all_datasets`
 - Attribute graphs: `gen_all_attributed_graphs`

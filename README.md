@@ -10,7 +10,7 @@ Using a virtual environment for all commands in this guide is strongly recommend
 ### Package installation
 ```sh
 # assuming you have an SSH key set up on GitHub
-pip install "git+ssh://git@github.ibm.com/Santiago-Castro-Dau/graph-concept-learner.git@main"
+pip install "git+ssh://git@github.com:AI4SCR/graph-concept-learner.git@main"
 ```
 
 ### Suggested setup for development

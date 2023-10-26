@@ -53,7 +53,7 @@ for cfg in cfgs:
     if cfg["build_concept_graph"] is False:
         continue
 
-    labels = cfg["concept_params"]["labels"]
+    labels = cfg["concept_params"]["include_labels"]
     filter_col = cfg["concept_params"]["filter_col"]
 
     # Remove incomplete or not well defined samples

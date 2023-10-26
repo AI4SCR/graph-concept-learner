@@ -23,9 +23,10 @@ pip install ruamel.yaml
 pip install mlflow
 pip3 install torch
 pip install torch_geometric
-pip install ai4scr-athena
+pip install pre-commit
+# pip install ai4scr-athena TODO: Until release this needs to be installed manually
 pip install ai4scr-spatial-omics
-pip snakemake
+pip install snakemake
 ```
 
 If you have GPUs available install this:
@@ -40,13 +41,12 @@ Otherwise this:
 pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.0.0+cpu.html
 ```
 
-Additionally, this workflow makes use of the `graph-concept-learner` packages that is not available through pip or conda so you need to be installed "manually". Clone this repo, or copy them into your home directory (here denoted as `$HOME`). If `$HOME` does not exist in your system you can just replace it with the absolute path to your home directory.
+Additionally, this workflow makes use of the `graph-concept-learner` packages that is not available through pip or conda so you need to be installed "manually". Clone this repo.
 
 ```bash
-cd $HOME
 git clone <address_to_graph_concept-learner_package>
 ```
-or
+If you want to run things on a cluster, you can scp the repo into your home directory in the remote server.
 
 ```bash
 cd $HOME
@@ -88,78 +88,15 @@ On the other hand, if you will only run things locally (not in the cluster) you 
 brew install harelba/q/q
 ```
 
-Then modify the `workflows/0_make_so_jackson/scripts/gather_split_ct_data.sh` to the following:
-
-```bash
-#!/bin/bash
-
-# Unpack input
-z_pg=$1
-b_pg=$2
-z_mtc=$3
-b_mtc=$4
-z_scl=$5
-b_scl=$6
-map=$7
-out=$8
-
-# Mkdir outdir and cd into it
-mkdir -p $out
-cd $out
-
-# Make two lists, one for each cohort, and sample specifi files
-z=($z_pg,$z_mtc,$z_scl)
-b=($b_pg,$b_mtc,$b_scl)
-
-# Change header of b_pg
-sed -i".bak" 's/PhenoGraphBasel/PhenoGraph/g' $b_pg
-
-# Path to q
-#q=$HOME/q-3.1.6/bin/q.py
-
-# Iterte over lists
-for l in $z $b; do
-    # Unpack paths
-    pg=$(echo $l | cut -d "," -f 1)
-    mtc=$(echo $l | cut -d "," -f 2)
-    scl=$(echo $l | cut -d "," -f 3)
-
-    # Preprocces map then join cell id with cell type data, and the with cell location data
-    sed 's/;/,/g' $map |
-    sed -E 's/[[:blank:]]+/_/g' |
-    q -O -H -d',' "SELECT mtc.id,mtc.cluster,map.Cell_Type,map.Class FROM $mtc mtc JOIN - map ON (mtc.cluster = map.Metacluster_)" |
-    q -O -H -d',' "SELECT pg.id,mtc.cluster,mtc.Cell_Type,mtc.Class,pg.PhenoGraph FROM $pg pg LEFT JOIN - mtc ON (pg.id = mtc.id)" |
-    q -O -H -d',' "SELECT scl.core,scl.ObjectNumber_renamed,scl.id,mc.cluster,mc.Cell_Type,mc.Class,mc.PhenoGraph,scl.Location_Center_X,scl.Location_Center_Y FROM $scl scl LEFT JOIN - mc ON (mc.id = scl.id) ORDER BY scl.core" |
-    awk -F ',' '
-        BEGIN {
-            file_name="core"
-        }
-        {
-            if(file_name==$1) {
-                print > $1
-            }
-            else {
-                close(file_name)
-                file_name=$1
-                print > $1
-            }
-        }
-    '
-done
-
-# Rename with csv extension
-for f in $(ls); do
-	mv $f $f.csv
-done
-```
-
-As you can see the only changes is that q is no longer runs by referencing a local file (`$HOME/q-3.1.6/bin/q.py`) but a program available through the command line (simply `q`).
-
 **The rest of the set-up is only for cluster use. Omit in case you want to run things in your local machine.**
 
 ### Your .bashrc
 
-Add the following to your `$HOME/.bashrc`:
+You can run the workflow either on a cluster setup or on you local machine.
+For local runs no further configuration is required except for running the snakemake commands with the `--cores N` flag, where `N` is the number of cores you want to use on your local machine
+
+If you want to run the workflow on a cluster you need to configure the submission of the cluster runs in a profile.
+An example profile is provided in `$HOME/graph-concept-learner/workflows/profile`.  Adding the following to your `$HOME/.bashrc` will enable cluster execution:
 
 ```bash
 export SNAKEMAKE_PROFILE=$HOME/graph-concept-learner/workflows/profile
@@ -265,7 +202,20 @@ The default config files provide the user with an easy way to get started, howev
 
 ### Input 1: The Dataset.
 
+Download the Jackson dataset from [here](https://zenodo.org/records/4607374).
+The dataset is distributed as a single zip file. Unzip it and place the contents in `<root>/raw_data/zipped/`. The folder structure should look like this:
+
+```bash
+<root>/raw_data/zipped/
+├── 4607374.zip
+├── TumorStroma_masks.zip
+├── singlecell_cluster_labels.zip
+└── singlecell_locations.zip
+
+```
+
 Assuming that the workflow supports the gathering of the data for a given dataset, all a user needs to do is place the data into the `<root>/raw_data/zipped/` directory. The workflow will then take care of unzipping the data (and placing it into the `<root>/raw_data/unzipped/` directory), and gathering it into a `SpatialOmics` object which will be placed in a folder that will be created by the workflow, namely `<root>/intermediate_data/so.pkl`.
+
 
 From here onwards we will also refer to the `<root>/intermediate_data/so.pkl` object as `so`.
 
@@ -548,11 +498,16 @@ Once all of the inputs are set, we are ready to run the workflow.
 
 ## Running the Workflow
 
-Simply run:
+Simply run (replace 6 with the number of cores available or omit if running in the cluster):
 
 ```bash
 cd <path_to_local_graph_concept_learner_package>/workflows
-snakemake all
+snakemake -c 6 split_basel_leave_zurich_as_external
+snakemake -c 6 normalize_all_folds
+snakemake -c 6 gen_all_attributed_graphs
+snakemake -c 6 pretrain_all
+snakemake -c 6 get_best_pretrain_models // TODO: must adjust this step/
+snakemake -c 6 train_all
 ```
 
 Depending on the size of the dataset, the type of graphs you are building, the number of models you are testing, and the computational resources you have available this might take from a few days to more than a week. One can also run specific parts of the workflow individually, which might be useful for debugging.
@@ -561,6 +516,7 @@ Replace `<rule>` in the code below with one of the following.
 
 - Make `so` object: `make_so`
 - Filter out ill defined images: `filter_samples`
+- Split samples `split_basel_leave_zurich_as_external` | `split_both_cohorts` | `split_zurich_leave_basel_as_external`
 - Normalize data: `normalize_all_folds`
 - Generates all concept graph datasets.: `gen_all_datasets`
 - Attribute graphs: `gen_all_attributed_graphs`

@@ -14,7 +14,7 @@ rule make_folder_structure:
     params:
         path_to_cfgs=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs"
     shell:
-        "scripts/make_folder_structure.py {input.main_cfg} && "
-        "cp -t {params.path_to_cfgs}/dataset_configs/ {input.c1} {input.c2} {input.c3} && "
-        "cp -t {params.path_to_cfgs}/base_configs/ {input.pretrain} {input.train} && "
+        "scripts/make_folder_structure.py {input.main_cfg} &&"
+        "cp {input.c1} {input.c2} {input.c3} {params.path_to_cfgs}/dataset_configs/ &&"
+        "cp {input.pretrain} {input.train} {params.path_to_cfgs}/base_configs/ &&"
         "cp {input.attributes} {params.path_to_cfgs}/attribute_configs/"

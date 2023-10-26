@@ -12,14 +12,14 @@ rule unzip_raw_data:
         f"{root}/raw_data/unzipped/Data_publication/ZurichTMA/Zuri_PatientMetadata.csv",
         f"{root}/raw_data/unzipped/Data_publication/BaselTMA/SC_dat.csv",
         f"{root}/raw_data/unzipped/Data_publication/ZurichTMA/SC_dat.csv",
+        f"{root}/raw_data/unzipped/Data_publication/Basel_Zuri_StainingPanel.csv",
         f"{root}/raw_data/unzipped/Cluster_labels/PG_zurich.csv",
         f"{root}/raw_data/unzipped/Cluster_labels/PG_basel.csv",
         f"{root}/raw_data/unzipped/Cluster_labels/Zurich_matched_metaclusters.csv",
         f"{root}/raw_data/unzipped/Cluster_labels/Basel_metaclusters.csv",
+        f"{root}/raw_data/unzipped/Cluster_labels/Metacluster_annotations.csv",
         f"{root}/raw_data/unzipped/singlecell_locations/Zurich_SC_locations.csv",
         f"{root}/raw_data/unzipped/singlecell_locations/Basel_SC_locations.csv",
-        f"{root}/raw_data/unzipped/Cluster_labels/Metacluster_annotations.csv",
-        f"{root}/raw_data/unzipped/Data_publication/Basel_Zuri_StainingPanel.csv",
         directory(f"{root}/raw_data/unzipped/OMEnMasks/Basel_Zuri_masks")
     resources:
         cores=10,

@@ -33,7 +33,7 @@ for file in os.listdir(cfgs_dir):
 
         # reading the data from the file
         with open(file_path) as f:
-            cfg = yaml.safe_load(file)
+            cfg = yaml.safe_load(f)
 
         # append to list
         cfgs.append(cfg)
@@ -92,12 +92,12 @@ if not is_numeric_dtype(so.spl[prediction_target]):
 
     # Write map to file
     with open(label_dict, "w") as file:
-        documents = yaml.dump(map_to_numeric, file, Dumper=yaml.RoundTripDumper)
+        documents = yaml.dump(map_to_numeric, file)
 else:
     prediction_labels = so.spl[prediction_target][all_samples]
     map_to_numeric = {"no_need_for_map": "labels are numeric."}
     with open(label_dict, "w") as file:
-        documents = yaml.dump(map_to_numeric, file, Dumper=yaml.RoundTripDumper)
+        documents = yaml.dump(map_to_numeric, file)
 
 # Save list of samples and their associated prediction labels.
 prediction_labels.to_csv(filtered_sample_ids_and_labels, index=True)

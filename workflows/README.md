@@ -172,7 +172,7 @@ Before we actually put the inputs where they are expected by the workflow we nee
 
 ```bash
 cd <path_to_local_graph_concept-learner_package>/workflows
-snakemake make_folder_structure
+snakemake -c 1 make_folder_structure
 ```
 
 This will create the following folder structure with some example config files that must be adapted according to the user's needs. Folders names enclosed in `<>` represent fields that are specified in the `main_config.yaml`.
@@ -207,7 +207,9 @@ The dataset is distributed as a single zip file. Unzip it and place the contents
 
 ```bash
 <root>/raw_data/zipped/
-├── 4607374.zip
+.
+├── OMEandSingleCellMasks.zip
+├── SingleCell_and_Metadata.zip
 ├── TumorStroma_masks.zip
 ├── singlecell_cluster_labels.zip
 └── singlecell_locations.zip
@@ -502,8 +504,10 @@ Simply run (replace 6 with the number of cores available or omit if running in t
 
 ```bash
 cd <path_to_local_graph_concept_learner_package>/workflows
+snakemake -c 6 make_so
 snakemake -c 6 split_basel_leave_zurich_as_external
 snakemake -c 6 normalize_all_folds
+snakemake -c 6 gen_all_datasets
 snakemake -c 6 gen_all_attributed_graphs
 snakemake -c 6 pretrain_all
 snakemake -c 6 get_best_pretrain_models // TODO: must adjust this step/

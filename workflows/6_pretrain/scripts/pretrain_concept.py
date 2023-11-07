@@ -20,7 +20,7 @@ from graph_cl.utils.train_utils import (
     randomize_labels,
 )
 
-### Debug input ###
+# Debug input
 # cfg = {
 #     "pool": "global_mean_pool",
 #     "gnn": "PNA",
@@ -40,7 +40,7 @@ from graph_cl.utils.train_utils import (
 #     "seed": 25
 # }
 # pred_target = "ERStatus"
-# concept_dataset_dir="/Users/ast/Documents/GitHub/datasets/jakson/prediction_tasks/ERStatus/processed_data/immune_radius"
+# concept_dataset_dir="/Users/ast/Documents/GitHub/datasets/jackson/prediction_tasks/ERStatus/processed_data/immune_radius"
 # randomize="True"
 # splits_df="/Users/ast/Downloads/sample_splits.csv"
 
@@ -53,12 +53,12 @@ from graph_cl.utils.train_utils import (
     normalized_with,  # Name of the folder
     split_strategy,  # Name of other folder
     run_type,  # Specify type of run
-    randomize,  # Wehter to randomize the labes in the data
-    mlflow_on_remote_server,  # Wheather to log to remote or local
+    randomize,  # Weather to randomize the labels in the data
+    mlflow_on_remote_server,  # Weather to log to remote or local
     mlflow_uri,  # Specify path to in local file system where to save the mlflow log
     pred_target,  # Prediction target
     root,  # Path to the dir with all the data (used to specify mlflow experiment)
-    log_frequency,  # Frequency with which the model is loged
+    log_frequency,  # Frequency with which the model is logged
     out_file_1,  # Path to the output file with the final model
     out_file_2,  # Path to the output file with the final model
 ) = sys.argv
@@ -77,7 +77,7 @@ with open(cfg_path) as file:
 # Load dataset
 dataset = Concept_Dataset(concept_dataset_dir)
 
-# Save dataset infomration to config
+# Save dataset information to config
 cfg["num_classes"] = dataset.num_classes
 cfg["in_channels"] = dataset.num_node_features
 cfg["hidden_channels"] = cfg["in_channels"] * cfg["scaler"]
@@ -86,28 +86,28 @@ cfg["hidden_channels"] = cfg["in_channels"] * cfg["scaler"]
 seed_everything(cfg["seed"])
 
 # Get a separate dataset for each split
-splited_datasets = split_concept_dataset(
+splitted_datasets = split_concept_dataset(
     splits_df=splits_df, index_col="core", dataset=dataset
 )
 
-# Permute labels if fals is true
+# Permute labels if false is true
 if bool(randomize):
-    splited_datasets = randomize_labels(splits_df, pred_target, splited_datasets)
+    splitted_datasets = randomize_labels(splits_df, pred_target, splitted_datasets)
 
 # Build model.
 # Important to pass train_dataset in cpu, not cuda.
-model = GNN_plus_MPL(cfg, splited_datasets["train"])
+model = GNN_plus_MPL(cfg, splitted_datasets["train"])
 
 # Move to CUDA if available
 model.to(device)
 
 # Load datasets according to device
 loaders = {}
-for split_and_splited_dataset in splited_datasets.items():
+for split_and_splitted_dataset in splitted_datasets.items():
     # Unpack key and value
-    split, splited_dataset = split_and_splited_dataset
+    split, splitted_dataset = split_and_splitted_dataset
     loaders[split] = DataLoader(
-        [data.to(device, non_blocking=True) for data in splited_dataset],
+        [data.to(device, non_blocking=True) for data in splitted_dataset],
         batch_size=cfg["batch_size"],
         shuffle=True,
     )
@@ -144,11 +144,11 @@ if cfg["gnn"] == "PNA":
 # Log config
 robust_mlflow(mlflow.log_params, params=cfg)
 
-### Training and evaluation ###
+# Training and evaluation
 # Log frequency in terms of epochs
 log_every_n_epochs = int(log_frequency)
 
-# Save checkpoints for the follwoing metrics
+# Save checkpoints for the following metrics
 follow_this_metrics = get_dict_of_metric_names_and_paths(out_file_1, out_file_2)
 
 # Train and validate for cfg["n_epochs"]
@@ -166,7 +166,7 @@ train_validate_and_log_n_epochs(
     follow_this_metrics=follow_this_metrics,
 )
 
-### Load best models an compute test metrics ###
+# Load best models an compute test metrics ###
 test_and_log_best_models(
     cfg=cfg,
     model=model,

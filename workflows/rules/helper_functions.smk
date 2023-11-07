@@ -37,14 +37,18 @@ def get_all_graphs_for_a_concept(wildcards):
     return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/" + "{{concept}}/{spl_id}.pt", spl_id=SMAPLE_IDS)
 
 def get_paths_to_pretrained_models(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/"
-    CONCEPT_NAMES = [f for f in os.listdir(path_to_file)]
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs"
-    CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
+    CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/"
-    FOLD_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".csv"]
-    path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
-    ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if f.endswith(".yaml")]
+    FOLD_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".csv")]
+
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
     return expand(
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{attribute_config}}/{{concept}}/{{fold}}/{{cfg_id}}/best_val_{{metric_name}}.pt",
         fold=FOLD_IDS,

@@ -3,7 +3,7 @@
 import sys
 import os
 import mlflow
-from ruamel import yaml
+import yaml
 import torch
 from torch_geometric.loader import DataLoader
 from torch_geometric import seed_everything

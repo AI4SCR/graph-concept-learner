@@ -3,7 +3,7 @@ def get_all_attributed_graphs(wildcards):
     path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
     CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if f.endswith(".yaml")]
 
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     path_to_folds = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/normalized_data"
@@ -12,7 +12,7 @@ def get_all_attributed_graphs(wildcards):
     return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/{{attribute_config}}/{{concept}}/{{fold}}", concept=CONCEPT_NAMES, attribute_config=CONFIG_NAMES, fold=FOLDS)
 
 def get_all_graphs_and_datasets(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     CONTACT_CONCEPTS = []
@@ -37,7 +37,7 @@ def get_all_graphs_for_a_concept(wildcards):
     return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/" + "{{concept}}/{spl_id}.pt", spl_id=SMAPLE_IDS)
 
 def get_paths_to_pretrained_models(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs"
@@ -58,8 +58,8 @@ def get_paths_to_pretrained_models(wildcards):
         metric_name=config["follow_this_metrics"]
     )
 
-def get_paths_to_dataset_configs(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+def get_paths_to_concept_configs(wildcards):
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
     return expand(f"{path_to_file}/{{concept}}.yaml", concept=CONCEPT_NAMES)
 
@@ -76,7 +76,7 @@ def gen_paths_to_space_gm_conf_matrices(wildcards):
     return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/space_gm_baseline/"+"{dataset}/{cfg_id}/test_conf_mat_from_best_val_weighted_f1_score.png", cfg_id=CFG_IDS, dataset=DATASET_NAMES)
 
 def get_all_rand_graphs_and_datasets(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
 
     CONTACT_CONCEPTS = []

@@ -2,7 +2,7 @@
 rule split_run_metrics_per_concept:
     input:
         #get_paths_to_pretrained_models,
-        dataset_configs_path = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/dataset_configs",
+        concept_configs_path = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/concept_configs",
     output:
         directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/pretrain_results/all_models_per_concept")
     params:
@@ -17,7 +17,7 @@ rule split_run_metrics_per_concept:
     shell:
         "source scripts/setup_MLflow.sh && "
         "7_model_selection/scripts/split_run_metrics_per_concept.py "
-        "{input.dataset_configs_path} "
+        "{input.concept_configs_path} "
         "{params.folder_name} {params.split_strategy} "
         "{config[prediction_target]} {config[root]} "
         "{output}"

@@ -26,7 +26,7 @@ import pandas as pd
 
 # sample_ids_file = "/Users/ast/Documents/GitHub/datasets/ER/meta_data/filtered_sample_ids_and_labels.csv"
 # preiction_target = "ER"
-# cfg_file = "/Users/ast/Documents/GitHub/datasets/ER/configs/dataset_configs/immune_tumor_radius.yaml"
+# cfg_file = "/Users/ast/Documents/GitHub/datasets/ER/configs/concept_configs/immune_tumor_radius.yaml"
 # so_file = "/Users/ast/Documents/GitHub/datasets/ER/int_data/full_so.pkl"
 # output_dir = "/Users/ast/Documents/GitHub/datasets/ER/prd_data/immune_tumor_radius"
 

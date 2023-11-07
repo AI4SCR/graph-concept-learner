@@ -7,7 +7,7 @@ else:
 rule gen_rand_concept_graph_dataset:
     input:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/meta_data/randomized_data/filtered_sample_ids_and_labels.csv",
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/dataset_configs/{{concept}}_radius.yaml",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/concept_configs/{{concept}}_radius.yaml",
         path_to_so
     output:
         directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/randomized_data/{{concept}}_radius/")

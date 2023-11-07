@@ -192,13 +192,13 @@ This will create the following folder structure with some example config files t
                     ├── base_configs
                     │   ├── pretrain_models_base_config.yaml
                     │   └── train_models_base_config.yaml
-                    └── dataset_configs
+                    └── concept_configs
                         ├── concept_1_radius.yaml
                         ├── concept_2_knn.yaml
                         └── concept_3_contact.yaml
 ```
 
-The default config files provide the user with an easy way to get started, however depending on the dataset that will be used the `dataset_configs` might not be compatible. Therefore they do not provide a fail safe minimal working example. For the Jackson dataset they are in deed a minimal working example.
+The default config files provide the user with an easy way to get started, however depending on the dataset that will be used the `concept_configs` might not be compatible. Therefore they do not provide a fail safe minimal working example. For the Jackson dataset they are in deed a minimal working example.
 
 ### Input 1: The Dataset.
 
@@ -242,7 +242,7 @@ Notably, the key in this dictionary must be the name for the last directory in `
 
 ### Input 2: The Concepts
 
-Each concept is fully defined by a config file. These configs should be placed in `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/dataset_configs`. The reason for this name is that each config will define a concept dataset, a collection of graphs constructed with a specific construction algorithm and a subset of the cells.
+Each concept is fully defined by a config file. These configs should be placed in `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/concept_configs`. The reason for this name is that each config will define a concept dataset, a collection of graphs constructed with a specific construction algorithm and a subset of the cells.
 
 Each config should be named `<name_of_concept>.yaml` and should have the following structure.
 

@@ -8,7 +8,7 @@ rule split_basel_leave_zurich_as_external:
         directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/proportions"),
     params:
         split_proportions=[0.7, 0.15, 0.15], # Approximate proportions of the train test and validation splits (respectively).
-        n_folds=10
+        n_folds=config["n_folds"]
     resources:
         cores=2,
         mem="3G",

@@ -44,7 +44,7 @@ def get_paths_to_pretrained_models(wildcards):
     CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/"
-    FOLD_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".csv")]
+    FOLD_IDS = [f"fold_{i}" for i in range(config["n_folds"])]
 
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
     ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]

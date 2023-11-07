@@ -12,7 +12,7 @@ These are specified through configuration files and once these are set, executio
 
 **Disclaimer: tutorial for cluster execution and use.**
 
-## Setting up the Environment
+## Setting up the environment
 
 Create a virtual environment with Python 3.8 and activate it (e.g. `conda create -n gcl python=3.8 && conda activate gcl`). Then install the following packages:
 
@@ -67,7 +67,8 @@ TODO: erase this comment when the repo name is changed `graph-concept-learner`
 Note that `graph-concept-learner` also exists as `graph-concept-learner-pub`. You may have to adjust the above and below code correspondingly.
 
 ## Cluster set-up
-**Read Additional software section even if you only intend to run things locally.**
+
+**Read "Additional software" section, even if you only intend to run things locally.**
 
 ### Additional software
 You need to install `q` a CLT that is used to pre-process the Jackson dataset. It is only available through brew or as a zip file. Zip file is the way to go if you want to install it in the cluster where brew is often not available. In your local machine...
@@ -123,7 +124,7 @@ cluster: "../scripts/SLURM_cluster_job.py"
 cluster-status: "../scripts/SLURM_cluster_status.py"
 ```
 
-## Inputs and Where to Put Them
+## Inputs and where to put them
 
 The workflow takes care of gathering the raw data into a single object with all of the relevant information for GCL training and selection. In other words, given a raw spatial omics dataset a `SpatialOmics` object can be produced using the workflow. Since each dataset will be distributed differently (the data will be located in different folders and files with different names), this part of the workflow will be different for every dataset one wishes to use. As of now, we provide a sub-workflow for gathering data from the Jackson dataset.
 
@@ -152,6 +153,9 @@ normalize_with: "min_max"
 # Supported options: "both_cohorts", "split_zurich_leave_basel_as_external" or "split_basel_leave_zurich_as_external"
 split_how: "split_basel_leave_zurich_as_external"
 
+# Number of cross-validation folds to use
+n_folds: 3
+
 # Define metrics that should be used to save checkpoints. Supported options are: balanced_accuracy, weighted_f1_score, weighted_recall, weighted_precision, loss.
 follow_this_metrics:
   - "balanced_accuracy"
@@ -166,7 +170,7 @@ mlflow_on_remote_server: False
 
 All the inputs, outputs, and intermediate files will be created inside the `root` folder specified here. You can find descriptions of the other fields in the example config above. Several design choices are defined here and therefore users must modify this file according to their needs.
 
-### Where to Put the Inputs
+### Where to put the inputs
 
 Before we actually put the inputs where they are expected by the workflow we need to create a folder structure according to the `main_config.yaml`. To do, after you have modified the `main_config.yaml` according to your needs, run:
 
@@ -192,15 +196,17 @@ This will create the following folder structure with some example config files t
                     ├── base_configs
                     │   ├── pretrain_models_base_config.yaml
                     │   └── train_models_base_config.yaml
-                    └── concept_configs
-                        ├── concept_1_radius.yaml
-                        ├── concept_2_knn.yaml
-                        └── concept_3_contact.yaml
+                    ├── concept_configs
+                    │   ├── concept_1_radius.yaml
+                    │   └── concept_2_knn.yaml
+                    └── pretrain_model_configs
+                        ├── model_1.yaml
+                        └── model_2.yaml
 ```
 
 The default config files provide the user with an easy way to get started, however depending on the dataset that will be used the `concept_configs` might not be compatible. Therefore they do not provide a fail safe minimal working example. For the Jackson dataset they are in deed a minimal working example.
 
-### Input 1: The Dataset.
+### Input 1: the dataset.
 
 Download the Jackson dataset from [here](https://zenodo.org/records/4607374).
 The dataset is distributed as a single zip file. Unzip it and place the contents in `<root>/raw_data/zipped/`. The folder structure should look like this:
@@ -240,7 +246,7 @@ supported_datasets = {
 
 Notably, the key in this dictionary must be the name for the last directory in `<root>`.
 
-### Input 2: The Concepts
+### Input 2: the concepts configuration files
 
 Each concept is fully defined by a config file. These configs should be placed in `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/concept_configs`. The reason for this name is that each config will define a concept dataset, a collection of graphs constructed with a specific construction algorithm and a subset of the cells.
 
@@ -309,7 +315,7 @@ builder_params:
   n_jobs: -1
 ```
 
-### Input 3: The Attribution Configs
+### Input 3: the attribution configuration files
 
 Because the graph construction takes a considerable amount of time, it is more practical to first create the graphs and in a second step attribute them. This is especially useful in case one wishes to use cross-validation in which case, the attributes will be normalized separately for each fold leading to graph datasets with different attributes but the same connectivity in the individual graphs.
 
@@ -336,9 +342,9 @@ attrs_params:
 
 In the example above nodes would have two attributes, namely the expression from marker "Ir193" and "Yb174", information which is contained in the (fold-wise-normalized) `so.X[<spl>]`. Alternatively one can use all columns from either `so.obs` or `so.X` by setting `obs_cols: all` and `X_cols: all` respectively.
 
-### Input 4: Pretraining Models and Hyperparameters
+### Input 4: pretraining Models and hyperparameters
 
-Before training a full GCL model individual GNNs are pretrained. This serves a double purpose; on one hand, we can define a zoo of models-hyperparameter combinations and choose the best-performing ones for our GCL. On the other hand, by saving checkpoints of these models we can train our GCL models with the best performing-pretrained GNN models, and finetune them while training the aggregator from scratch. This was shown to improve performance.
+Before training a full GCL model individual GNNs are pretrained. This serves a double purpose; on one hand, we can define a zoo of models-hyperparameter combinations and choose the best-performing ones for our GCL. On the other hand, by saving checkpoints of these models we can train our GCL models with the best performing-pretrained GNN models, and fine-tune them while training the aggregator from scratch. This was shown to improve performance.
 
 To define a zoo of models-hyperparameter combinations all a user needs to do is to specify a `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/base_configs/pretrain_models_base_config.yaml`. Here is an example:
 
@@ -426,7 +432,7 @@ seed:
 
 Each field must have at least one non-empty entry (except for `jk` which accepts an empty entry as shown above). The cross product of all options specified is computed (automatically by the workflow) and a config for each combination is generated and stored as `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/pretrain_configs/<confgi_id>.yaml`.
 
-### Input 5: Training Models and Hyperparameters
+### Input 5: training models and hyperparameters
 
 Similar to the way we specified `pretrain_models_base_config.yaml` we must specify a `<root>/prediction_tasks/<prediction_task>/normalized_with_<normalize_with>/configs/base_configs/train_models_base_config.yaml`. The cross product of all options specified will be computed (automatically by the workflow) generating a config file for each model-hyperparameter combination to be trained. Here is an example base config file.
 
@@ -498,18 +504,30 @@ scaler:
 
 Once all of the inputs are set, we are ready to run the workflow.
 
-## Running the Workflow
+## Running the workflow
 
-Simply run (replace 6 with the number of cores available or omit if running in the cluster):
+First and foremost lets create a working
 
 ```bash
 cd <path_to_local_graph_concept_learner_package>/workflows
-snakemake -c 6 make_so
-snakemake -c 6 split_basel_leave_zurich_as_external
-snakemake -c 6 normalize_all_folds
-snakemake -c 6 gen_all_datasets
-snakemake -c 6 gen_all_attributed_graphs
-snakemake -c 6 pretrain_all
+snakemake -c 1 make_folder_structure
+```
+Before you proceed you need to:
+
+1. place the raw data as indicated below and
+2. change the configs according to you experimental setup.
+
+The `make_folder_structure` rule creates default configuration files that provide a minimal working example for the Jackson dataset, so if you only want to try things out you only need to download and place the raw data as detailed below.
+
+Once this is done run the following:
+
+```bash
+snakemake -c all pretrain_all // This will prepossess and pretrains
+```
+
+TODO: Write instruction for the rest of the workflow. E.g
+
+```bash
 snakemake -c 6 get_best_pretrain_models // TODO: must adjust this step/
 snakemake -c 6 train_all
 ```

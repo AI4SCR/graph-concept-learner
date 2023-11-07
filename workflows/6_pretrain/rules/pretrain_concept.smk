@@ -9,7 +9,7 @@ rule pretrain_concept:
     output:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{attribute_config}}/{{concept}}/{{fold}}/{{config_id}}/test_conf_mat_from_best_val_balanced_accuracy.png",
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{attribute_config}}/{{concept}}/{{fold}}/{{config_id}}/test_conf_mat_from_best_val_weighted_f1_score.png",
-        out_files=expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/"+"{{concept}}/{{fold}}/{{config_id}}/best_val_{metric_name}.pt", metric_name=config["follow_this_metrics"]),
+        out_files=expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/"+"{{attribute_config}}/{{concept}}/{{fold}}/{{config_id}}/best_val_{metric_name}.pt", metric_name=config["follow_this_metrics"]),
     params:
         normalized_with=normalized_with,
         split_strategy=split_how,

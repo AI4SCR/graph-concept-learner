@@ -16,18 +16,18 @@ def get_all_graphs_and_datasets(wildcards):
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     CONTACT_CONCEPTS = []
-    RADIUS_CONCEPTS = []
+    RADIUS_KNN_CONCEPTS = []
     for concept in CONCEPT_NAMES:
         if "contact" in concept:
             CONTACT_CONCEPTS.append(concept)
         else:
-            RADIUS_CONCEPTS.append(concept)
+            RADIUS_KNN_CONCEPTS.append(concept)
 
     path_to_filtered_sample_ids = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/filtered_sample_ids_and_labels.csv"
     SMAPLE_IDS = list(pd.read_csv(path_to_filtered_sample_ids, index_col=0).squeeze("columns").index.values)
 
     all_graphs = expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}/{{spl_id}}.pkl", concept=CONTACT_CONCEPTS, spl_id=SMAPLE_IDS)
-    all_datasets = expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}", concept=RADIUS_CONCEPTS)
+    all_datasets = expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}", concept=RADIUS_KNN_CONCEPTS)
 
     return all_graphs + all_datasets
 

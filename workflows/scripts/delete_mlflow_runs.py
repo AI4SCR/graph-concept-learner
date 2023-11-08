@@ -14,7 +14,7 @@ root = sys.argv[5]
 # pred_target = "ERStatus"
 # folder_name = "ERStatus_normalized"
 # dataset_name = "jakson"
-# path_to_all_concepts = f"/dccstor/cpath_data/datasets/GCL/{dataset_name}/prediction_tasks/{folder_name}/configs/dataset_configs/"
+# path_to_all_concepts = f"/dccstor/cpath_data/datasets/GCL/{dataset_name}/prediction_tasks/{folder_name}/configs/concept_configs/"
 
 # Get datset name
 dataset_name = os.path.basename(root)

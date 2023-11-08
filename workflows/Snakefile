@@ -36,7 +36,7 @@ include: "rules/make_folder_structure.smk"
 include: "rules/normalize_all_folds.smk"
 
 # Gen datasets
-include: "rules/gen_all_datasets.smk" # Generates all concept graph datasets.
+include: "rules/gen_all_graphs.smk" # Generates all concept graph datasets.
 # include: "rules/gen_all_rand_datasets.smk" # Generates all random concept graph datasets.
 
 # Attribute graphs

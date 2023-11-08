@@ -36,7 +36,11 @@ p = os.path.join(extended_root, "base_configs")
 os.makedirs(p, exist_ok=True)
 
 # dataset configs
-p = os.path.join(extended_root, "dataset_configs")
+p = os.path.join(extended_root, "concept_configs")
+os.makedirs(p, exist_ok=True)
+
+# pretrain configs
+p = os.path.join(extended_root, "pretrain_model_configs")
 os.makedirs(p, exist_ok=True)
 
 print(f"Folder structure in {cfg['root']} has been created.")

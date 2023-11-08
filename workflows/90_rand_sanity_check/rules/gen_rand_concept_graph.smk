@@ -7,7 +7,7 @@ else:
 rule gen_rand_concept_graph:
     input:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/meta_data/randomized_data/filtered_sample_ids_and_labels.csv",
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/dataset_configs/{{concept}}_contact.yaml",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/concept_configs/{{concept}}_contact.yaml",
         path_to_so,
     output:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/randomized_data/{{concept}}_contact/{{spl_id}}.pt"

@@ -3,7 +3,7 @@ rule gen_pretrain_configs:
     input:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/base_configs/pretrain_models_base_config.yaml"
     output:
-        protected(directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs"))
+        directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs")
     resources:
         cores=1,
         mem="1G",

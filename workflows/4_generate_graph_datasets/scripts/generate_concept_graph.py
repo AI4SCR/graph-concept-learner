@@ -31,7 +31,7 @@ cfg["build_and_attribute"] = False
 # Make a graph for the given sample, and turn it into pyg and save to file
 # Build graph
 ath.graph.build_graph(
-    so, spl, builder_type=builder_type, config=cfg, key_added=concept_name
+    so, spl, config=cfg, key_added=concept_name
 )
 
 # Remove edge weights

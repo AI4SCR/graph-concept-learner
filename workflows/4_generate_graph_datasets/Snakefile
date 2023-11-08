@@ -1,2 +1,2 @@
-include: "rules/generate_concept_graph.smk" # Generates concept graph for every concept and sample in fliter samples
+include: "rules/generate_concept_graph.smk" # Generates concept graph for every concept and sample in filter samples
 include: "rules/generate_concept_graph_dataset.smk" # Generates concept graph dataset for every concept.

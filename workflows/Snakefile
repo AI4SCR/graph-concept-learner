@@ -21,7 +21,7 @@ mlflow_on_remote_server=config["mlflow_on_remote_server"]
 include: "rules/helper_functions.smk"
 
 ##### Load other rules #####
-# Usefule when wanting to run the workflow in chunks.
+# Useful when wanting to run the workflow in chunks.
 
 # Make folder structure and default config files
 include: "rules/make_folder_structure.smk"
@@ -31,11 +31,12 @@ include: "rules/make_folder_structure.smk"
 #include: "rules/parse_pretrain_mlflow_runs.smk" # Checks against mlflow if all concept configs combinations have been pretrained.
 #include: "rules/parse_train_mlflow_runs.smk" # Parse the train runs.
 
+
 # Normalize data
 include: "rules/normalize_all_folds.smk"
 
 # Gen datasets
-include: "rules/gen_all_datasets.smk" # Generates all concept graph datasets.
+include: "rules/gen_all_graphs.smk" # Generates all concept graph datasets.
 # include: "rules/gen_all_rand_datasets.smk" # Generates all random concept graph datasets.
 
 # Attribute graphs

@@ -1,6 +1,6 @@
 rule select_best_model_per_concept:
     input:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{concept}}/*/test_conf_mat_from_best_val_balanced_accuracy.png"
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/*/{{concept}}/*/test_conf_mat_from_best_val_balanced_accuracy.png"
     output:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/{{concept}}.yaml",
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/figures/models_performance_distribution_per_concept/{{concept}}.png",

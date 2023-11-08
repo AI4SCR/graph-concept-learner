@@ -1,7 +1,7 @@
 # Delete some mlflow run. Dont use unless you know what you are donig.
 rule delete_mlflow_runs:
     input:
-        path_to_all_concepts=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/dataset_configs"
+        path_to_all_concepts=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/concept_configs"
     params:
         folder_name=normalized_with,
         split_strategy=split_how

@@ -2,7 +2,7 @@
 rule parse_pretrain_mlflow_runs:
     input:
         path_to_all_cfgs=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/pretrain_model_configs",
-        path_to_all_concepts=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/dataset_configs",
+        path_to_all_concepts=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/configs/concept_configs",
     output:
         path_dupl=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/parse_pretrain_mlflow_runs/duplicated_runs_cofig_ids.txt",
         path_miss=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/parse_pretrain_mlflow_runs/missing_runs_cofig_ids.txt",

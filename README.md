@@ -23,7 +23,7 @@ pre-commit install
 ```
 
 ## Usage
-Check workflow [README.md](./workflows/README.md).
+Check workflow [Workflow tutorial](https://github.com/AI4SCR/graph-concept-learner/wiki/Workflow-tutorial)
 
 ## Contributing
 

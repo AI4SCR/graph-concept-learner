@@ -132,10 +132,11 @@ start_mlflow_run(root, pred_target, out_dir)
 cfg_file_name = os.path.basename(cfg_path)
 cfg_id = os.path.splitext(cfg_file_name)[0]
 cfg["run_type"] = run_type
-cfg["folder_name"] = normalized_with
+cfg["normalized_with"] = normalized_with
+cfg["fold"] = os.path.basename(concept_dataset_dir)
 cfg["split_strategy"] = split_strategy
 cfg["cfg_id"] = cfg_id
-cfg["concept"] = os.path.basename(concept_dataset_dir)
+cfg["concept"] = os.path.basename(os.path.dirname(concept_dataset_dir))
 cfg["path_input_config"] = cfg_path
 cfg["path_output_models"] = out_dir
 if cfg["gnn"] == "PNA":

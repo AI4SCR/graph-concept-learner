@@ -3,6 +3,7 @@ rule pretrain_concept:
     input:
         #f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs", # Dependance on configs generation
         #get_all_graphs_for_a_concept, # Dependence on all graphs.
+        mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns",
         cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs/{{config_id}}.yaml",
         splits=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/{{fold}}.csv",
         concept=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/{{attribute_config}}/{{concept}}/{{fold}}"
@@ -16,7 +17,6 @@ rule pretrain_concept:
         run_type="pretrain_concept",
         randomize="False",
         mlflow_on_remote_server=mlflow_on_remote_server,
-        mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns"
     resources:
         cores="1+1",
         mem="3G",
@@ -28,6 +28,6 @@ rule pretrain_concept:
         "6_pretrain/scripts/pretrain_concept.py "
         "{input.cfg} {input.splits} {input.concept} "
         "{params.normalized_with} {params.split_strategy} {params.run_type} {params.randomize} "
-        "{params.mlflow_on_remote_server} {params.mlflow_uri} "
+        "{params.mlflow_on_remote_server} {input.mlflow_uri} "
         "{config[prediction_target]} {config[root]} {config[log_frequency]} "
         "{output.out_files}"

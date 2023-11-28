@@ -13,15 +13,25 @@ import mlflow
 ) = sys.argv
 
 # Define mlflow experiment
+path_out = mlflow_uri
+mlflow_uri = os.path.dirname(mlflow_uri)
+
 if mlflow_on_remote_server == "False":
     mlflow.set_tracking_uri(mlflow_uri)
-else:
-    os.makedirs(mlflow_uri)
-    os.path.join(mlflow_uri, "README.txt")
-    with open(mlflow_uri, "w") as f:
+    with open(path_out, "w") as f:
         f.write(
             """"
             Since mlflow_on_remote_server == False in the main_config.yaml, \
+            this folder should be contain all MLFlow experiments \
+            (and this file containing this message).
+            """
+        )
+else:
+    os.makedirs(mlflow_uri)
+    with open(path_out, "w") as f:
+        f.write(
+            """"
+            Since mlflow_on_remote_server == True in the main_config.yaml, \
             this folder should be empty \
             (with the exception of the file containing this message).
             """

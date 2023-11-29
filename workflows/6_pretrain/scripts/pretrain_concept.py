@@ -137,6 +137,9 @@ cfg["fold"] = os.path.basename(concept_dataset_dir)
 cfg["split_strategy"] = split_strategy
 cfg["cfg_id"] = cfg_id
 cfg["concept"] = os.path.basename(os.path.dirname(concept_dataset_dir))
+cfg["attribute_config"] = os.path.basename(
+    os.path.dirname(os.path.dirname(concept_dataset_dir))
+)
 cfg["path_input_config"] = cfg_path
 cfg["path_output_models"] = out_dir
 if cfg["gnn"] == "PNA":

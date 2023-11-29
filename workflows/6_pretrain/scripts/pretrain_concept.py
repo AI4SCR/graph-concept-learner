@@ -55,6 +55,7 @@ from graph_cl.utils.train_utils import (
     run_type,  # Specify type of run
     randomize,  # Weather to randomize the labels in the data
     mlflow_on_remote_server,  # Weather to log to remote or local
+    seed,
     mlflow_uri,  # Specify path to in local file system where to save the mlflow log
     pred_target,  # Prediction target
     root,  # Path to the dir with all the data (used to specify mlflow experiment)
@@ -82,6 +83,10 @@ cfg["num_classes"] = dataset.num_classes
 cfg["in_channels"] = dataset.num_node_features
 cfg["hidden_channels"] = cfg["in_channels"] * cfg["scaler"]
 
+# Save other relevant info o config
+cfg["seed"] = int(seed.split("_")[1])
+cfg["randomize"] = randomize
+
 # Set seed
 seed_everything(cfg["seed"])
 
@@ -91,7 +96,7 @@ splitted_datasets = split_concept_dataset(
 )
 
 # Permute labels if false is true
-if bool(randomize):
+if randomize == "True":
     splitted_datasets = randomize_labels(splits_df, pred_target, splitted_datasets)
 
 # Build model.

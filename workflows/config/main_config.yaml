@@ -15,6 +15,9 @@ split_how: "split_basel_leave_zurich_as_external"
 # Number of cross-validation folds to use
 n_folds: 3
 
+# Number of seeds to use. Must be an integer greater or equal to 1. Values greater than 1 will result in multiple training runs with the same configuration but different initializations.
+n_seeds: 3
+
 # Define metrics that should be used to save checkpoints. Supported options are: balanced_accuracy, weighted_f1_score, weighted_recall, weighted_precision, loss
 follow_this_metrics:
   - "balanced_accuracy"

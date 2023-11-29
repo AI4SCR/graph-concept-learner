@@ -43,15 +43,16 @@ def get_paths_to_pretrained_models(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs"
     CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/"
     FOLD_IDS = [f"fold_{i}" for i in range(config["n_folds"])]
+    SEEDS = [f"seed_{i}" for i in range(config["n_seeds"])]
 
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
     ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     return expand(
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{attribute_config}}/{{concept}}/{{fold}}/{{cfg_id}}/best_val_{{metric_name}}.pt",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
         fold=FOLD_IDS,
+        seed=SEEDS,
         concept=CONCEPT_NAMES,
         cfg_id=CFG_IDS,
         attribute_config=ATTR_CFG_IDS,

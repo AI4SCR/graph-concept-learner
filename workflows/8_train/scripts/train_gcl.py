@@ -94,6 +94,9 @@ with open(paths_to_single_concept_model_configs) as file:
     cfg_single_concept_models = yaml.load(file, Loader=yaml.Loader)
 
 ### Load dataset ###
+# TODO: Modify the init method such that it does not have too look ina directory
+# maybe its better if there paths to each of the concept datasets is specified in
+# the config or something.
 dataset = ConceptSetDataset(root=path_to_datasets, exclude=exclude_this_concepts)
 
 # Get sample ids for each split

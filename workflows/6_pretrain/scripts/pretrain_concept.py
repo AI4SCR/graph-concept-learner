@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# from tqdm import tqdm
 import sys
 import os
 import mlflow
@@ -147,6 +146,7 @@ cfg["attribute_config"] = os.path.basename(
 )
 cfg["path_input_config"] = cfg_path
 cfg["path_output_models"] = out_dir
+cfg["path_input_data"] = os.path.dirname(concept_dataset_dir)
 if cfg["gnn"] == "PNA":
     cfg.pop("deg")
 
@@ -161,7 +161,6 @@ log_every_n_epochs = int(log_frequency)
 follow_this_metrics = get_dict_of_metric_names_and_paths(out_file_1, out_file_2)
 
 # Train and validate for cfg["n_epochs"]
-# for epoch in tqdm(range(1, cfg["n_epoch"] + 1)):  # this line if for debugging
 train_validate_and_log_n_epochs(
     cfg=cfg,
     model=model,

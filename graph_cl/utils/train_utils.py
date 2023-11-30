@@ -208,7 +208,7 @@ def train_validate_and_log_n_epochs(
             # Unpack path and meteric
             best_so_far, out_file = best_so_far_and_path
 
-            if val_metrics[metric] > best_so_far:
+            if val_metrics[metric] >= best_so_far:
                 # Reset best so far
                 best_so_far = val_metrics[metric]
                 follow_this_metrics[metric][0] = best_so_far

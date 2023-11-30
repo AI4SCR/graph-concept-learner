@@ -22,12 +22,12 @@ rule pretrain_concept:
         mem="3G",
         queue="x86_1h",
     log:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/pretrain_concept/{{attribute_config}}/{{concept}}//{{config_id}}/{{fold}}/{{seed}}"
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/pretrain_concept/{{attribute_config}}/{{concept}}/{{config_id}}/{{fold}}/{{seed}}"
     shell:
         "source scripts/setup_MLflow.sh {params.mlflow_on_remote_server} && "
         "6_pretrain/scripts/pretrain_concept.py "
         "{input.cfg} {input.splits} {input.concept} "
         "{params.normalized_with} {params.split_strategy} {params.run_type} {params.randomize} "
-        "{params.mlflow_on_remote_server} {params.seed} {input.mlflow_uri} "
+        "{params.mlflow_on_remote_server} {params.seed} $(dirname {input.mlflow_uri}) "
         "{config[prediction_target]} {config[root]} {config[log_frequency]} "
         "{output.out_files}"

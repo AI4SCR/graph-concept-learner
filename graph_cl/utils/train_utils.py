@@ -39,9 +39,8 @@ def split_concept_dataset(splits_df, index_col, dataset):
                 idxs.append(i)
                 file_names.append(spl)
 
-        # Subset dataset(
+        # Subset dataset
         subseted_datasets[split] = dataset[idxs]
-        subseted_datasets[split].file_names = file_names
 
     # return dataset
     return subseted_datasets

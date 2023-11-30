@@ -47,7 +47,7 @@ class Concept_Dataset(Dataset):
             idx: The index of the observation as in self.file_names list.
 
         Returns:
-            An isntacne of toch_geometric "Data".
+            An instance of toch_geometric "Data".
         """
         data = torch.load(osp.join(self.root, self.file_names[idx]))
         return data

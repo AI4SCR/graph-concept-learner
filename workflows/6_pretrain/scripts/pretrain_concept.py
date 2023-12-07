@@ -52,7 +52,7 @@ from graph_cl.utils.train_utils import (
     normalized_with,  # Name of the folder
     split_strategy,  # Name of other folder
     run_type,  # Specify type of run
-    randomize,  # Weather to randomize the labels in the data
+    labels_permuted,  # Weather to permute the labels in the data
     mlflow_on_remote_server,  # Weather to log to remote or local
     seed,
     mlflow_uri,  # Specify path to in local file system where to save the mlflow log
@@ -84,7 +84,7 @@ cfg["hidden_channels"] = cfg["in_channels"] * cfg["scaler"]
 
 # Save other relevant info o config
 cfg["seed"] = int(seed.split("_")[1])
-cfg["randomize"] = randomize
+cfg["labels_permuted"] = labels_permuted
 
 # Set seed
 seed_everything(cfg["seed"])
@@ -94,8 +94,8 @@ splitted_datasets = split_concept_dataset(
     splits_df=splits_df, index_col="core", dataset=dataset
 )
 
-# Permute labels if false is true
-if randomize == "True":
+# Permute labels if "permuted"
+if labels_permuted == "permuted":
     splitted_datasets = randomize_labels(splits_df, pred_target, splitted_datasets)
 
 # Build model.

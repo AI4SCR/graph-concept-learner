@@ -50,13 +50,14 @@ def get_paths_to_pretrained_models(wildcards):
     ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     return expand(
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{labels_permuted}}/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
         fold=FOLD_IDS,
         seed=SEEDS,
         concept=CONCEPT_NAMES,
         cfg_id=CFG_IDS,
         attribute_config=ATTR_CFG_IDS,
-        metric_name=config["follow_this_metrics"]
+        metric_name=config["follow_this_metrics"],
+        labels_permuted=["not_permuted"]
     )
 
 def get_paths_to_concept_configs(wildcards):

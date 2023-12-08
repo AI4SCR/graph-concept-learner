@@ -1,4 +1,14 @@
 ##### Helper functions #####
+def get_concept_sets(wildcards):
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/concept_sets/"+"{labels_permuted}/{attribute_config}/concept_set.yaml",
+        labels_permuted=["not_permuted"],
+        attribute_config=ATTR_CFG_IDS
+    )
+
 def get_configs_best_pretrain_models(wildcards):
     path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
     CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if f.endswith(".yaml")]

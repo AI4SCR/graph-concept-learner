@@ -48,6 +48,7 @@ include: "rules/pretrain_all.smk" # Pretrains all models
 
 # Select pretrain models
 include: "rules/select_best_pretrain_models.smk"
+include: "rules/collect_concept_sets.smk"
 
 # Train
 # include: "rules/train_all.smk" # Train all models.

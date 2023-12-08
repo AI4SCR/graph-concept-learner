@@ -1,4 +1,18 @@
 ##### Helper functions #####
+def get_configs_best_pretrain_models(wildcards):
+    path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if f.endswith(".yaml")]
+
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
+    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/{{labels_permuted}}/{{attribute_config}}/{{concept}}.yaml",
+        concept=CONCEPT_NAMES,
+        attribute_config=CONFIG_NAMES,
+        labels_permuted=["not_permuted"]
+    )
+
 def get_all_attributed_graphs(wildcards):
     path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
     CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if f.endswith(".yaml")]

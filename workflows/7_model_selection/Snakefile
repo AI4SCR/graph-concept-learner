@@ -1,2 +1,3 @@
 include: "rules/get_best_pretrain_models.smk" # Fetch from mlflow a specified runs, make a summary and also write the paths to the models ina file for training.
 include: "rules/split_run_metrics_per_concept.smk" # Split runs
+include: "rules/select_best_model_per_concept.smk"

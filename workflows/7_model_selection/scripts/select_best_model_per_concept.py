@@ -1,111 +1,193 @@
 #!/usr/bin/env python3
 
 import mlflow
+import sys
+import yaml
+import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os
-from ruamel import yaml
-import sys
 
-### Debugging input ###
-# concept="tumor_contact_ER"
-# normalized_with="normalized_with_min_max"
-# metric_name="balanced_accuracy"
-# prediction_target="ERStatus"
-# dataset_name="jackson"
-
-### Set up ###
+# Unpack arguments
 (
     program_name,
-    concept,
-    normalized_with,
-    metric_name,
-    prediction_target,
     dataset_name,
-    output_figure,
-    output_config,
+    pred_target,
+    split_strategy,
+    normalized_with,
+    concept,
+    attribute_config,
+    labels_permuted,
+    run_type,
+    metric_name,
+    mlflow_uri,
+    output_train_cfg,
+    output_mlflow_run_id,
+    output_plot,
 ) = sys.argv
 
-# Define experiment name
-experiment_name = f"san_{dataset_name}_{prediction_target}"
+# Set mlflow uri
+mlflow.set_tracking_uri(mlflow_uri)
 
-# Defin query
-query = f"params.run_type = 'pretrain_concept' and params.concept = '{concept}' and params.folder_name = '{normalized_with}'"
+# Expand the metric name
+metric = f"metrics.best_val_{metric_name}"
 
-# Load data
-df = mlflow.search_runs(
-    experiment_names=[experiment_name],
-    filter_string=query,
+# Define query for MLFlow
+query = f"""\
+    params.concept = "{concept}" and \
+    params.run_type = "{run_type}" and \
+    params.split_strategy = "{split_strategy}" and \
+    params.attribute_config = "{attribute_config}" and \
+    params.normalized_with = "{normalized_with}" and \
+    params.labels_permuted = "{labels_permuted}"
+    """
+
+# Query
+experiment_name = f"san_{dataset_name}_{pred_target}"
+df = mlflow.search_runs(experiment_names=[experiment_name], filter_string=query)
+
+# Get path to the dataset and config
+median_metrics = df.groupby("params.cfg_id")[metric].median().reset_index()
+
+# Get group with the best median
+best_params = median_metrics.loc[median_metrics[metric].idxmax()]
+median = best_params[metric]
+
+# Use the values from the Series to create a DataFrame for merging
+best_params_df = pd.DataFrame([best_params.values], columns=best_params.index)
+
+# Merge with the original DataFrame to locate all runs with the best parameters
+best_runs = pd.merge(
+    df,
+    best_params_df,
+    on="params.cfg_id",
+    how="inner",
+    suffixes=(None, "_from_grouped"),
 )
 
-# Define group by columns
-df["cfg_id"] = (
-    df["params.pool"]
-    + df["params.gnn"]
-    + df["params.lr"].astype(str)
-    + df["params.jk"]
-    + df["params.norm"]
-    + df["params.num_layers"].astype(str)
-    + df["params.scaler"].astype(str)
-    + df["params.num_layers_MLP"].astype(str)
-    + df["params.act"]
-    + df["params.batch_size"].astype(str)
-    + df["params.optim"]
-    + df["params.n_epoch"].astype(str)
-    + df["params.scheduler"]
-)
-
-### Choose best performing model ###
-# Compute statistics
-stats = (
-    df[["cfg_id", f"metrics.best_val_{metric_name}"]].groupby(by="cfg_id").describe()
-)
-
-# Select row with highest median
-best_params = stats.loc[stats["50%"].idxmax()]
-
-# Select checkpoint
-runs_best_config = df.loc[(df["cfg_id"] == best_params.cfg_id)]
-best_run = runs_best_config.loc[
-    runs_best_config[f"metrics.best_val_{metric_name}"].idmax()
-]
-
-# Initialize output dictionary
-checkpoint_and_config_per_concept = {}
-checkpoint_and_config_per_concept[concept] = {
-    "checkpoint": os.path.join(
-        best_run.path_output_models, f"best_val_{metric_name}.pt"
-    ),
-    "config": best_run.path_input_config,
+# Initialize output dict
+# Path to the dataset (including the attribute config dir)
+# Path to config with highest median
+# Path to checkpoint of model closest to the median (so to avoid overfitting)
+output = {
+    "data": best_runs["params.path_input_data"].unique()[0],
+    "config": best_runs["params.path_input_config"].unique()[0],
+    "checkpoint": best_runs.loc[
+        (best_runs[metric] - median).abs().idxmin(), "params.path_output_models"
+    ],
 }
 
-# Save config to file
-# Write config
-with open(output_config, "w") as file:
-    yaml.dump(checkpoint_and_config_per_concept, file, Dumper=yaml.RoundTripDumper)
+# Write to file (YAML)
+with open(output_train_cfg, "w") as file:
+    yaml.dump(output, file, default_flow_style=False)
 
-### Make figure and save to file ###
-# Seaborn theme to "white" and modifies the "axes.facecolor" parameter to have a transparent background.
-sns.set_theme(style="white", rc={"axes.facecolor": (0, 0, 0, 0)})
+# Save tuple of run_ids so that the losses can be visualize in mlflow
+mlflow_run_id = best_runs.loc[(best_runs[metric] - median).abs().idxmin(), "run_id"]
 
-# Initializing the FacetGrid object
-# Color palette
-pal = sns.cubehelix_palette(10, rot=-0.25, light=0.7)
-g = sns.FacetGrid(
-    df[["cfg_id", f"metrics.best_val_{metric_name}"]],
-    row="cfg_id",
-    hue="cfg_id",
-    aspect=15,
-    height=0.5,
-    palette=pal,
+# Write to file (plain text file)
+with open(output_mlflow_run_id, "w") as file:
+    file.write(mlflow_run_id)
+
+# Plot distributions of test and training
+# Theme
+metric2 = f"metrics.test_best_val_{metric_name}_{metric_name}"
+df2 = df[["params.cfg_id", metric, metric2]]
+sns.set_theme(
+    style="whitegrid", rc={"axes.facecolor": (0, 0, 0, 0), "axes.linewidth": 1}
 )
 
-# Adding a reference line
-g.refline(y=0, linewidth=2, linestyle="-", color=None, clip_on=False)
+# Calculate median for each row based on the first metric
+median_order = df2.groupby("params.cfg_id")[metric].median().sort_values().index
 
-# Adjusting the subplots and removing details
-g.figure.subplots_adjust(hspace=-0.25)
+# Create a grid with a row for each configuration, ordered by the median of the first metric
+g = sns.FacetGrid(
+    df2,
+    row="params.cfg_id",
+    hue="params.cfg_id",
+    aspect=9,
+    height=1.2,
+    xlim=(0, 1),
+    row_order=median_order,
+)
+
+# Map Kernel Density Plot for each configuration
+g.map_dataframe(sns.kdeplot, x=metric, color="#377eb8", fill=True, alpha=0.7)
+
+# Map Kernel Density Plot for the second metric
+g.map_dataframe(sns.kdeplot, x=metric2, color="#ff7f00", fill=True, alpha=0.5)
+
+
+# Function to draw labels
+def label(x, color, label):
+    ax = plt.gca()  # Get current axis
+    ax.text(
+        0.01,
+        0.2,
+        label,
+        color="black",
+        fontsize=10,
+        ha="left",
+        va="center",
+        transform=ax.transAxes,
+    )
+
+
+# Iterate grid to plot labels
+g.map(label, "params.cfg_id")
+
+# Adjust subplots to create overlap
+g.fig.subplots_adjust(hspace=-0.5)
+
+# Remove subplot titles
 g.set_titles("")
-g.set(yticks=[], ylabel="")
-g.despine(bottom=True, left=True)
-plt.savefig(output_figure, bbox_inches="tight", dpi=300)
+
+# Remove y-axis ticks and label, set x-axis label
+g.set(yticks=[], ylabel="", xlabel="Balanced Accuracy")
+
+# Remove left spine
+g.despine(left=True)
+
+# Set title
+plt.suptitle(
+    "Performance on the Validation and Test Set for each configuration", y=0.98
+)
+plt.figtext(
+    0.88,
+    0.95,
+    f"Concept: {concept}",
+    ha="center",
+    va="center",
+    fontsize=12,
+    color="gray",
+)
+plt.figtext(
+    0.9,
+    0.88,
+    f"Attr cfg: {attribute_config}",
+    ha="center",
+    va="center",
+    fontsize=12,
+    color="gray",
+)
+plt.figtext(
+    0.9,
+    0.8,
+    f"Labels Permuted = {labels_permuted}",
+    ha="center",
+    va="center",
+    fontsize=12,
+    color="gray",
+)
+
+# Customize the legend
+legend = plt.legend(title="", loc="upper left")
+legend.set_bbox_to_anchor((0.00, 1.6))
+legend.get_frame().set_facecolor("#ffffff")
+
+# Set custom labels
+legend_labels = ["Validation", "Test"]
+for text, label in zip(legend.get_texts(), legend_labels):
+    text.set_text(label)
+
+# Write to file (plot)
+# Save the plot to a file (e.g., PNG)
+plt.savefig(output_plot, bbox_inches="tight")

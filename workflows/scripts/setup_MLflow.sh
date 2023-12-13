@@ -12,5 +12,5 @@ if [ $1 == "True" ]; then
                 echo "WARNING: The env var AWS_SECRET_ACCESS_KEY is either blank or not set!"
         fi
 else
-        echo "mlflow_on_remote_server = $1. Logging run to local file system"
+        echo "mlflow_on_remote_server = $1. Conecting to local file system"
 fi

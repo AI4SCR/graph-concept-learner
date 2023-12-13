@@ -2,6 +2,7 @@
 
 import mlflow
 import sys
+import os
 import yaml
 import pandas as pd
 import seaborn as sns
@@ -68,12 +69,17 @@ best_runs = pd.merge(
 # Path to the dataset (including the attribute config dir)
 # Path to config with highest median
 # Path to checkpoint of model closest to the median (so to avoid overfitting)
+checkpoint_path = os.path.join(
+    best_runs.loc[
+        (best_runs[metric] - median).abs().idxmin(), "params.path_output_models"
+    ],
+    f"best_val_{metric_name}.pt",
+)
+
 output = {
     "data": best_runs["params.path_input_data"].unique()[0],
     "config": best_runs["params.path_input_config"].unique()[0],
-    "checkpoint": best_runs.loc[
-        (best_runs[metric] - median).abs().idxmin(), "params.path_output_models"
-    ],
+    "checkpoint": checkpoint_path,
 }
 
 # Write to file (YAML)

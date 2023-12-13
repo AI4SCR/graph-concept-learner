@@ -51,7 +51,7 @@ include: "rules/select_best_pretrain_models.smk"
 include: "rules/collect_concept_sets.smk"
 
 # Train
-# include: "rules/train_all.smk" # Train all models.
+include: "rules/train_all.smk" # Train all models.
 # include: "rules/train_end2end_gcls.smk" # Train al the end2end models.
 
 # Train baselines

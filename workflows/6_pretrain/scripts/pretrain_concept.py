@@ -16,32 +16,8 @@ from graph_cl.utils.train_utils import (
     test_and_log_best_models,
     train_validate_and_log_n_epochs,
     get_dict_of_metric_names_and_paths,
-    randomize_labels,
+    permute_labels,
 )
-
-# Debug input
-# cfg = {
-#     "pool": "global_mean_pool",
-#     "gnn": "PNA",
-#     "scaler": 2,
-#     "num_layers": 4,
-#     "dropout": False,
-#     "act": "ReLU",
-#     "act_first": False,
-#     "norm": "LayerNorm",
-#     "jk": "lstm",
-#     "num_layers_MLP": 2,
-#     "batch_size": 8,
-#     "lr": 0.001,
-#     "optim": "Adam",
-#     "n_epoch": 100,
-#     "scheduler":["ExponentialLR",0.98],
-#     "seed": 25
-# }
-# pred_target = "ERStatus"
-# concept_dataset_dir="/Users/ast/Documents/GitHub/datasets/jackson/prediction_tasks/ERStatus/processed_data/immune_radius"
-# randomize="True"
-# splits_df="/Users/ast/Downloads/sample_splits.csv"
 
 # Read config file path
 (
@@ -96,7 +72,7 @@ splitted_datasets = split_concept_dataset(
 
 # Permute labels if "permuted"
 if labels_permuted == "permuted":
-    splitted_datasets = randomize_labels(splits_df, pred_target, splitted_datasets)
+    splitted_datasets = permute_labels(splits_df, pred_target, splitted_datasets)
 
 # Build model.
 # Important to pass train_dataset in cpu, not cuda.

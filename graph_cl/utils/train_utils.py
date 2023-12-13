@@ -12,13 +12,12 @@ from sklearn.metrics import (
 from graph_cl.utils.mlflow_utils import (
     robust_mlflow,
     make_confusion_matrix,
-    save_fig_to_mlflow,
 )
 import mlflow
 import os
 
 
-### Util functions ###
+# Util functions
 def split_concept_dataset(splits_df, index_col, dataset):
     # Read split map
     split_map = pd.read_csv(splits_df, index_col=index_col)
@@ -56,8 +55,11 @@ def build_scheduler(cfg, optimizer):
     if cfg["scheduler"][0] == "ExponentialLR":
         scheduler = ExponentialLR(optimizer, gamma=cfg["scheduler"][1])
     elif cfg["scheduler"][0] == "LambdaLR":
-        lam = lambda epoch: cfg["scheduler"][1] ** (epoch // cfg["scheduler"][2])
-        scheduler = LambdaLR(optimizer, lr_lambda=lam)
+        scheduler = LambdaLR(
+            optimizer,
+            lr_lambda=lambda epoch: cfg["scheduler"][1]
+            ** (epoch // cfg["scheduler"][2]),
+        )
     else:
         raise Exception(
             "Sorry, only ExponentialLR and LambdaLR are supported as learning rate decay strategies."
@@ -81,7 +83,7 @@ def train_one_epoch(model, train_loader, criterion, optimizer, scheduler):
 
 
 def eval_one_epoch(loader, split: str, model, device, cfg, criterion):
-    # Get loss, predictionas and tru labels
+    # Get loss, predictions and true labels
     mean_loss, y_pred, y_true = predict(loader, model, device, criterion)
     (
         balanced_accuracy,
@@ -116,7 +118,7 @@ def compute_metrics(y_true, y_pred):
         )
     except Warning:
         # Print labels and predictions for debugging
-        print(f"One of the metrics is ill defined. Run tagged with metric warning.")
+        print("One of the metrics is ill defined. Run tagged with metric warning.")
         print("Printing y_pred:")
         print(y_pred)
         print("Printing y_true:")
@@ -149,7 +151,7 @@ def predict(loader, model, device, criterion):
         # Use the class with highest probability.
         y_pred = torch.cat((y_pred, out.argmax(dim=1)), 0)
 
-        # Get ground thruth labels
+        # Get ground truth labels
         y_true = torch.cat((y_true, data.y), 0)
 
         loss = criterion(out, data.y)  # Compute the loss.
@@ -277,52 +279,52 @@ def get_dict_of_metric_names_and_paths(out_file_1, out_file_2):
     return follow_this_metrics
 
 
-def randomize_labels(splits_df, pred_target, splited_datasets):
+def permute_labels(splits_df, pred_target, splitted_datasets):
     # Read split map
     split_map = pd.read_csv(splits_df, index_col="core")
 
     # Create a new dictionary for the data in each split
-    splited_datasets_in_mem = {}
+    splitted_datasets_in_mem = {}
 
     # For every split, permute the labels.
     for split in split_map["split"].unique():
 
-        # Randomly permute labes
+        # Randomly permute labels
         split_map.loc[split_map["split"] == split, pred_target] = np.random.permutation(
             split_map.loc[split_map["split"] == split, pred_target]
         )
 
-        # For each smaple in the split put it in a list and change its label
+        # For each sample in the split put it in a list and change its label
         in_mem_data = []
-        for i, file_name_ext in enumerate(splited_datasets[split].file_names):
+        for i, file_name_ext in enumerate(splitted_datasets[split].file_names):
             file_name = file_name_ext.split(".")[0]
-            in_mem_data.append(splited_datasets[split].get(i))
+            in_mem_data.append(splitted_datasets[split].get(i))
             in_mem_data[i].y = torch.tensor([split_map.loc[file_name][pred_target]])
 
         # Save data to dictionary
-        splited_datasets_in_mem[split] = in_mem_data
+        splitted_datasets_in_mem[split] = in_mem_data
 
     # Return permuted data
-    return splited_datasets_in_mem
+    return splitted_datasets_in_mem
 
-    ### Code for debugging ###
+    # Code for debugging
     # for split in split_map["split"].unique():
-    #     for i, file_name_ext in enumerate(splited_datasets[split].file_names):
-    #         print(f"in mem: {splited_datasets_in_mem[split][i].y.item()}. in disk: {splited_datasets[split].get(i).y.item()}")
+    #     for i, file_name_ext in enumerate(splitted_datasets[split].file_names):
+    #         print(f"in mem: {splitted_datasets_in_mem[split][i].y.item()}. in disk: {splitted_datasets[split].get(i).y.item()}")
     #         print(f"filename: {file_name_ext}")
-    #         assert splited_datasets_in_mem[split][i].y.item() == splited_datasets[split].get(i).y.item()
+    #         assert splitted_datasets[split][i].y.item() == splitted_datasets[split].get(i).y.item()
 
     # assert False, "All good"
 
 
-def get_datum_from_ConceptSetDataset(randomize, device, idx, splited_dataset):
+def get_datum_from_ConceptSetDataset(randomize, device, idx, splitted_dataset):
     """
     Return a datum from a ConceptSetDataset instance. If randomize == "True"
-    then return it by slicing the splited_dataset since its a list. If "False"
+    then return it by slicing the splitted_datasets since its a list. If "False"
     then use the get method from ConceptSetDataset class.
     """
 
     if randomize == "True":
-        return splited_dataset[idx].to(device, non_blocking=True)
+        return splitted_dataset[idx].to(device, non_blocking=True)
     else:
-        return splited_dataset.get(idx).to(device, non_blocking=True)
+        return splitted_dataset.get(idx).to(device, non_blocking=True)

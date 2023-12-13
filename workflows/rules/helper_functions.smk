@@ -4,7 +4,7 @@ def get_concept_sets(wildcards):
     ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     return expand(
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/concept_sets/"+"{labels_permuted}/{attribute_config}/{cfg_id}.yaml",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/concept_sets/"+"{attribute_config}/{labels_permuted}/{cfg_id}.yaml",
         labels_permuted=["not_permuted"],
         attribute_config=ATTR_CFG_IDS,
         cfg_id=["all_concepts"]
@@ -18,7 +18,7 @@ def get_configs_best_pretrain_models(wildcards):
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     return expand(
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/{{labels_permuted}}/{{attribute_config}}/{{concept}}.yaml",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/{{attribute_config}}/{{labels_permuted}}/{{concept}}.yaml",
         concept=CONCEPT_NAMES,
         attribute_config=CONFIG_NAMES,
         labels_permuted=["not_permuted"]

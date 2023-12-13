@@ -1,7 +1,7 @@
 rule select_best_model_per_concept:
     input:
         expand(
-            f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/"+"{{labels_permuted}}/{{attribute_config}}/{{concept}}/{cfg_id}/{fold}/{seed}/best_val_{metric_name}.pt",
+            f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/single_concepts/"+"{{attribute_config}}/{{concept}}/{cfg_id}/{{labels_permuted}}/{fold}/{seed}/best_val_{metric_name}.pt",
             metric_name=config["follow_this_metrics"],
             seed=[f"seed_{i}" for i in range(config["n_seeds"])],
             fold=[f"fold_{i}" for i in range(config["n_folds"])],
@@ -9,9 +9,9 @@ rule select_best_model_per_concept:
         ),
         mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns/flag.txt"
     output:
-        cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/{{labels_permuted}}/{{attribute_config}}/{{concept}}.yaml",
-        run_id=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/pretrain_results/mlflow_run_ids/{{labels_permuted}}/{{attribute_config}}/{{concept}}.txt",
-        plot=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/pretrain_results/model_performance_distribution_per_concept/{{labels_permuted}}/{{attribute_config}}/{{concept}}.png",
+        cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/{{attribute_config}}/{{labels_permuted}}/{{concept}}.yaml",
+        run_id=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/pretrain_results/mlflow_run_ids/{{attribute_config}}/{{labels_permuted}}/{{concept}}.txt",
+        plot=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/pretrain_results/model_performance_distribution_per_concept/{{attribute_config}}/{{labels_permuted}}/{{concept}}.png",
     params:
         dataset_name=dataset_name,
         prediction_target=prediction_target,
@@ -28,7 +28,7 @@ rule select_best_model_per_concept:
         mem="2G",
         queue="x86_1h",
     log:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/select_best_model_per_concept/{{labels_permuted}}/{{attribute_config}}/{{concept}}"
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/select_best_model_per_concept/{{attribute_config}}/{{labels_permuted}}/{{concept}}"
     shell:
         "source scripts/setup_MLflow.sh {params.mlflow_on_remote_server} && "
         "7_model_selection/scripts/select_best_model_per_concept.py "

@@ -1,4 +1,25 @@
 ##### Helper functions #####
+def gen_paths_to_train_conf_matrices(wildcards):
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/models"
+    CFG_ID_MODELS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
+
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
+    FOLD_IDS = [f"fold_{i}" for i in range(config["n_folds"])]
+    SEEDS = [f"seed_{i}" for i in range(config["n_seeds"])]
+
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/gcls/"+"{attribute_config}/{cfg_id_concept_set}/{cfg_id_model}/{labels_permuted}/{fold}/{seed}/test_conf_mat_from_best_val_{metric_name}.png",
+        metric_name=config["follow_this_metrics"],
+        attribute_config=ATTR_CFG_IDS,
+        cfg_id_concept_set=["all_concepts"],
+        cfg_id_model=CFG_ID_MODELS,
+        labels_permuted=["not_permuted"],
+        fold=FOLD_IDS,
+        seed=SEEDS,
+    )
+
 def get_concept_sets(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
     ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
@@ -75,7 +96,7 @@ def get_paths_to_pretrained_models(wildcards):
     ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     return expand(
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{labels_permuted}}/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/single_concepts/{{labels_permuted}}/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
         fold=FOLD_IDS,
         seed=SEEDS,
         concept=CONCEPT_NAMES,
@@ -89,11 +110,6 @@ def get_paths_to_concept_configs(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
     return expand(f"{path_to_file}/{{concept}}.yaml", concept=CONCEPT_NAMES)
-
-def gen_paths_to_train_conf_matrices(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_model_configs"
-    CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
-    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/graph_concept_learners/"+"ER/{config_id}/test_conf_mat_from_best_val_{metric_name}.png", metric_name=config["follow_this_metrics"], config_id=CFG_IDS)
 
 def gen_paths_to_space_gm_conf_matrices(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/space_gm_train_configs"

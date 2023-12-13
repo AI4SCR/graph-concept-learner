@@ -34,40 +34,24 @@ class ConceptSetDataset(Dataset):
     """
 
     def __init__(
-        self, root, exclude, transform=None, pre_transform=None, pre_filter=None
+        self, config: dict, transform=None, pre_transform=None, pre_filter=None
     ):
-        super().__init__(root, exclude, transform, pre_transform, pre_filter)
+        super().__init__(config, transform, pre_transform, pre_filter)
 
         # Get concept names
-        # Its necesarry to create a copy.
-        # No looping and modifying at the same time.
-        # Leads to undefined behaviour
-        files_in_root = os.listdir(self.root)
-        self.concepts_names = files_in_root.copy()
+        self.concept_names = list(config.keys())
 
-        for x in files_in_root:
-            # Remove folders that start with "."
-            if x.startswith("."):
-                self.concepts_names.remove(x)
+        # Number of concepts
+        self.num_concepts = len(config)
 
-            # Remove concepts specified in exclude
-            if x in exclude:
-                self.concepts_names.remove(x)
-
-        # Add full adress
-        self.concept_dirs = [osp.join(self.root, x) for x in self.concepts_names]
-
-        # Create dictionary of concept names and directories
-        self.concept_dict = dict(zip(self.concepts_names, self.concept_dirs))
-
-        # Save number of concept names
-        self.num_concepts = len(self.concepts_names)
+        # Dictionary key=concept_name and value=path_to dir_with_graphs
+        self.concept_dict = {key: value["data"] for key, value in config.items()}
 
         # list to store file names
         self.file_names = []
 
-        # Save name of the files in root
-        for file in os.listdir(osp.join(self.concept_dirs[0])):
+        # Save name of the files (all concepts should have the same)
+        for file in os.listdir(config[self.concept_names[0]]["data"]):
             # check only text files
             if file.endswith(".pt"):
                 self.file_names.append(file)

@@ -1,5 +1,4 @@
-# %%
-"""Dataset implementation for a constellation of conceopt graphs using pytorch geometric"""
+"""Dataset implementation for a constellation of concept graphs using pytorch geometric"""
 
 import os.path as osp
 import os
@@ -9,7 +8,7 @@ from torch_geometric.data import Dataset, Data
 
 class ConceptSetDatum(Data):
     """
-    One data point in a Paradigm dataset. This is necessary to ensure correct batching.
+    One data point in a ConceptSetDataset dataset. This is necessary to ensure correct batching.
     """
 
     def __init__(self):
@@ -30,7 +29,7 @@ class ConceptSetDataset(Dataset):
 
     Args:
         root: a directory where all the pytorch geometric graphs are (datatype 'Data').
-        The files containg the graphs bust be suffixed '.pt', and inside concept designated
+        The files containing the graphs bust be suffixed '.pt', and inside concept designated
         folder.
     """
 
@@ -83,25 +82,53 @@ class ConceptSetDataset(Dataset):
         Returns:
             Number of observations in the dataset.
         """
-        return len(self.file_names)
+        if self._indices is None:
+            return len(self.file_names)
+        else:
+            return len(self._indices)
 
-    def get(self, idx: int):
+    def get(self, idx: int) -> ConceptSetDatum:
         """
         Method to load the i'th observation of the dataset.
+
+        It could happen that after splinting some datums/indexes
+        are not longe accessible with this method, since the method
+        fetches data based on their absolute index (order of files in
+        `self.file_names`) which is subseted when a dataset is split.
+
+        Subscript operator `[]` invokes `__getitem__()`.
+        When the `self._indices` variable is not `None`
+        (when `ConceptSetDataset` has been splitted) `[i]`
+        returns the i'th index from the `self._indices` list.
+        Therefore `i` in the context of the subscript operator references
+        a position of the data in a dataset rather than its absolute index.
 
         Args:
             idx: The index of the observation as in self.file_names list.
 
         Returns:
-            An isntacne of toch_geometric "Data".
+            An instance of torch_geometric "Data".
         """
-        datum = ConceptSetDatum()
 
+        if self._indices is None:
+            return self._get(idx)
+        else:
+            if idx in self._indices:
+                return self._get(idx)
+            else:
+                raise KeyError(
+                    f"This dataset does not contain a datum with index {idx}.\n"
+                    "Printing index: \n"
+                    f"{self._indices}"
+                )
+
+    def _get(self, idx: int) -> ConceptSetDatum:
+        datum = ConceptSetDatum()
         for concept_name, concept_dir in self.concept_dict.items():
             data = torch.load(osp.join(concept_dir, self.file_names[idx]))
             setattr(datum, f"{concept_name}__x", data.x)
             setattr(datum, f"{concept_name}__edge_index", data.edge_index)
 
-        setattr(datum, f"y", data.y)
-        setattr(datum, f"sample_id", self.file_names[idx].split(".")[0])
+        setattr(datum, "y", data.y)
+        setattr(datum, "sample_id", self.file_names[idx].split(".")[0])
         return datum

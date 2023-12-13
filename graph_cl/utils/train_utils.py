@@ -32,13 +32,15 @@ def split_concept_dataset(splits_df, index_col, dataset):
 
         # List of indexes of ids in dataset
         idxs = []
-        file_names = []
         for i, spl in enumerate(dataset.file_names):
             if spl in ids:
                 idxs.append(i)
-                file_names.append(spl)
 
         # Subset dataset
+        # NOTE: Subscript operator invokes __getitem__()
+        # Here it creates a copy of the dataset and sets the self._indices variable
+        # to idxs. Then when [i] is called on the new object the i'th index from
+        # the self._indices is returned.
         subseted_datasets[split] = dataset[idxs]
 
     # return dataset
@@ -251,7 +253,7 @@ def test_and_log_best_models(
         # Log metrics mlflown
         robust_mlflow(mlflow.log_metrics, metrics=test_metrics)
 
-        # Log confussion matrix
+        # Log confusion matrix
         _, y_pred, y_true = predict(test_loader, model, device, criterion)
         fig = make_confusion_matrix(
             prediction=y_pred.numpy(force=True).astype(int),
@@ -315,16 +317,3 @@ def permute_labels(splits_df, pred_target, splitted_datasets):
     #         assert splitted_datasets[split][i].y.item() == splitted_datasets[split].get(i).y.item()
 
     # assert False, "All good"
-
-
-def get_datum_from_ConceptSetDataset(randomize, device, idx, splitted_dataset):
-    """
-    Return a datum from a ConceptSetDataset instance. If randomize == "True"
-    then return it by slicing the splitted_datasets since its a list. If "False"
-    then use the get method from ConceptSetDataset class.
-    """
-
-    if randomize == "True":
-        return splitted_dataset[idx].to(device, non_blocking=True)
-    else:
-        return splitted_dataset.get(idx).to(device, non_blocking=True)

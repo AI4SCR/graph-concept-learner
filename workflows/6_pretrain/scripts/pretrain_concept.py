@@ -83,11 +83,12 @@ model.to(device)
 
 # Load datasets according to device
 loaders = {}
-for split_and_splitted_dataset in splitted_datasets.items():
-    # Unpack key and value
-    split, splitted_dataset = split_and_splitted_dataset
+for split, splitted_dataset in splitted_datasets.items():
     loaders[split] = DataLoader(
-        [data.to(device, non_blocking=True) for data in splitted_dataset],
+        [
+            splitted_dataset[idx].to(device, non_blocking=True)
+            for idx in range(len(splitted_dataset))
+        ],
         batch_size=cfg["batch_size"],
         shuffle=True,
     )

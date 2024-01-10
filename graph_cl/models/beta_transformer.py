@@ -1,10 +1,9 @@
-# %%
 import torch
 from torch import nn
 from torch import Tensor
 from einops import repeat
 from graph_cl.models.mlp import MLP
-from typing import Optional, Union, Callable
+from typing import Optional, Callable
 from torch.nn import functional as F
 
 
@@ -151,7 +150,7 @@ class ConceptGraphTransformer(nn.Module):
         - `ClassificationHead`: a classification head.
 
     Methods:
-        forward(x: torch.Tensor) -> torch.Tensor: `forward` should be called on a toch.Tensor of shape
+        forward(x: torch.Tensor) -> torch.Tensor: `forward` should be called on a torch.Tensor of shape
         (batch_size, num_concepts, emb_size). Returns a torch.Tensor of shape
         (batch_size, n_classes), the predicted unnomralized class probabilities for a batch of graph embedding.
     """
@@ -177,7 +176,7 @@ class ConceptGraphTransformer(nn.Module):
             depth (int): Number of staked TransformerEncoderLayer stacked.
             n_classes (int): Number of classes in the classification task.
             scaler (int): scaler * emb_size = the dimension of the feedforward network model.
-            need_weights (bool): falg for output attention filters from las layer
+            need_weights (bool): flag for output attention filters from las layer
         """
 
         # Init and save need_weights to attributes
@@ -230,6 +229,3 @@ class ConceptGraphTransformer(nn.Module):
         else:
             x = self.transformer(x)
             return self.mlp(x[:, 0, :])
-
-
-# %%

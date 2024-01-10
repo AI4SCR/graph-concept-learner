@@ -222,7 +222,9 @@ gcl_cfg["normalized_with"] = normalized_with
 gcl_cfg["fold"] = os.path.basename(splits_df).split(".")[0]
 gcl_cfg["split_strategy"] = split_strategy
 gcl_cfg["cfg_id"] = cfg_id
-gcl_cfg["attribute_config"] = os.path.basename(os.path.dirname(paths_to_concept_set))
+gcl_cfg["attribute_config"] = os.path.basename(
+    os.path.basename(os.path.dirname(paths_to_concept_set))
+)
 gcl_cfg["concept_set"] = os.path.basename(paths_to_concept_set).split(".")[0]
 gcl_cfg["labels_permuted"] = labels_permuted
 gcl_cfg["path_input_config"] = path_to_aggregator_and_training_config

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import mlflow
 import sys
 import os
@@ -112,7 +111,7 @@ g = sns.FacetGrid(
     aspect=9,
     height=1.2,
     xlim=(0, 1),
-    row_order=median_order,
+    row_order=median_order if len(median_order) > 1 else None,
 )
 
 # Map Kernel Density Plot for each configuration
@@ -166,7 +165,7 @@ plt.figtext(
     color="gray",
 )
 plt.figtext(
-    0.9,
+    0.86,
     0.88,
     f"Attr cfg: {attribute_config}",
     ha="center",

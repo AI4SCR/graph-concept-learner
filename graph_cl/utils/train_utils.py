@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import torch
+from itertools import product
 from torch.optim.lr_scheduler import LambdaLR, ExponentialLR
 import warnings
 from sklearn.metrics import (
@@ -207,9 +208,9 @@ def train_validate_and_log_n_epochs(
                 metrics=metrics,
                 step=epoch,
             )
-        # Save model to file if metrics in follow_this_metrics are immproved
+        # Save model to file if metrics in follow_this_metrics are improved
         for metric, best_so_far_and_path in follow_this_metrics.items():
-            # Unpack path and meteric
+            # Unpack path and metric
             best_so_far, out_file = best_so_far_and_path
 
             if val_metrics[metric] >= best_so_far:
@@ -270,6 +271,56 @@ def test_and_log_best_models(
 
         # Log on mlflow
         # save_fig_to_mlflow(fig, "confusion_plots", name)
+
+
+def generate_and_save_attention_maps(
+    model,
+    loader,
+    device,
+    follow_this_metrics,
+    out_dir,
+):
+    """
+    Output is a dictionary where the first level all combinations of y_pred y_true.
+    Second level is the sample id. he data files contains a tensor of dimension
+    (number of heads) x (number of concepts)s^2
+    """
+    for metric, best_so_far_and_path in follow_this_metrics.items():
+        # Unpack values (metric_value, path_to_checkpoint) in tuple inside dict
+        _, out_file = best_so_far_and_path
+
+        # Load model and move to device
+        model.load_state_dict(torch.load(out_file))
+        model.to(device)
+        model.eval()
+
+        # Get unique labels
+        y = torch.cat([data.y for data in loader if "y" in data], dim=0)
+        class_labels = torch.unique(y).tolist()
+
+        # Init dict of results
+        y_true_pred = {
+            category_key: {} for category_key in product(class_labels, repeat=2)
+        }
+
+        # Go through loader and save attention weights
+        for data in loader:
+            # Unpack output
+            unnorm_logits, attention_weights = model(data)
+
+            # Take prediction
+            y_pred = unnorm_logits.argmax(dim=1)
+
+            # Save attention map once per iteration
+            attention_map = torch.squeeze(attention_weights).cpu().detach()
+
+            category_key = (data.y.item(), y_pred.item())
+            y_true_pred[category_key][data.sample_id[0]] = attention_map
+
+        # Save the overall result dictionary
+        torch.save(
+            y_true_pred, os.path.join(out_dir, f"attention_weights_best_{metric}.pt")
+        )
 
 
 def get_dict_of_metric_names_and_paths(out_file_1, out_file_2):

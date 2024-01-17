@@ -23,6 +23,7 @@ from graph_cl.utils.train_utils import (
     train_validate_and_log_n_epochs,
     get_dict_of_metric_names_and_paths,
     permute_labels,
+    generate_and_save_attention_maps,
 )
 
 # Read input and output
@@ -223,7 +224,7 @@ gcl_cfg["fold"] = os.path.basename(splits_df).split(".")[0]
 gcl_cfg["split_strategy"] = split_strategy
 gcl_cfg["cfg_id"] = cfg_id
 gcl_cfg["attribute_config"] = os.path.basename(
-    os.path.basename(os.path.dirname(paths_to_concept_set))
+    os.path.dirname(os.path.dirname(paths_to_concept_set))
 )
 gcl_cfg["concept_set"] = os.path.basename(paths_to_concept_set).split(".")[0]
 gcl_cfg["labels_permuted"] = labels_permuted
@@ -278,6 +279,21 @@ if "external_test" in loaders.keys():
         follow_this_metrics=follow_this_metrics,
         out_dir=out_dir,
         split="external_test",
+    )
+
+# Save attention maps to file
+if gcl_cfg["aggregator"] == "transformer":
+    graph_concept_learner.aggregator.return_attention_map()
+    generate_and_save_attention_maps(
+        model=graph_concept_learner,
+        loader=DataLoader(
+            dataset=dataset,
+            batch_size=1,
+            follow_batch=follow_this,
+        ),
+        device=device,
+        follow_this_metrics=follow_this_metrics,
+        out_dir=out_dir,
     )
 
 # End run

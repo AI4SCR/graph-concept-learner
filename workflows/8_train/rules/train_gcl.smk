@@ -22,7 +22,7 @@ rule train_gcl:
         mem="3G",
         queue="x86_6h",
     log:
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/{split_how}/logs/train_gcl/{{attribute_config}}/{{cfg_id_concept_set}}/{{cfg_id_model}}/{{labels_permuted}}/{{fold}}/{{seed}}"
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/logs/train_gcl/{{attribute_config}}/{{cfg_id_concept_set}}/{{cfg_id_model}}/{{labels_permuted}}/{{fold}}/{{seed}}"
     shell:
         "source scripts/setup_MLflow.sh {params.mlflow_on_remote_server} && "
         "8_train/scripts/train_gcl.py "

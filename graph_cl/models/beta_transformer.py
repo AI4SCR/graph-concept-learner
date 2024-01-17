@@ -182,6 +182,7 @@ class ConceptGraphTransformer(nn.Module):
         # Init and save need_weights to attributes
         super(ConceptGraphTransformer, self).__init__()
         self.need_weights = need_weights
+        self.depth = depth
 
         # Initialize a single layer.
         # By default need_weights inside CustomTransformerEncoderLayer = False
@@ -229,3 +230,10 @@ class ConceptGraphTransformer(nn.Module):
         else:
             x = self.transformer(x)
             return self.mlp(x[:, 0, :])
+
+    def return_attention_map(self, set_to: bool = True):
+        """
+        When this function is called with set_to=True the last layer of the transformer returns attention maps with the prediction.
+        """
+        self.transformer[1].layers[self.depth - 1].need_weights = set_to
+        self.need_weights = set_to

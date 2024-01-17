@@ -95,6 +95,9 @@ include: "7_model_selection/Snakefile"
 # train the graph concept learner.
 include: "8_train/Snakefile"
 
+# Select best GCL models
+include: "9_model_selection/Snakefile"
+
 # Randomization sanity check
 # include: "80_rand_sanity_check/Snakefile"
 

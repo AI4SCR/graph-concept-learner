@@ -17,8 +17,9 @@ rule select_best_gcls:
         get_gcl_checkpoints,
         mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns/flag.txt"
     output:
-        run_id=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/train_results/mlflow_run_ids/{{attribute_config}}/{{labels_permuted}}/mlflow_run_ids.txt",
-        plot=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/train_results/model_performance_distributions/{{attribute_config}}/{{labels_permuted}}/model_performance_distributions.png",
+        output_cfg_id=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/train_results/{{attribute_config}}/{{labels_permuted}}/cfg_id.yaml",
+        run_id=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/train_results/{{attribute_config}}/{{labels_permuted}}/mlflow_run_ids.txt",
+        plot=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/train_results/{{attribute_config}}/{{labels_permuted}}/model_performance_distributions.png",
     params:
         dataset_name=dataset_name,
         prediction_target=prediction_target,

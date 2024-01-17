@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import mlflow
 import sys
+import yaml
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ import matplotlib.pyplot as plt
     run_type,
     metric_name,
     mlflow_uri,
+    output_cfg_id,
     output_mlflow_run_id,
     output_plot,
 ) = sys.argv
@@ -60,6 +62,14 @@ best_runs = pd.merge(
     how="inner",
     suffixes=(None, "_from_grouped"),
 )
+
+output = {
+    "cfg_id": best_runs["params.cfg_id"].unique()[0],
+}
+
+# Write to file (YAML)
+with open(output_cfg_id, "w") as file:
+    yaml.dump(output, file, default_flow_style=False)
 
 # Save tuple of run_ids so that the losses can be visualize in mlflow
 mlflow_run_id = best_runs.loc[(best_runs[metric] - median).abs().idxmin(), "run_id"]

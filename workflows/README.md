@@ -27,7 +27,7 @@ One can also run specific parts of the workflow individually, which might be use
 - Filter out ill defined images: `filter_samples`
 - Split samples `split_basel_leave_zurich_as_external` | `split_both_cohorts` | `split_zurich_leave_basel_as_external`
 - Normalize data: `normalize_all_folds`
-- Generates all concept graph datasets.: `gen_all_datasets`
+- Generates all concept graph datasets.: `gen_all_datasets`  # this does not produce any rules
 - Attribute graphs: `gen_all_attributed_graphs`
 - Pretrains all models: `pretrain_all`
 - Train all models: `pretrain_all`
@@ -54,6 +54,8 @@ pip3 install torch
 pip install torch_geometric
 pip install pre-commit
 # pip install ai4scr-athena TODO: Until release this needs to be installed manually
+pip install "PuLP<2.8"
+conda install anaconda::pytables  # for arm64 install pytables with conda
 pip install ai4scr-spatial-omics
 pip install snakemake
 ```
@@ -112,6 +114,14 @@ On the other hand, if you will only run things locally (not in the cluster) you 
 
 ```bash
 brew install harelba/q/q
+```
+
+or
+
+```bash
+wget https://github.com/harelba/q/archive/refs/tags/v3.1.6.tar.gz
+tar -xvf v3.1.6.tar.gz
+sudo ln -s $(readlink -f q-3.1.6)/bin/q.py /usr/local/bin/q
 ```
 
 > **The rest of the set-up is only for cluster use. Omit in case you want to run things in your local machine.**

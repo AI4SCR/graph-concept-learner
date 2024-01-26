@@ -1,14 +1,14 @@
-# Dont retry jobs if they fail
+# Don't retry jobs if they fail
 restart-times: 2
 
-# Specify custom job submission warpper
+# Specify custom job submission wrapper
 # cluster: "../scripts/LSF_cluster_job.py"
 cluster: "../scripts/SLURM_cluster_job.py"
 
 # Specify custom job status command wrapper
-cluster-status: "../scripts/SLURM_cluster_status.py"
+cluster-status: "../scripts/SLURM_cluster_status.py"  # comment out if int SLURM
 
-# Dont submit/check-job-status more then x times per second
+# Don't submit/check-job-status more then x times per second
 max-jobs-per-second: 10000
 max-status-checks-per-second: 10
 
@@ -19,10 +19,10 @@ jobs: 1000
 local-cores: 100
 
 # Re-run all jobs the output of which is recognized as incomplete.
-rerun-incomplete: true  # recomended for cluster submissions
+rerun-incomplete: true  # recommended for cluster submissions
 
-# Stop if independen jobs fails
+# Stop if independent jobs fails
 keep-going: false
 
-# Only re run if the output is newr that the input
+# Only re run if the output is newer that the input
 # rerun-triggers: mtime

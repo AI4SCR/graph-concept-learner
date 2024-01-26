@@ -44,10 +44,14 @@ include: "rules/gen_all_attributed_graphs.smk"
 
 # Pretrain
 include: "rules/pretrain_all.smk" # Pretrains all models
-# include: "rules/pretrain_all_rnd.smk" # Pretrain selected randomly permuted models. s
+# include: "rules/pretrain_all_rnd.smk" # Pretrain selected randomly permuted models.
+
+# Select pretrain models
+include: "rules/select_best_pretrain_models.smk"
+include: "rules/collect_concept_sets.smk"
 
 # Train
-# include: "rules/train_all.smk" # Train all models.
+include: "rules/train_all.smk" # Train all models.
 # include: "rules/train_end2end_gcls.smk" # Train al the end2end models.
 
 # Train baselines
@@ -90,6 +94,9 @@ include: "7_model_selection/Snakefile"
 
 # train the graph concept learner.
 include: "8_train/Snakefile"
+
+# Select best GCL models
+include: "9_model_selection/Snakefile"
 
 # Randomization sanity check
 # include: "80_rand_sanity_check/Snakefile"

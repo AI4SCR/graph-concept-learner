@@ -70,9 +70,3 @@ n_epoch:
 # where x is the third value in the list. Only these two strategies are supported.
 scheduler:
   - ["ExponentialLR", 0.98]
-
-# Seed. Specifying multiple seeds will result in multiple runs with the same configuration but different initialization.
-seed:
-  - 1
-  - 2
-  - 3

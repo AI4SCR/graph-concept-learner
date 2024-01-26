@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import mlflow
 import sys
-import os
 import yaml
 import pandas as pd
 import seaborn as sns
@@ -14,13 +13,12 @@ import matplotlib.pyplot as plt
     pred_target,
     split_strategy,
     normalized_with,
-    concept,
     attribute_config,
     labels_permuted,
     run_type,
     metric_name,
     mlflow_uri,
-    output_train_cfg,
+    output_cfg_id,
     output_mlflow_run_id,
     output_plot,
 ) = sys.argv
@@ -33,7 +31,6 @@ metric = f"metrics.best_val_{metric_name}"
 
 # Define query for MLFlow
 query = f"""\
-    params.concept = "{concept}" and \
     params.run_type = "{run_type}" and \
     params.split_strategy = "{split_strategy}" and \
     params.attribute_config = "{attribute_config}" and \
@@ -45,8 +42,10 @@ query = f"""\
 experiment_name = f"san_{dataset_name}_{pred_target}"
 df = mlflow.search_runs(experiment_names=[experiment_name], filter_string=query)
 
-# Get path to the dataset and config
-median_metrics = df.groupby("params.cfg_id")[metric].median().reset_index()
+# Compute medians for al combinations of cfg_id_concept_set & cfg_id_model
+median_metrics = (
+    df.groupby(["params.concept_set", "params.cfg_id"])[metric].median().reset_index()
+)
 
 # Get group with the best median
 best_params = median_metrics.loc[median_metrics[metric].idxmax()]
@@ -64,25 +63,12 @@ best_runs = pd.merge(
     suffixes=(None, "_from_grouped"),
 )
 
-# Initialize output dict
-# Path to the dataset (including the attribute config dir)
-# Path to config with highest median
-# Path to checkpoint of model closest to the median (so to avoid overfitting)
-checkpoint_path = os.path.join(
-    best_runs.loc[
-        (best_runs[metric] - median).abs().idxmin(), "params.path_output_models"
-    ],
-    f"best_val_{metric_name}.pt",
-)
-
 output = {
-    "data": best_runs["params.path_input_data"].unique()[0],
-    "config": best_runs["params.path_input_config"].unique()[0],
-    "checkpoint": checkpoint_path,
+    "cfg_id": best_runs["params.cfg_id"].unique()[0],
 }
 
 # Write to file (YAML)
-with open(output_train_cfg, "w") as file:
+with open(output_cfg_id, "w") as file:
     yaml.dump(output, file, default_flow_style=False)
 
 # Save tuple of run_ids so that the losses can be visualize in mlflow
@@ -95,13 +81,18 @@ with open(output_mlflow_run_id, "w") as file:
 # Plot distributions of test and training
 # Theme
 metric2 = f"metrics.test_best_val_{metric_name}_{metric_name}"
-df2 = df[["params.cfg_id", metric, metric2]]
+df2 = df[["params.concept_set", "params.cfg_id", metric, metric2]]
 sns.set_theme(
     style="whitegrid", rc={"axes.facecolor": (0, 0, 0, 0), "axes.linewidth": 1}
 )
 
 # Calculate median for each row based on the first metric
-median_order = df2.groupby("params.cfg_id")[metric].median().sort_values().index
+median_order = (
+    df2.groupby(["params.concept_set", "params.cfg_id"])[metric]
+    .median()
+    .sort_values()
+    .index
+)
 
 # Create a grid with a row for each configuration, ordered by the median of the first metric
 g = sns.FacetGrid(
@@ -109,7 +100,7 @@ g = sns.FacetGrid(
     row="params.cfg_id",
     hue="params.cfg_id",
     aspect=9,
-    height=1.2,
+    height=1.6,
     xlim=(0, 1),
     row_order=median_order if len(median_order) > 1 else None,
 )
@@ -153,17 +144,9 @@ g.despine(left=True)
 
 # Set title
 plt.suptitle(
-    "Performance on the Validation and Test Set for each configuration", y=0.98
+    "GCL performance on the validation and test set for each configuration", y=0.98
 )
-plt.figtext(
-    0.88,
-    0.95,
-    f"Concept: {concept}",
-    ha="center",
-    va="center",
-    fontsize=12,
-    color="gray",
-)
+
 plt.figtext(
     0.86,
     0.88,
@@ -175,7 +158,7 @@ plt.figtext(
 )
 plt.figtext(
     0.9,
-    0.8,
+    0.75,
     f"Labels Permuted = {labels_permuted}",
     ha="center",
     va="center",

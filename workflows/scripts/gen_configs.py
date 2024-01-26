@@ -43,3 +43,13 @@ for i, tup in enumerate(prod):
     # Write config
     with open(path_new_config, "w") as file:
         yaml.dump(new_cfg, file, default_flow_style=False)
+
+    os.chmod(path_new_config, 0o444)
+
+print(
+    f"""
+    Configs generated!\n
+    Source: {os.path.basename(base_config_path)}\n
+    Saved to: {out_dir}
+    """
+)

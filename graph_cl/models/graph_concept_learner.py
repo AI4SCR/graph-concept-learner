@@ -45,13 +45,13 @@ class GraphConceptLearner(nn.Module):
         # Get model class
         agg_class = aggregators[config["aggregator"]]
 
-        # Add mlpo activation function to the config dictionary
+        # Add mlp activation function to the config dictionary
         config["mlp_act"] = activation_functions[config["mlp_act_key"]]
 
         # Init model
         self.aggregator = agg_class(**config)
 
-        # Get some aditionalinformation from config
+        # Get some additional information from config
         self.num_concepts = config["num_concepts"]
         self.emb_size = config["emb_size"]
         self.device = device
@@ -76,7 +76,7 @@ class GraphConceptLearner(nn.Module):
             # Unpack concept name and corresponding model
             concept, model = item
 
-            # Get concept sepcific data from Paradigm_DatumBatch
+            # Get concept specific data from Paradigm_DatumBatch
             x = batch[f"{concept}__x"]
             edge_index = batch[f"{concept}__edge_index"]
             x_batch = batch[f"{concept}__x_batch"]
@@ -90,9 +90,9 @@ class GraphConceptLearner(nn.Module):
             # check that there is no nan in output
             assert not torch.isnan(
                 batch_embeddings
-            ).any(), f"NaN's in batch_embeddings. Printing batch graph embeddings for concept: {concept}. Batch embbedings {batch_embeddings}"
+            ).any(), f"NaN's in batch_embeddings. \nPrinting batch graph embeddings for concept: \n{concept}. \n\nBatch embeddings: \n{batch_embeddings}"
 
-            # Insert the graph emebdding into tensor
+            # Insert the graph embedding into tensor
             embeddings[:, insert_at_dim, :] = batch_embeddings
 
         # Pass embeddings through aggregator

@@ -1,7 +1,7 @@
 # Train a GNN model specifies by a config, log results and save weights.
 rule set_mlflow_experiment:
     output:
-        mlflow_uri=directory(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns")
+        mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns/flag.txt"
     params:
         mlflow_on_remote_server=mlflow_on_remote_server,
     resources:

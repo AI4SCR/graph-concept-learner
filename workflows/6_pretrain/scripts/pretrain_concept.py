@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# from tqdm import tqdm
 import sys
 import os
 import mlflow
@@ -17,32 +16,8 @@ from graph_cl.utils.train_utils import (
     test_and_log_best_models,
     train_validate_and_log_n_epochs,
     get_dict_of_metric_names_and_paths,
-    randomize_labels,
+    permute_labels,
 )
-
-# Debug input
-# cfg = {
-#     "pool": "global_mean_pool",
-#     "gnn": "PNA",
-#     "scaler": 2,
-#     "num_layers": 4,
-#     "dropout": False,
-#     "act": "ReLU",
-#     "act_first": False,
-#     "norm": "LayerNorm",
-#     "jk": "lstm",
-#     "num_layers_MLP": 2,
-#     "batch_size": 8,
-#     "lr": 0.001,
-#     "optim": "Adam",
-#     "n_epoch": 100,
-#     "scheduler":["ExponentialLR",0.98],
-#     "seed": 25
-# }
-# pred_target = "ERStatus"
-# concept_dataset_dir="/Users/ast/Documents/GitHub/datasets/jackson/prediction_tasks/ERStatus/processed_data/immune_radius"
-# randomize="True"
-# splits_df="/Users/ast/Downloads/sample_splits.csv"
 
 # Read config file path
 (
@@ -53,8 +28,9 @@ from graph_cl.utils.train_utils import (
     normalized_with,  # Name of the folder
     split_strategy,  # Name of other folder
     run_type,  # Specify type of run
-    randomize,  # Weather to randomize the labels in the data
+    labels_permuted,  # Weather to permute the labels in the data
     mlflow_on_remote_server,  # Weather to log to remote or local
+    seed,
     mlflow_uri,  # Specify path to in local file system where to save the mlflow log
     pred_target,  # Prediction target
     root,  # Path to the dir with all the data (used to specify mlflow experiment)
@@ -82,6 +58,10 @@ cfg["num_classes"] = dataset.num_classes
 cfg["in_channels"] = dataset.num_node_features
 cfg["hidden_channels"] = cfg["in_channels"] * cfg["scaler"]
 
+# Save other relevant info o config
+cfg["seed"] = int(seed.split("_")[1])
+cfg["labels_permuted"] = labels_permuted
+
 # Set seed
 seed_everything(cfg["seed"])
 
@@ -90,9 +70,9 @@ splitted_datasets = split_concept_dataset(
     splits_df=splits_df, index_col="core", dataset=dataset
 )
 
-# Permute labels if false is true
-if bool(randomize):
-    splitted_datasets = randomize_labels(splits_df, pred_target, splitted_datasets)
+# Permute labels if "permuted"
+if labels_permuted == "permuted":
+    splitted_datasets = permute_labels(splits_df, pred_target, splitted_datasets)
 
 # Build model.
 # Important to pass train_dataset in cpu, not cuda.
@@ -103,11 +83,12 @@ model.to(device)
 
 # Load datasets according to device
 loaders = {}
-for split_and_splitted_dataset in splitted_datasets.items():
-    # Unpack key and value
-    split, splitted_dataset = split_and_splitted_dataset
+for split, splitted_dataset in splitted_datasets.items():
     loaders[split] = DataLoader(
-        [data.to(device, non_blocking=True) for data in splitted_dataset],
+        [
+            splitted_dataset[idx].to(device, non_blocking=True)
+            for idx in range(len(splitted_dataset))
+        ],
         batch_size=cfg["batch_size"],
         shuffle=True,
     )
@@ -137,8 +118,12 @@ cfg["fold"] = os.path.basename(concept_dataset_dir)
 cfg["split_strategy"] = split_strategy
 cfg["cfg_id"] = cfg_id
 cfg["concept"] = os.path.basename(os.path.dirname(concept_dataset_dir))
+cfg["attribute_config"] = os.path.basename(
+    os.path.dirname(os.path.dirname(concept_dataset_dir))
+)
 cfg["path_input_config"] = cfg_path
 cfg["path_output_models"] = out_dir
+cfg["path_input_data"] = os.path.dirname(concept_dataset_dir)
 if cfg["gnn"] == "PNA":
     cfg.pop("deg")
 
@@ -153,7 +138,6 @@ log_every_n_epochs = int(log_frequency)
 follow_this_metrics = get_dict_of_metric_names_and_paths(out_file_1, out_file_2)
 
 # Train and validate for cfg["n_epochs"]
-# for epoch in tqdm(range(1, cfg["n_epoch"] + 1)):  # this line if for debugging
 train_validate_and_log_n_epochs(
     cfg=cfg,
     model=model,

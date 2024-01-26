@@ -25,14 +25,21 @@ with open(cfg_file) as f:
 concept_name = cfg["concept_name"]
 builder_type = cfg["builder_type"]
 
+randomize = cfg.pop("randomize", {})
+randomize_cell_labels = randomize.pop("cell_labels", False)
+if randomize_cell_labels:
+    randomize_seed = randomize.pop("seed", 42)
+    col_name = cfg["concept_params"]["filter_col"]
+    so.obs[spl][col_name] = so.obs[spl][col_name].sample(
+        frac=1, replace=False, random_state=randomize_seed
+    )
+
 # Do not attribute
 cfg["build_and_attribute"] = False
 
 # Make a graph for the given sample, and turn it into pyg and save to file
 # Build graph
-ath.graph.build_graph(
-    so, spl, config=cfg, key_added=concept_name
-)
+ath.graph.build_graph(so, spl, config=cfg, key_added=concept_name)
 
 # Remove edge weights
 for (n1, n2, d) in so.G[spl][concept_name].edges(data=True):

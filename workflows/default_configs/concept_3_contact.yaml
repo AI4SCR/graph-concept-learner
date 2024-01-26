@@ -29,3 +29,5 @@ concept_params:
   # Labels in the entries of so.obs[<spl>][<filter_col>] to include in the graph
   include_labels:
   - Tumor
+
+cell_label_randomized: false

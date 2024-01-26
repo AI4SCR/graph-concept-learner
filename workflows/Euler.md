@@ -8,10 +8,11 @@ First set the default to the new software stack by running `set_software_stack.s
 
 ```bash
 mkdir -p ~/projects/ai4scr/
+mkdir ~/venvs
 # use module spider <search_term> to discover available modules
 module load gcc/11.4.0 python/3.8.18
-python -m venv gcl
-source gcl/bin/activate
+python -m venv venvs/gcl
+source venvs/gcl/bin/activate
 ```
 
 ### Upload files
@@ -19,7 +20,7 @@ source gcl/bin/activate
 ```bash
 rsync -ahvp ~/projects/ai4scr/ATHENA adrianom@euler:~/projects/ai4scr/
 rsync -ahvp ~/projects/ai4scr/spatial-omics adrianom@euler:~/projects/ai4scr/
-rsync -ahvp ~/projects/ai4scr/graph-concept-learner adrianom@euler:~/projects/ai4scr/
+#rsync -ahvp ~/projects/ai4scr/graph-concept-learner adrianom@euler:~/projects/ai4scr/
 ```
 
 ### Install packages
@@ -47,7 +48,8 @@ pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -
 ```bash
 wget https://github.com/harelba/q/archive/refs/tags/v3.1.6.tar.gz
 tar -xvf v3.1.6.tar.gz
-
+mkdir /cluster/home/adrianom/bin/  # change to your username
+ln -fs /cluster/home/adrianom/q-3.1.6/bin/q.py /cluster/home/adrianom/bin/q
 ```
 
 ```bash

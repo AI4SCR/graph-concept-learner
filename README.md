@@ -1,6 +1,6 @@
 # Graph Concept Learner
 
-Learning using concept graphs for general prediction tasks. 
+Learning using concept graphs for general prediction tasks.
 
 ## Environment
 Using a virtual environment for all commands in this guide is strongly recommended.
@@ -10,7 +10,7 @@ Using a virtual environment for all commands in this guide is strongly recommend
 ### Package installation
 ```sh
 # assuming you have an SSH key set up on GitHub
-pip install "git+ssh://git@github.ibm.com/Santiago-Castro-Dau/graph-concept-learner.git@main"
+pip install "git+ssh://git@github.com:AI4SCR/graph-concept-learner.git@main"
 ```
 
 ### Suggested setup for development
@@ -23,15 +23,12 @@ pre-commit install
 ```
 
 ## Usage
-...
+Check workflow [Workflow tutorial](https://github.com/AI4SCR/graph-concept-learner/wiki/Workflow-tutorial)
 
 ## Contributing
 
-Check [CONTRIBUTING.md](.github/CONTRIBUTING.md).
+Check [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Getting support
 
-Check [SUPPORT.md](.github/SUPPORT.md).
-
-## Credits
-This project was created using https://github.ibm.com/HCLS-innersource/python-blueprint.
+Check [SUPPORT.md](./SUPPORT.md).

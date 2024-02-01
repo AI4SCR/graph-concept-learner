@@ -8,7 +8,6 @@ configfile: "./config/main_config.yaml"
 supported_datasets = {
     "jackson": "0_make_so_jackson/Snakefile"
 }
-assert os.path.exists(config["root"])
 dataset_name = os.path.basename(config["root"])
 
 ##### Define path variables form config #####
@@ -22,18 +21,22 @@ mlflow_on_remote_server=config["mlflow_on_remote_server"]
 include: "rules/helper_functions.smk"
 
 ##### Load other rules #####
-# Usefule when wnting to run the workflow in chunks.
+# Useful when wanting to run the workflow in chunks.
+
+# Make folder structure and default config files
+include: "rules/make_folder_structure.smk"
 
 # MLflow
 #include: "rules/delete_mlflow_runs.smk" # Delete some mlflow run. Dont use unless you know what you are donig.
 #include: "rules/parse_pretrain_mlflow_runs.smk" # Checks against mlflow if all concept configs combinations have been pretrained.
 #include: "rules/parse_train_mlflow_runs.smk" # Parse the train runs.
 
+
 # Normalize data
 include: "rules/normalize_all_folds.smk"
 
 # Gen datasets
-include: "rules/gen_all_datasets.smk" # Generates all concept graph datasets.
+include: "rules/gen_all_graphs.smk" # Generates all concept graph datasets.
 # include: "rules/gen_all_rand_datasets.smk" # Generates all random concept graph datasets.
 
 # Attribute graphs
@@ -41,10 +44,14 @@ include: "rules/gen_all_attributed_graphs.smk"
 
 # Pretrain
 include: "rules/pretrain_all.smk" # Pretrains all models
-# include: "rules/pretrain_all_rnd.smk" # Pretrain selected randomly permuted models. s
+# include: "rules/pretrain_all_rnd.smk" # Pretrain selected randomly permuted models.
+
+# Select pretrain models
+include: "rules/select_best_pretrain_models.smk"
+include: "rules/collect_concept_sets.smk"
 
 # Train
-# include: "rules/train_all.smk" # Train all models.
+include: "rules/train_all.smk" # Train all models.
 # include: "rules/train_end2end_gcls.smk" # Train al the end2end models.
 
 # Train baselines
@@ -87,6 +94,9 @@ include: "7_model_selection/Snakefile"
 
 # train the graph concept learner.
 include: "8_train/Snakefile"
+
+# Select best GCL models
+include: "9_model_selection/Snakefile"
 
 # Randomization sanity check
 # include: "80_rand_sanity_check/Snakefile"

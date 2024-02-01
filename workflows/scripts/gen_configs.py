@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 from itertools import product
 import uuid
-from ruamel import yaml
+import yaml
 import os
 import sys
 
 (prog_name, base_config_path, out_dir) = sys.argv
-# base_config_path = "/Users/ast/Documents/GitHub/datasets/jakson/prediction_targets/ERStatus/configs/base_configs/pretrain_models_base_config.yaml"
+# base_config_path = "/Users/ast/Documents/GitHub/datasets/jackson/prediction_targets/ERStatus/configs/base_configs/pretrain_models_base_config.yaml"
 # pred_target = "ERStatus"
-# out_dir = "/Users/ast/Documents/GitHub/datasets/jakson/prediction_targets/ERStatus/configs/model_configs"
+# out_dir = "/Users/ast/Documents/GitHub/datasets/jackson/prediction_targets/ERStatus/configs/model_configs"
 
 # Make output dir.
 os.makedirs(out_dir, exist_ok=True)
@@ -24,7 +24,7 @@ keys = [key for key in cfg]
 options = [cfg[key] for key in cfg]
 prod = product(*options)
 
-# Create new config and save to file unde the mlflow run id
+# Create new config and save to file under the mlflow run id
 for i, tup in enumerate(prod):
     # Make new config
     new_cfg = dict(zip(keys, tup))
@@ -42,4 +42,14 @@ for i, tup in enumerate(prod):
 
     # Write config
     with open(path_new_config, "w") as file:
-        yaml.dump(new_cfg, file, Dumper=yaml.RoundTripDumper)
+        yaml.dump(new_cfg, file, default_flow_style=False)
+
+    os.chmod(path_new_config, 0o444)
+
+print(
+    f"""
+    Configs generated!\n
+    Source: {os.path.basename(base_config_path)}\n
+    Saved to: {out_dir}
+    """
+)

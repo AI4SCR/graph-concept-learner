@@ -3,7 +3,7 @@
 rule generate_concept_graph:
     input:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/filtered_sample_ids_and_labels.csv",
-        cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs/{{concept}}_contact.yaml",
+        cfg=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs/{{concept}}_contact.yaml",
         so=f"{root}/intermediate_data/so.pkl",
     output:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}_contact/{{spl_id}}.pkl"

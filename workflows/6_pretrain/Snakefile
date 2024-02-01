@@ -1,2 +1,3 @@
 include: "rules/gen_pretrain_configs.smk" # Generates a zoo of configs based on a base config for gcl pretraing.
 include: "rules/pretrain_concept.smk" # Train a GNN model specifies by a config, log results and save weights.
+include: "rules/set_mlflow_experiment.smk"

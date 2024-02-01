@@ -1,0 +1,72 @@
+# Pooling strategy to use to combine the processed node embeddings into a graph-level embedding. (str: {global_add_pool, global_mean_pool, global_max_pool})
+# Look at https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#pooling-layers for details.
+pool:
+  - "global_add_pool"
+
+# GNN model to use. (str: {GCN, SAGE, GAT, GIN})
+# There are more models available. Should I consider more?
+# Look at https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#models for details.
+gnn:
+  - "GIN"
+
+### GNN model parameters ###
+# scalar * in_cheannels = hidden_channels = out_channels
+# in_channels: the dimension of the initial node feature vectors, derived from the input.
+# out_channels: should be the same as the hidden dimensions for our use case, derived from input.
+# scaler: integer that scales the in_cheannels to compute the hidden_channels.
+scaler:
+  - 2
+
+# Number of hops/neighborhood layers to consider in the GNN model. (int >= 1)
+num_layers:
+  - 2
+
+# Whether to use dropout or not. (bool)
+dropout:
+  - False
+
+# Activation function to use within the GNN model. (str: {'ReLU6', 'PReLU', 'SiLU', 'Softmax2d', 'ReLU', 'Hardshrink', 'NonDynamicallyQuantizableLinear', 'SELU', 'swish', 'LeakyReLU', 'CELU', 'GELU', 'RReLU', 'Softplus', 'LogSigmoid', 'GLU', 'ELU', 'Threshold', 'Softmin', 'Hardswish', 'LogSoftmax', 'Sigmoid', 'Hardtanh', 'Tanh', 'Hardsigmoid', 'Module', 'MultiheadAttention', 'Softmax', 'Softshrink', 'Mish', 'Tanhshrink', 'Softsign'})
+act:
+  - "ReLU"
+
+# Whether to apply the activation is applied before normalization (True), or after (False).
+act_first:
+  - False
+
+# Normalization function to use within the GNN model. (str: {'GraphSizeNorm', 'BatchNorm', 'GraphNorm', 'PairNorm', 'MeanSubtractionNorm', 'InstanceNorm', 'LayerNorm', 'DiffGroupNorm', 'MessageNorm'})
+norm:
+  - "BatchNorm"
+
+# The Jumping Knowledge mode. If specified, the model will additionally apply a final linear transformation to transform node embeddings to the expected output feature dimensionality. (None, "last", "cat", "max", "lstm").
+jk:
+  - # None. Must leave the entry empty for it to be read as none when loading this file.
+
+### Classification head parameters ###
+# Number of layers in the MLP classifier
+num_layers_MLP:
+  - 2
+
+### Training parameters ###
+# Batch size
+batch_size:
+  - 8
+
+# Learning rate
+lr:
+  - 0.0001
+
+# Optimizer (str).
+# Only Adam and SGD are supported.
+optim:
+  - "Adam"
+
+# Number of epochs
+n_epoch:
+  - 100
+
+# Learning rate decay strategy to use.
+# For ExponentialLR, the second value in the list corresponds to the gamma parameter.
+# For LambdaLR, the second value in the list corresponds to the divisor by which the lr is divided each every x epochs,
+# where x is the third value in the list. Only these two strategies are supported.
+scheduler:
+  - ["ExponentialLR", 0.98]

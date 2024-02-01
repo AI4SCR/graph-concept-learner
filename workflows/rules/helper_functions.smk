@@ -1,33 +1,79 @@
 ##### Helper functions #####
+def gen_paths_to_train_conf_matrices(wildcards):
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/models"
+    CFG_ID_MODELS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
+
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
+    FOLD_IDS = [f"fold_{i}" for i in range(config["n_folds"])]
+    SEEDS = [f"seed_{i}" for i in range(config["n_seeds"])]
+
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/gcls/"+"{attribute_config}/{cfg_id_concept_set}/{cfg_id_model}/{labels_permuted}/{fold}/{seed}/test_conf_mat_from_best_val_{metric_name}.png",
+        metric_name=config["follow_this_metrics"],
+        attribute_config=ATTR_CFG_IDS,
+        cfg_id_concept_set=["all_concepts"],
+        cfg_id_model=CFG_ID_MODELS,
+        labels_permuted=["not_permuted"],
+        fold=FOLD_IDS,
+        seed=SEEDS,
+    )
+
+def get_concept_sets(wildcards):
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/concept_sets/"+"{attribute_config}/{labels_permuted}/{cfg_id}.yaml",
+        labels_permuted=["not_permuted"],
+        attribute_config=ATTR_CFG_IDS,
+        cfg_id=["all_concepts"]
+    )
+
+def get_configs_best_pretrain_models(wildcards):
+    path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if f.endswith(".yaml")]
+
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
+    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/{{attribute_config}}/{{labels_permuted}}/{{concept}}.yaml",
+        concept=CONCEPT_NAMES,
+        attribute_config=CONFIG_NAMES,
+        labels_permuted=["not_permuted"]
+    )
+
 def get_all_attributed_graphs(wildcards):
     path_to_configs = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
-    CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if os.path.splitext(f)[1] == ".yaml"]
+    CONFIG_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_configs) if f.endswith(".yaml")]
 
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
-    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
+    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     path_to_folds = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/normalized_data"
-    FOLDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_folds) if os.path.splitext(f)[1] == ".pkl"]
+    FOLDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_folds) if f.endswith(".pkl")]
 
-    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/{{concept}}_{{attribute_config}}/{{fold}}", concept=CONCEPT_NAMES, attribute_config=CONFIG_NAMES, fold=FOLDS)
+    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/{{attribute_config}}/{{concept}}/{{fold}}", concept=CONCEPT_NAMES, attribute_config=CONFIG_NAMES, fold=FOLDS)
 
 def get_all_graphs_and_datasets(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
-    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
+    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     CONTACT_CONCEPTS = []
-    RADIUS_CONCEPTS = []
+    RADIUS_KNN_CONCEPTS = []
     for concept in CONCEPT_NAMES:
         if "contact" in concept:
             CONTACT_CONCEPTS.append(concept)
         else:
-            RADIUS_CONCEPTS.append(concept)
+            RADIUS_KNN_CONCEPTS.append(concept)
 
     path_to_filtered_sample_ids = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/filtered_sample_ids_and_labels.csv"
     SMAPLE_IDS = list(pd.read_csv(path_to_filtered_sample_ids, index_col=0).squeeze("columns").index.values)
 
     all_graphs = expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}/{{spl_id}}.pkl", concept=CONTACT_CONCEPTS, spl_id=SMAPLE_IDS)
-    all_datasets = expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}", concept=RADIUS_CONCEPTS)
+    all_datasets = expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/unattributed/{{concept}}", concept=RADIUS_KNN_CONCEPTS)
 
     return all_graphs + all_datasets
 
@@ -37,29 +83,33 @@ def get_all_graphs_for_a_concept(wildcards):
     return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/" + "{{concept}}/{spl_id}.pt", spl_id=SMAPLE_IDS)
 
 def get_paths_to_pretrained_models(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/processed_data/attributed/"
-    CONCEPT_NAMES = [f for f in os.listdir(path_to_file)]
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
+    CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs"
-    CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/meta_data/CV_folds/folds/"
-    FOLD_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".csv"]
+    CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
+    FOLD_IDS = [f"fold_{i}" for i in range(config["n_folds"])]
+    SEEDS = [f"seed_{i}" for i in range(config["n_seeds"])]
+
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/attribute_configs"
+    ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
+
     return expand(
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/{{concept}}/{{fold}}/{{cfg_id}}/best_val_{{metric_name}}.pt",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/single_concepts/{{labels_permuted}}/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
         fold=FOLD_IDS,
+        seed=SEEDS,
         concept=CONCEPT_NAMES,
         cfg_id=CFG_IDS,
-        metric_name=config["follow_this_metrics"]
+        attribute_config=ATTR_CFG_IDS,
+        metric_name=config["follow_this_metrics"],
+        labels_permuted=["not_permuted"]
     )
 
-def get_paths_to_dataset_configs(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+def get_paths_to_concept_configs(wildcards):
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
     return expand(f"{path_to_file}/{{concept}}.yaml", concept=CONCEPT_NAMES)
-
-def gen_paths_to_train_conf_matrices(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_model_configs"
-    CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
-    return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/graph_concept_learners/"+"ER/{config_id}/test_conf_mat_from_best_val_{metric_name}.png", metric_name=config["follow_this_metrics"], config_id=CFG_IDS)
 
 def gen_paths_to_space_gm_conf_matrices(wildcards):
     path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/space_gm_train_configs"
@@ -69,7 +119,7 @@ def gen_paths_to_space_gm_conf_matrices(wildcards):
     return expand(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/space_gm_baseline/"+"{dataset}/{cfg_id}/test_conf_mat_from_best_val_weighted_f1_score.png", cfg_id=CFG_IDS, dataset=DATASET_NAMES)
 
 def get_all_rand_graphs_and_datasets(wildcards):
-    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/dataset_configs"
+    path_to_file = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs"
     CONCEPT_NAMES = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if os.path.splitext(f)[1] == ".yaml"]
 
     CONTACT_CONCEPTS = []

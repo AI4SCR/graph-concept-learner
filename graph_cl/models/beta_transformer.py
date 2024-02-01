@@ -1,10 +1,9 @@
-# %%
 import torch
 from torch import nn
 from torch import Tensor
 from einops import repeat
 from graph_cl.models.mlp import MLP
-from typing import Optional, Union, Callable
+from typing import Optional, Callable
 from torch.nn import functional as F
 
 
@@ -151,7 +150,7 @@ class ConceptGraphTransformer(nn.Module):
         - `ClassificationHead`: a classification head.
 
     Methods:
-        forward(x: torch.Tensor) -> torch.Tensor: `forward` should be called on a toch.Tensor of shape
+        forward(x: torch.Tensor) -> torch.Tensor: `forward` should be called on a torch.Tensor of shape
         (batch_size, num_concepts, emb_size). Returns a torch.Tensor of shape
         (batch_size, n_classes), the predicted unnomralized class probabilities for a batch of graph embedding.
     """
@@ -177,12 +176,13 @@ class ConceptGraphTransformer(nn.Module):
             depth (int): Number of staked TransformerEncoderLayer stacked.
             n_classes (int): Number of classes in the classification task.
             scaler (int): scaler * emb_size = the dimension of the feedforward network model.
-            need_weights (bool): falg for output attention filters from las layer
+            need_weights (bool): flag for output attention filters from las layer
         """
 
         # Init and save need_weights to attributes
         super(ConceptGraphTransformer, self).__init__()
         self.need_weights = need_weights
+        self.depth = depth
 
         # Initialize a single layer.
         # By default need_weights inside CustomTransformerEncoderLayer = False
@@ -231,5 +231,9 @@ class ConceptGraphTransformer(nn.Module):
             x = self.transformer(x)
             return self.mlp(x[:, 0, :])
 
-
-# %%
+    def return_attention_map(self, set_to: bool = True):
+        """
+        When this function is called with set_to=True the last layer of the transformer returns attention maps with the prediction.
+        """
+        self.transformer[1].layers[self.depth - 1].need_weights = set_to
+        self.need_weights = set_to

@@ -8,7 +8,7 @@ import pickle
 import torch
 from torch_geometric.utils.convert import from_networkx
 
-## Debug input
+# Debug input
 # so_path = "/cluster/scratch/scastro/jackson/prediction_tasks/ERStatus/normalized_with_min_max/meta_data/normalized_data/fold_0.pkl"
 # concept_path = "/cluster/scratch/scastro/jackson/prediction_tasks/ERStatus/normalized_with_min_max/processed_data/unattributed/all_cells_radius"
 # config_path = "/cluster/scratch/scastro/jackson/prediction_tasks/ERStatus/normalized_with_min_max/configs/attribute_configs/ER.yaml"

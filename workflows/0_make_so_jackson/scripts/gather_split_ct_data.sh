@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Unpack input
 z_pg=$1
@@ -22,7 +22,8 @@ b=($b_pg,$b_mtc,$b_scl)
 sed -i".bak" 's/PhenoGraphBasel/PhenoGraph/g' $b_pg
 
 # Path to q
-q=$HOME/q-3.1.6/bin/q.py
+# q=$HOME/q-3.1.6/bin/q.py
+q=$(which q)
 
 # Iterte over lists
 for l in $z $b; do
@@ -55,6 +56,6 @@ for l in $z $b; do
 done
 
 # Rename with csv extension
-for f in $(ls); do
+for f in *; do
 	mv $f $f.csv
 done

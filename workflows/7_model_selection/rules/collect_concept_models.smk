@@ -1,10 +1,13 @@
+def get_best_model_per_concept_confgis(wildcards):
+    return expand(
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/"+"{{attribute_config}}/{{labels_permuted}}/{concept}.yaml",
+        concept=[os.path.splitext(f)[0] for f in os.listdir(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs") if f.endswith(".yaml")]
+    )
+
 # Collect the models into one big config
 rule collect_concept_models:
     input:
-        expand(
-            f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/best_model_per_concept/"+"{{attribute_config}}/{{labels_permuted}}/{concept}.yaml",
-            concept=[os.path.splitext(f)[0] for f in os.listdir(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs") if f.endswith(".yaml")]
-        )
+        get_best_model_per_concept_confgis,
     output:
         f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/concept_sets/{{attribute_config}}/{{labels_permuted}}/{{cfg_id}}.yaml"
     resources:

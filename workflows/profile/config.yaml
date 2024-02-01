@@ -1,5 +1,5 @@
 # Dont retry jobs if they fail
-restart-times: 2
+restart-times: 29
 
 # Specify custom job submission warpper
 # cluster: "../scripts/LSF_cluster_job.py"
@@ -9,14 +9,14 @@ cluster: "../scripts/SLURM_cluster_job.py"
 cluster-status: "../scripts/SLURM_cluster_status.py"
 
 # Dont submit/check-job-status more then x times per second
-max-jobs-per-second: 10000
-max-status-checks-per-second: 10
+max-jobs-per-second: 1000
+max-status-checks-per-second: 1
 
 # Max number of jobs to submit at one time to queue
 jobs: 1000
 
 # Max number of cores that can be use in parallel for all rules/jobs
-local-cores: 100
+local-cores: 1000
 
 # Re-run all jobs the output of which is recognized as incomplete.
 rerun-incomplete: true  # recomended for cluster submissions

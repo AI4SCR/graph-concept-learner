@@ -1,13 +1,16 @@
-rule gen_performance_scatterplot:
-    input:
-        expand(
+def get_single_concept_checkpoints(wildcards):
+    return expand(
             f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/single_concepts/"+"{{attribute_config}}/{concepts}/{cfg_id}/{{labels_permuted}}/{fold}/{seed}/best_val_{metric_name}.pt",
             metric_name=config["follow_this_metrics"],
             seed=[f"seed_{i}" for i in range(config["n_seeds"])],
             fold=[f"fold_{i}" for i in range(config["n_folds"])],
             cfg_id=[os.path.splitext(f)[0] for f in os.listdir(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/pretrain_model_configs") if f.endswith(".yaml")],
             concepts=[os.path.splitext(f)[0] for f in os.listdir(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/concept_configs") if f.endswith(".yaml")]
-        ),
+        )
+
+rule gen_performance_scatterplot:
+    input:
+        get_single_concept_checkpoints,
         mlflow_uri=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/mlruns/flag.txt"
     output:
         plot=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/pretrain_results/median_performance_scatterplot/{{attribute_config}}/{{labels_permuted}}/median_performance_scatterplot.png",

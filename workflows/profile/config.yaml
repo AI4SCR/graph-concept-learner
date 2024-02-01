@@ -6,7 +6,7 @@ restart-times: 2
 cluster: "../scripts/SLURM_cluster_job.py"
 
 # Specify custom job status command wrapper
-cluster-status: "../scripts/SLURM_cluster_status.py"  # comment out if int SLURM
+cluster-status: "../scripts/SLURM_cluster_status.py"  # comment out if not SLURM
 
 # Dont submit/check-job-status more then x times per second
 max-jobs-per-second: 1000

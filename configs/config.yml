@@ -1,0 +1,3 @@
+data:
+  raw: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jackson/raw_data/zipped
+  intermediate: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jackson/intermediate_data/so.pkl

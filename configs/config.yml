@@ -10,6 +10,10 @@ filter:
   min_num_cells_per_graph: 10
 normalize:
   method: min_max
+  cofactor: 5
 split:
   method: split_basel_leave_zurich_as_external
+  train: 0.7
+  val: 0.15
+  test: 0.15
   n_folds: 3

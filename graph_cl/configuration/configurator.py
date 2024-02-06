@@ -6,8 +6,9 @@ from pathlib import Path
 
 class Data(BaseModel):
     raw: Path
+    intermediate: Path
 
-    @field_validator("raw", mode="before")
+    @field_validator("raw", "intermediate", mode="before")
     @classmethod
     def convert_raw_to_path(cls, v):
         return Path(v)

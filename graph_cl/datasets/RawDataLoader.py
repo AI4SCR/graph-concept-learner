@@ -96,11 +96,11 @@ class RawDataLoader:
 
         # Concatenate
         md = pd.concat([df_zh[list(intx)], df_bs[list(intx)]])
+        md = md.set_index("core")
         return md
 
     @staticmethod
     def gather_ct_data(labels, locs):
-
         # NOTE: ['core', 'CellId', 'PhenoGraph', 'id']
         pg_zh = labels["PG_zurich.csv"]
         pg_bs = labels["PG_basel.csv"]
@@ -140,9 +140,11 @@ class RawDataLoader:
             PhenoGraph=df.PhenoGraph.astype(int),
             cluster=df.cluster.astype(int),
         )
+
         df = df.merge(
             meta_cluster_anno, left_on="cluster", right_on="Metacluster", how="left"
         )
+        df = df.assign(Cell_type=df["Cell type"]).drop(columns=["Cell type"])
 
         return df
 
@@ -159,33 +161,48 @@ class RawDataLoader:
         # NOTE: 'PG_zurich.csv' is in both labels and meta, the df is identical
         labels = self.extract_single_cell_cluster_labels()
         meta = self.extract_meta_data()
-
         spl_df = self.gather_spl_metadata(
             meta["ZH_Zuri_PatientMetadata.csv"], meta["BS_Basel_PatientMetadata.csv"]
         )
 
         so = SpatialOmics()
 
-        so.spl = spl_df
+        # attr: uns
         uns_df = meta["Basel_Zuri_StainingPanel.csv"]
-        uns_df = uns_df.dropna(axis=0, how="all")
+        # NOTE: uns_df = pd.read_csv(uns_path, skiprows=range(1, 10, 1))
+        #   translates to skipping the first 9 rows in the read in csv file
+        uns_df = uns_df.iloc[9:]
+        # NOTE: now the following is no longer needed
+        # uns_df = uns_df.dropna(axis=0, how="all")
         so.uns["staining_panel"] = uns_df
+
+        # process OBS
+        obs = self.gather_ct_data(labels, locs)
+        obs = obs.set_index("CellId")
+        obs.index.names = ["cell_id"]
 
         # Get list of all samples.
         # NOTE: after my migration, this are integers 0-N and 0-M with N,M being the number of samples in each cohort.
-        #   This also means that there are REPEATING sample numbers!
-        spls = spl_df.index.values
-        cores = spl_df.core.values
+        #   This also means that there are REPEATING sample numbers! -> resolved
+        # spls = spl_df.index.values
 
-        obs = self.gather_ct_data(labels, locs)
-        X = self.split_scc_data(meta)
+        # select samples for which we have cell annotation in obs
+        spl_df = spl_df.loc[obs.core.unique()]
+        spls = spl_df.index.values
+
+        # attr: spl
+        so.spl = spl_df
 
         # Make map for numerica cell_type class
         keys = ["Stroma", "Immune", "Vessel", "Tumor"]
         numeric_labels = list(range(0, len(keys)))
         map_to_numeric = dict(zip(keys, numeric_labels))
+        obs = obs.assign(class_id=obs["Class"].map(map_to_numeric))
 
-        colnames_X_wide = X.channel.values
+        # process X
+        X = self.split_scc_data(meta)
+        X = X.set_index("core")
+        colnames_X_wide = X.channel.unique()
 
         # Get metal tag labels
         unique_metal_tags = np.unique(uns_df["Metal Tag"].values)
@@ -199,12 +216,13 @@ class RawDataLoader:
                 if substring in string:
                     map_to_metaltag[string] = substring
 
-        for grp_name, grp_X in X.groupby("core"):
+        for i, core in enumerate(spls):
+            print(f"[{i}/{len(spls)}]\t{core}")
+            grp_X = X.loc[core]
+
             # Load obs df
-            grp_obs = obs[obs.core == grp_name]
-            grp_obs = grp_obs.assign(class_id=["Class"].map(map_to_numeric))
-            grp_obs.index.names = ["cell_id"]
-            so.obs[grp_name] = grp_obs[
+            grp_obs = obs[obs.core == core]
+            grp_obs = grp_obs[
                 [
                     "id",
                     "cluster",
@@ -214,16 +232,19 @@ class RawDataLoader:
                     "PhenoGraph",
                     "Location_Center_X",
                     "Location_Center_Y",
+                    "ObjectNumber",  # keep original object number, should be equivalent to id in mask?
                 ]
             ]
 
             grp_X = grp_X.pivot(index="CellId", columns="channel", values="mc_counts")
             grp_X.index.names = ["cell_id"]
-            so.X[grp_name] = grp_X
+
+            assert len(grp_X) == len(grp_obs)
+            assert len(set(grp_X.index).intersection(set(grp_obs.index))) == len(grp_X)
 
             # Join morphological features into obs
-            so.obs[grp_name] = so.obs[grp_name].join(
-                so.X[grp_name][
+            grp_obs = grp_obs.join(
+                grp_X[
                     [
                         "Area",
                         "Eccentricity",
@@ -241,37 +262,38 @@ class RawDataLoader:
                 how="left",
             )
 
-            # Colnames in lowercase
-            so.obs[grp_name].rename(str.lower, axis="columns", inplace=True)
-
-            # Rename class as cell_class
-            so.obs[grp_name].rename(columns={"class": "cell_class"}, inplace=True)
-
-            # Reneame columns with metal tag
-            so.X[grp_name] = so.X[grp_name].rename(columns=map_to_metaltag)
+            # tidy
+            grp_obs.rename(str.lower, axis="columns", inplace=True)
+            grp_obs.rename(columns={"class": "cell_class"}, inplace=True)
+            grp_X = grp_X.rename(columns=map_to_metaltag)
 
             # Get metal tags present in sample
-            metaltas_in_sampl = so.X[grp_name].columns.intersection(unique_metal_tags)
+            metaltas_in_sampl = grp_X.columns.intersection(unique_metal_tags)
 
             # Drop other columns
-            so.X[grp_name] = so.X[grp_name][metaltas_in_sampl]
+            grp_X = grp_X[metaltas_in_sampl]
+
+            so.X[core] = grp_X
+            so.obs[core] = grp_obs
 
             # Load mask
-            mask_fname = list(filter(lambda x: spl in x, masks.keys()))[0]
-            so.masks[grp_name]["cellmasks"] = masks[mask_fname]
+            fname = Path(spl_df.loc[core]["FileName_FullStack"]).stem
+            mask_fname = f"{fname}_maks.tiff"
+            so.masks[core] = dict(cellmasks=masks[mask_fname])
 
-        # Drop metal tags only present in either of the cohorts
-        metal_tags_in_all_spls = set(unique_metal_tags)
-        for spl in cores:
-            metal_tags_in_all_spls = metal_tags_in_all_spls.intersection(
-                so.X[spl].columns
-            )
-
-        for spl in cores:
-            # Drop columns
-            so.X[spl] = so.X[spl][list(metal_tags_in_all_spls)]
+        # # Drop metal tags only present in either of the cohorts
+        # metal_tags_in_all_spls = set(unique_metal_tags)
+        # for core in spls:
+        #     metal_tags_in_all_spls = metal_tags_in_all_spls.intersection(
+        #         so.X[core].columns
+        #     )
+        #
+        # for core in spls:
+        #     # Drop columns
+        #     so.X[core] = so.X[core][list(metal_tags_in_all_spls)]
 
         ### Write to file ###
+        self.configuration.data.intermediate.parent.mkdir(parents=True, exist_ok=True)
         with open(self.configuration.data.intermediate, "wb") as f:
             pickle.dump(so, f)
 

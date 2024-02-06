@@ -1,11 +1,11 @@
 # Make so object from the preporcessed files
 rule make_so:
     input:
-        f"{root}/raw_data/unzipped/Data_publication/Basel_Zuri_StainingPanel.csv",
-        f"{root}/intermediate_data/spl_meta_data.csv",
-        f"{root}/intermediate_data/sct_data",
-        f"{root}/intermediate_data/scc_data",
-        f"{root}/raw_data/unzipped/OMEnMasks/Basel_Zuri_masks"
+        f"{root}/raw_data/unzipped/Data_publication/Basel_Zuri_StainingPanel.csv",  # uns_path
+        f"{root}/intermediate_data/spl_meta_data.csv",  # spl_path
+        f"{root}/intermediate_data/sct_data",  # obs_dir
+        f"{root}/intermediate_data/scc_data",  # X_dir
+        f"{root}/raw_data/unzipped/OMEnMasks/Basel_Zuri_masks"  # masks_dir
     output:
         f"{root}/intermediate_data/so.pkl"
     resources:

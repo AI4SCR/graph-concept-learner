@@ -30,10 +30,14 @@ class Filter(BaseModel):
 
 class Normalize(BaseModel):
     method: str
+    cofactor: int
 
 
 class Split(BaseModel):
     method: str
+    train: float
+    test: float
+    val: float
     n_folds: int
 
 

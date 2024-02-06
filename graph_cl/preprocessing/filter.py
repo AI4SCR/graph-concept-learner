@@ -11,7 +11,7 @@ from pandas.api.types import is_numeric_dtype
 from ..configuration import CONFIG
 
 
-def filter():
+def filter_samples():
     # Cast to int
     min_num_cells_per_graph = CONFIG.filter.min_num_cells_per_graph
     cfgs_dir = CONFIG.experiment.root / "configuration" / "concept_configs"

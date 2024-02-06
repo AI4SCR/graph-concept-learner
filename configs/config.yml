@@ -1,3 +1,15 @@
+experiment:
+  name: jackson
+  description: ""
+  prediction_target: 'ERStatus'
+  root: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jackson/experiments/jackson
 data:
   raw: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jackson/raw_data/zipped
   intermediate: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jackson/intermediate_data/so.pkl
+filter:
+  min_num_cells_per_graph: 10
+normalize:
+  method: min_max
+split:
+  method: split_basel_leave_zurich_as_external
+  n_folds: 3

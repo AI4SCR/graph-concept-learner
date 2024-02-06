@@ -156,6 +156,8 @@ class RawDataLoader:
         return X
 
     def __call__(self, *args, **kwargs):
+        if self.configuration.data.intermediate.exists():
+            return
         masks = self.extract_masks()
         locs = self.extract_single_cell_locations()
         # NOTE: 'PG_zurich.csv' is in both labels and meta, the df is identical
@@ -282,19 +284,19 @@ class RawDataLoader:
             so.masks[core] = dict(cellmasks=masks[mask_fname])
 
         # # Drop metal tags only present in either of the cohorts
-        # metal_tags_in_all_spls = set(unique_metal_tags)
-        # for core in spls:
-        #     metal_tags_in_all_spls = metal_tags_in_all_spls.intersection(
-        #         so.X[core].columns
-        #     )
-        #
-        # for core in spls:
-        #     # Drop columns
-        #     so.X[core] = so.X[core][list(metal_tags_in_all_spls)]
+        metal_tags_in_all_spls = set(unique_metal_tags)
+        for core in spls:
+            metal_tags_in_all_spls = metal_tags_in_all_spls.intersection(
+                so.X[core].columns
+            )
+
+        for core in spls:
+            # Drop columns
+            so.X[core] = so.X[core][list(metal_tags_in_all_spls)]
 
         ### Write to file ###
         self.configuration.data.intermediate.parent.mkdir(parents=True, exist_ok=True)
         with open(self.configuration.data.intermediate, "wb") as f:
             pickle.dump(so, f)
 
-        return so
+        # return so

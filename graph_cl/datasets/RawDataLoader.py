@@ -13,13 +13,12 @@ import pickle
 
 
 class RawDataLoader:
-    def __init__(self, configuration):
-        self.configuration = configuration
+    def __init__(self, raw_dir: Path, output: Path):
+        self.raw = raw_dir
+        self.output = output
 
     def extract_masks(self):
-        with zipfile.ZipFile(
-            self.configuration.data.raw / "OMEandSingleCellMasks.zip", "r"
-        ) as zip_ref:
+        with zipfile.ZipFile(self.raw / "OMEandSingleCellMasks.zip", "r") as zip_ref:
             with zip_ref.open("OMEnMasks/Basel_Zuri_masks.zip") as file:
                 inner_zip_contents = file.read()
 
@@ -38,9 +37,7 @@ class RawDataLoader:
         return masks
 
     def extract_single_cell_locations(self):
-        with zipfile.ZipFile(
-            self.configuration.data.raw / "singlecell_locations.zip", "r"
-        ) as zip_ref:
+        with zipfile.ZipFile(self.raw / "singlecell_locations.zip", "r") as zip_ref:
             locs = {}
             for f in zip_ref.namelist():
                 if f.endswith(".csv"):
@@ -51,7 +48,7 @@ class RawDataLoader:
 
     def extract_single_cell_cluster_labels(self):
         with zipfile.ZipFile(
-            self.configuration.data.raw / "singlecell_cluster_labels.zip", "r"
+            self.raw / "singlecell_cluster_labels.zip", "r"
         ) as zip_ref:
             labels = {}
             for f in zip_ref.namelist():
@@ -65,9 +62,7 @@ class RawDataLoader:
         return labels
 
     def extract_meta_data(self):
-        with zipfile.ZipFile(
-            self.configuration.data.raw / "SingleCell_and_Metadata.zip", "r"
-        ) as zip_ref:
+        with zipfile.ZipFile(self.raw / "SingleCell_and_Metadata.zip", "r") as zip_ref:
             meta = {}
             for f in zip_ref.namelist():
                 if f.endswith(".csv"):
@@ -155,8 +150,8 @@ class RawDataLoader:
         X = pd.concat([sc_bs, sc_zh])
         return X
 
-    def __call__(self, *args, **kwargs):
-        if self.configuration.data.intermediate.exists():
+    def create_so(self, *args, **kwargs):
+        if self.output.exists():
             return
         masks = self.extract_masks()
         locs = self.extract_single_cell_locations()
@@ -182,11 +177,6 @@ class RawDataLoader:
         obs = self.gather_ct_data(labels, locs)
         obs = obs.set_index("CellId")
         obs.index.names = ["cell_id"]
-
-        # Get list of all samples.
-        # NOTE: after my migration, this are integers 0-N and 0-M with N,M being the number of samples in each cohort.
-        #   This also means that there are REPEATING sample numbers! -> resolved
-        # spls = spl_df.index.values
 
         # select samples for which we have cell annotation in obs
         spl_df = spl_df.loc[obs.core.unique()]
@@ -295,8 +285,5 @@ class RawDataLoader:
             so.X[core] = so.X[core][list(metal_tags_in_all_spls)]
 
         ### Write to file ###
-        self.configuration.data.intermediate.parent.mkdir(parents=True, exist_ok=True)
-        with open(self.configuration.data.intermediate, "wb") as f:
+        with open(self.output, "wb") as f:
             pickle.dump(so, f)
-
-        # return so

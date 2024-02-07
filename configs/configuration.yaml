@@ -1,0 +1,24 @@
+project:
+  name: 'Graph Concept Learner'
+  description: 'add your description here'
+  root: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/
+experiment:
+  name: ERStatus
+  description: ""
+  target: 'ERStatus'
+data:
+  root: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jack/data/
+  processing:
+    filter:
+      method:
+      min_cells_per_graph: 10
+    normalize:
+      method: min_max
+      cofactor: 5
+      censoring: 0.999
+    split:
+      method: split_basel_leave_zurich_as_external
+      train_size: 0.7
+      test_size: 0.15
+      val_size: 0.15
+      n_folds: 3

@@ -1,12 +1,10 @@
+import os
 from pathlib import Path
 import yaml
 from .configurator import Configuration
 
 # %%
-config_path = Path("/configs/config.yml")
-
-
-def load_config(config_path: str):
+def load_config(config_path: str | Path):
     with open(config_path, "r") as stream:
         try:
             config = yaml.safe_load(stream)
@@ -16,6 +14,5 @@ def load_config(config_path: str):
     return Configuration(**config)
 
 
-CONFIG = load_config(
-    "/Users/adrianomartinelli/projects/ai4scr/graph-concept-learner/configs/config.yml"
-)
+config_path = os.getenv("CONFIGURATION")
+CONFIG = load_config(config_path)

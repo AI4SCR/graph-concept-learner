@@ -2,91 +2,69 @@
 import pickle
 import pandas as pd
 import numpy as np
-import sys
+
 from sklearn.preprocessing import MinMaxScaler
 from pathlib import Path
+from graph_cl.configuration import load_config
+from spatialOmics import SpatialOmics
 
-from ..configuration import CONFIG
 
 # %%
 
 
-def min_max(splits_df):
+def min_max(
+    so, df_fold: pd.DataFrame, cofactor: int, censoring: float, output_dir: Path
+):
+    so_norm = SpatialOmics()
+    so.spl = so.spl.loc[df_fold.index]
 
-    # (
-    # prog_name,
-    # so_file,
-    # splits_df,
-    # cofactor,
-    # out_file,
-    # ) = sys.argv
+    for grp_name, grp_data in df_fold.groupby("split"):
+        # gather all X across samples in the group
+        grp_x = pd.concat([so.X[spl] for spl in grp_data.index])
 
-    so_file = CONFIG.data.intermediate
-    cofactor = CONFIG.normalize.cofactor
-
-    root = CONFIG.experiment.root
-    out_file = root / "meta_data" / "normalized_data" / f"{splits_df.stem}.pkl"
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-
-    # Load so object
-    with open(so_file, "rb") as f:
-        so = pickle.load(f)
-
-    # Get spl ids for each split
-    splits = []
-    split_map = pd.read_csv(splits_df, index_col="core")
-
-    for split in split_map["split"].unique():
-        ids = split_map[split_map["split"] == split].index.values
-        splits.append(ids)
-
-    # %% For every split normalize samples separately
-    # for split in tqdm(splits):
-    for split in splits:
-        # Create empty df to agregate al data
-        all_Xs = pd.DataFrame()
-
-        # Creates a second index layer specifying the sample id and concatenates all df toghether
-        for spl in split:
-            all_Xs = pd.concat(
-                [all_Xs, pd.concat([so.X[spl]], keys=[spl], names=["core"])]
-            )
-
-        ### Normalize ###
         # arcsinh transform
-        np.divide(all_Xs, int(cofactor), out=all_Xs)
-        np.arcsinh(all_Xs, out=all_Xs)
+        np.divide(grp_x, cofactor, out=grp_x)
+        np.arcsinh(grp_x, out=grp_x)
 
         # censoring
-        for col_name in all_Xs.columns:
-            thres = all_Xs[col_name].quantile(0.999)
-            all_Xs.loc[all_Xs[col_name] > thres, col_name] = thres
+        for col_name in grp_x.columns:
+            thres = grp_x[col_name].quantile(censoring)
+            grp_x.loc[grp_x[col_name] > thres, col_name] = thres
 
         # min-max normalization
         minMax = MinMaxScaler()
-        all_Xs[:] = minMax.fit_transform(all_Xs)
+        grp_x = minMax.fit_transform(grp_x)
 
-        ### Assign back the normalized Xs in so object ###
-        for spl in split:
-            so.X[spl] = all_Xs.loc[spl]
+        for core in grp_data.index:
+            so_norm.obs[core] = so.obs[core]
+            so_norm.X[core] = grp_x
 
-    # Write to output
-    with open(out_file, "wb") as f:
-        pickle.dump(so, f)
+    return so_norm
 
 
-def standard(splits_df):
-    pass
+def normalize_fold(
+    so_path: Path, fold_path: Path, output_dir: Path, config_path: Path, **kwargs
+):
+    config = load_config(config_path)
+    method = config.data.processing.normalize.method
 
+    with open(so_path, "rb") as f:
+        so = pickle.load(f)
 
-def normalize_folds():
-    method = CONFIG.normalize.method
-    root = CONFIG.experiment.root
+    df_fold = pd.read_csv(fold_path, index_col="core")
 
     if method == "min_max":
-        func = min_max
+        cofactor = config.data.processing.normalize.cofactor
+        censoring = config.data.processing.normalize.censoring
+        so_norm = min_max(
+            so=so,
+            df_fold=df_fold,
+            cofactor=cofactor,
+            censoring=censoring,
+            output_dir=output_dir,
+        )
     elif method == "standard":
-        func = standard
+        raise NotImplementedError()
 
-    for fold in (root / "meta_data" / "CV_folds" / "folds").glob("*.csv"):
-        func(fold)
+    with open(output_dir / f"{fold_path.stem}.pkl", "wb") as f:
+        pickle.dump(so_norm, f)

@@ -7,7 +7,7 @@ experiment:
   description: ""
   target: 'ERStatus'
 data:
-  root: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jack/data/
+  root: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/
   processing:
     filter:
       method:

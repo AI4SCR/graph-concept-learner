@@ -12,15 +12,18 @@ from spatialOmics import SpatialOmics
 # %%
 
 
-def min_max(
-    so, df_fold: pd.DataFrame, cofactor: int, censoring: float, output_dir: Path
-):
+def min_max(so, df_fold: pd.DataFrame, cofactor: int, censoring: float):
     so_norm = SpatialOmics()
-    so.spl = so.spl.loc[df_fold.index]
+    so_norm.spl = so.spl.loc[df_fold.index]
 
     for grp_name, grp_data in df_fold.groupby("split"):
         # gather all X across samples in the group
-        grp_x = pd.concat([so.X[spl] for spl in grp_data.index])
+        grp_x = pd.concat(
+            [
+                so.X[core].assign(core=core).set_index("core", append=True)
+                for core in grp_data.index
+            ]
+        )
 
         # arcsinh transform
         np.divide(grp_x, cofactor, out=grp_x)
@@ -33,11 +36,14 @@ def min_max(
 
         # min-max normalization
         minMax = MinMaxScaler()
-        grp_x = minMax.fit_transform(grp_x)
+        grp_x = pd.DataFrame(
+            minMax.fit_transform(grp_x), index=grp_x.index, columns=grp_x.columns
+        )
 
         for core in grp_data.index:
             so_norm.obs[core] = so.obs[core]
-            so_norm.X[core] = grp_x
+            so_norm.X[core] = grp_x.loc[(slice(None), core), :].droplevel("core")
+            so_norm.masks[core] = so.masks[core]
 
     return so_norm
 
@@ -61,10 +67,10 @@ def normalize_fold(
             df_fold=df_fold,
             cofactor=cofactor,
             censoring=censoring,
-            output_dir=output_dir,
         )
-    elif method == "standard":
+    else:
         raise NotImplementedError()
 
+    output_dir.mkdir(parents=True, exist_ok=True)
     with open(output_dir / f"{fold_path.stem}.pkl", "wb") as f:
         pickle.dump(so_norm, f)

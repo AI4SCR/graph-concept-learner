@@ -3,6 +3,7 @@ import pickle
 
 import pandas as pd
 from pathlib import Path
+from sklearn.preprocessing import LabelEncoder
 
 
 def filter_sample_has_target(valid_cores: set, spl: pd.DataFrame, target: str):
@@ -26,7 +27,7 @@ def filter_samples(
     concepts_dir: Path,
     target: str,
     min_cells_per_graph: int,
-    output: Path,
+    output_path: Path,
 ):
     # Load all configs (one for each concept)
     cfgs = []
@@ -53,6 +54,7 @@ def filter_samples(
             valid_cores, so.obs, filter_col, labels, min_cells_per_graph
         )
 
-    so.spl.loc[list(valid_cores), [target, "cohort"]].rename(
-        columns={target: "target"}
-    ).to_csv(output)
+    meta = so.spl.loc[list(valid_cores), [target, "cohort"]]
+    encoder = LabelEncoder()
+    meta = meta.assign(target=encoder.fit_transform(meta[target]))
+    meta.to_csv(output_path)

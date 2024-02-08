@@ -59,3 +59,25 @@ class Configuration(BaseModel):
     project: Project
     experiment: Experiment
     data: Data
+
+
+class Tracking(BaseModel):
+    mlflow_uri: str
+
+
+class Optimizer(BaseModel):
+    name: str
+    kwargs: dict
+
+
+class Scheduler(BaseModel):
+    name: str
+    kwargs: dict
+    interval: int = 1
+    frequency: int = 1
+
+
+class Training(BaseModel):
+    tracking: Tracking
+    optimizer: Optimizer
+    scheduler: Scheduler

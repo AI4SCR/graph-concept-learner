@@ -62,7 +62,7 @@ class Configuration(BaseModel):
 
 
 class Tracking(BaseModel):
-    mlflow_uri: str
+    mlflow_uri: str | None = None
     checkpoint_dir: str
 
 
@@ -74,7 +74,7 @@ class Optimizer(BaseModel):
 class Scheduler(BaseModel):
     name: str
     kwargs: dict
-    interval: int = 1
+    interval: int | str = 1
     frequency: int = 1
 
 

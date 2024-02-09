@@ -9,7 +9,7 @@ from ..configuration.configurator import Training
 class LitModule(L.LightningModule):
     def __init__(self, model: nn.Module, config: Training):
         super().__init__()
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
         self.model = model
         self.config = config
@@ -78,17 +78,17 @@ class LitModule(L.LightningModule):
         return scheduler
 
     def configure_metrics(self):
-        metrics_config = {
-            "train": {
-                "accuracy": Accuracy(task="multiclass", average="macro"),
-            },
-            "val": {
-                "accuracy": Accuracy(task="multiclass"),
-                "precision": Precision(task="multiclass"),
-                "recall": Recall(task="multiclass"),
-            },
-        }
-        return Accuracy(task="multiclass", average="macro")
+        # metrics_config = {
+        #     "train": {
+        #         "accuracy": Accuracy(task="multiclass", average="macro"),
+        #     },
+        #     "val": {
+        #         "accuracy": Accuracy(task="multiclass"),
+        #         "precision": Precision(task="multiclass"),
+        #         "recall": Recall(task="multiclass"),
+        #     },
+        # }
+        return Accuracy(task="multiclass", average="macro", num_classes=2)
 
     def configure_criterion(self):
         return torch.nn.CrossEntropyLoss()

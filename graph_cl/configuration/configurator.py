@@ -63,6 +63,7 @@ class Configuration(BaseModel):
 
 class Tracking(BaseModel):
     mlflow_uri: str
+    checkpoint_dir: str
 
 
 class Optimizer(BaseModel):
@@ -81,3 +82,9 @@ class Training(BaseModel):
     tracking: Tracking
     optimizer: Optimizer
     scheduler: Scheduler
+    batch_size: int
+
+
+class Model(BaseModel):
+    GNN: None
+    MLP: None

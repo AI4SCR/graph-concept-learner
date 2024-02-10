@@ -3,11 +3,12 @@ project:
   description: 'add your description here'
   root: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/
 experiment:
-  name: ERStatus
+  name: ERStatusV2
   description: ""
   target: 'ERStatus'
 data:
-  root: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/
+  raw_dir: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/01_raw/
+  processed_dir: /Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/02_processed/
   processing:
     filter:
       method:

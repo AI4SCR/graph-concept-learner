@@ -45,7 +45,8 @@ class Processing(BaseModel):
 
 
 class Data(BaseModel):
-    root: Path
+    raw_dir: Path
+    processed_dir: Path
     processing: Processing
 
     @field_validator("root", mode="before")

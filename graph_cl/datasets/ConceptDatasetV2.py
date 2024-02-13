@@ -99,6 +99,9 @@ class ConceptDataset(Dataset):
         folds = self.split_samples_into_folds(valid_samples)
 
         # iterate over all samples.parquet in folds_dir
+        for fold_info_path in self.folds_dir.glob("*/info.parquet"):
+            fold_info = pd.read_parquet(fold_info_path)
+
         # for each fold construct train, val and train, collect feature data from data_dir
         # save the features in 05_fold/fold_i/feature.parquet
         # normalize features and save in 05_fold/fold_i/feature_normalized.parquet
@@ -116,7 +119,7 @@ class ConceptDataset(Dataset):
         for i, fold in enumerate(folds):
             out_dir = self.folds_dir / f"fold_{i}"
             out_dir.mkdir(parents=True, exist_ok=True)
-            fold.to_parquet(out_dir / f"samples.parquet")
+            fold.to_parquet(out_dir / f"info.parquet")
         return folds
 
         # split data

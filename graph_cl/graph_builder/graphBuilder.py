@@ -1,3 +1,4 @@
+import networkx as nx
 import numpy as np
 
 from .contact_graph_builder import ContactGraphBuilder
@@ -11,7 +12,7 @@ GRAPH_BUILDERS = {
 }
 
 
-def build_graph(mask: np.ndarray, topology: str, builder_kwargs: dict):
+def build_graph(mask: np.ndarray, topology: str, params: dict) -> nx.Graph:
     """Build graph from mask using specified topology."""
 
     # Raise error is the builder_type is invalid
@@ -24,4 +25,5 @@ def build_graph(mask: np.ndarray, topology: str, builder_kwargs: dict):
     builder = GRAPH_BUILDERS[topology]()
 
     # Build graph and get key
-    g = builder.build_graph(mask, **builder_kwargs)
+    g = builder.build_graph(mask, **params)
+    return g

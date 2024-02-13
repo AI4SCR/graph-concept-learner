@@ -61,6 +61,7 @@ class RawDataLoader:
         self.rename_masks()
 
     def rename_masks(self):
+        # TODO: this only moves cores which are present in the samples metadata (there are masks that are not listed there)
         df = pd.read_parquet(self.meta_dir / "samples")
 
         mask_file_name = [f"{Path(f).stem}_maks.tiff" for f in df["FileName_FullStack"]]

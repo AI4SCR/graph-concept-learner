@@ -30,6 +30,9 @@ class ContactGraphBuilder(BaseGraphBuilder):
 
         objs = np.unique(mask)
         objs = objs[objs != 0]  # remove background
+        objs = objs.astype(
+            int
+        ).tolist()  # cast to int to avoid issues with numpy casting to uint16
 
         # Add nodes to graph
         self.graph.add_nodes_from(objs)
@@ -48,7 +51,9 @@ class ContactGraphBuilder(BaseGraphBuilder):
             cells = cells[cells != 0]  # remove background
 
             # Appends a list of the edges found at this iteration
-            edges.extend([(obj, cell, {EDGE_WEIGHT: 1}) for cell in cells])
+            # edges.extend([(obj, cell, {EDGE_WEIGHT: 1}) for cell in cells])
+            # note: we cast to int to avoid issues with numpy casting to uint16
+            edges.extend([(int(obj), int(cell)) for cell in cells])
 
         # Adds edges to instance variable graph object
         self.graph.add_edges_from(edges)

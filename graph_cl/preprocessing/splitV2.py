@@ -4,8 +4,8 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 
 def split_basel_leave_zurich_as_external(
-    valid_samples: pd.DataFrame, n_folds: int, train_size: float, output_dir: Path
-):
+    valid_samples: pd.DataFrame, n_folds: int, train_size: float
+) -> list[pd.DataFrame]:
 
     valid_samples = valid_samples.assign(split=None)
 
@@ -25,7 +25,8 @@ def split_basel_leave_zurich_as_external(
         bs.iloc[val_idc, zh.columns.get_loc("split")] = "val"
 
         fold = pd.concat([bs, zh])
-        # fold.to_csv(output_dir / f"fold_{i}.csv", index=True)
+        folds.append(fold)
+    return folds
 
 
 def split_both_cohorts():
@@ -57,3 +58,8 @@ def create_folds(
         split_zurich_leave_basel_as_external()
     else:
         raise ValueError(f"Unknown split method: {method}")
+
+
+SPLIT_STRATEGIES = {
+    "split_basel_leave_zurich_as_external": split_basel_leave_zurich_as_external,
+}

@@ -38,16 +38,14 @@ class RawDataLoader:
         self.labels_dir.mkdir(exist_ok=True, parents=True)
 
         self.meta_dir = self.processed / "meta"
+        self.meta_dir.mkdir(exist_ok=True, parents=True)
 
     def load(self):
         self.extract_metadata()
-
         self.extract_sample_labels()
         self.extract_observation_labels()
         self.extract_observation_locations()
-
         self.extract_observation_features()
-
         self.extract_masks()
 
     def extract_masks(self):
@@ -68,7 +66,7 @@ class RawDataLoader:
         mask_file_name = [f"{Path(f).stem}_maks.tiff" for f in df["FileName_FullStack"]]
         df = df.assign(mask_file_name=mask_file_name)
 
-        for core, mask_file_name in zip(df["core"], df["mask_file_name"]):
+        for core, mask_file_name in zip(df.index, df["mask_file_name"]):
             mask_path_old = self.mask_dir / "Basel_Zuri_masks" / mask_file_name
             mask_path_new = self.mask_dir / f"{core}.tiff"
             mask_path_old.rename(mask_path_new)
@@ -91,7 +89,7 @@ class RawDataLoader:
                     locs[fname] = pd.read_csv(BytesIO(buffer))
 
         df = pd.concat(locs.values())
-        out_dir = self.features_observations_dir / "locations"
+        out_dir = self.features_observations_dir / "location"
         out_dir.mkdir(exist_ok=True, parents=True)
         for grp_name, grp_data in df.groupby("core"):
             grp_data.to_parquet(out_dir / f"{grp_name}.parquet", index=False)
@@ -149,13 +147,9 @@ class RawDataLoader:
         df = df.merge(
             meta_cluster_anno, left_on="cluster", right_on="Metacluster", how="left"
         )
-        df = df.assign(Cell_type=df["Cell type"]).drop(columns=["Cell type"])
-
         # Make map for numerica cell_type class
-        keys = ["Stroma", "Immune", "Vessel", "Tumor"]
-        numeric_labels = list(range(0, len(keys)))
-        map_to_numeric = dict(zip(keys, numeric_labels))
-        df = df.assign(class_id=df["Class"].map(map_to_numeric))
+        df = df.assign(cell_class_id=df.groupby("Class").ngroup())
+        df = df.rename(columns={"Cell type": "cell_type", "Class": "cell_class"})
 
         for grp_name, grp_data in df.groupby("core"):
             grp_data.to_parquet(
@@ -201,7 +195,6 @@ class RawDataLoader:
 
         # TODO: only select labels and not metadata too
         metadata_cols = {
-            "cohort",
             "FileName_FullStack",
             "Height_FullStack",
             "TMABlocklabel",
@@ -222,17 +215,17 @@ class RawDataLoader:
         # NOTE: hack to avoid NaNs in the parquet file and thus be of undefined type
         # TODO: fix dtypes
         metadata = metadata.astype(str)
-        labels = df[list(intx - metadata_cols)]
+        metadata = metadata.set_index("core")
 
-        for grp_name, grp_data in labels.groupby("core"):
-            grp_data.to_parquet(
-                self.labels_samples_dir / f"{grp_name}.parquet", index=False
-            )
+        labels = df[list(intx - metadata_cols)]
+        labels = labels.astype(str).set_index("core")
+        for core in labels.index:
+            labels.loc[[core]].to_parquet(self.labels_samples_dir / f"{core}.parquet")
 
         out_dir = self.meta_dir / "samples"
         out_dir.mkdir(exist_ok=True, parents=True)
-        for grp_name, grp_data in metadata.groupby("core"):
-            grp_data.to_parquet(out_dir / f"{grp_name}.parquet", index=False)
+        for core in labels.index:
+            metadata.loc[[core]].to_parquet(out_dir / f"{core}.parquet")
 
     def extract_observation_features(self):
         logging.info("Extracting observation features")
@@ -293,7 +286,7 @@ class RawDataLoader:
         spti_dir.mkdir(exist_ok=True, parents=True)
         for grp_name, grp_x in X.groupby("core"):
             grp_x = grp_x.pivot(index="CellId", columns="channel", values="mc_counts")
-            grp_x.index.names = ["cell_id"]
+            # grp_x.index.names = ["cell_id"]
 
             x_spatial = grp_x[spatial_feat]
             x_expr = grp_x.drop(columns=spatial_feat)

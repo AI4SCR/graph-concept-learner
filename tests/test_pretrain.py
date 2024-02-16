@@ -1,14 +1,21 @@
 from graph_cl.train.pretrain import pretrain_concept, pretrain_concept_from_files
-from graph_cl import CONFIG
+from pathlib import Path
 
-experiment_root = CONFIG.project.root / "experiments" / CONFIG.experiment.name
-config_root = experiment_root / "configuration"
-train_config_path = config_root / "training.yaml"
-model_config_path = config_root / "model.yaml"
-fold_meta_data_path = experiment_root / "data" / "folds" / "fold_0.csv"
-root = experiment_root / "data" / "graphs" / "knn"
-
-
-pretrain_concept_from_files(
-    root, fold_meta_data_path, model_config_path, train_config_path
+fold_path = Path(
+    "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/data/05_folds/fold_0"
 )
+model_config_path = Path(
+    "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/configuration/model.yaml"
+)
+pretrain_config_path = Path(
+    "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/configuration/pretrain.yaml"
+)
+
+
+def test_pretrain_concept():
+    pretrain_concept_from_files(
+        concept="knn_all",
+        fold_path=fold_path,
+        model_config_path=model_config_path,
+        pretrain_config_path=pretrain_config_path,
+    )

@@ -49,7 +49,7 @@ class Data(BaseModel):
     processed_dir: Path
     processing: Processing
 
-    @field_validator("root", mode="before")
+    @field_validator("raw_dir", "processed_dir", mode="before")
     @classmethod
     def convert_raw_to_path(cls, v):
         return Path(v)

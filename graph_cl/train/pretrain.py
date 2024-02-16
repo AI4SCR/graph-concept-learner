@@ -16,21 +16,25 @@ import pandas as pd
 
 
 def pretrain_concept(
+    concept: str,
     root: Path,
     fold_info: pd.DataFrame,
-    concept: str,
     model_config: dict,
     train_config: Training,
 ):
+
+    ds_root = root / "datasets"
+    model_root = root / "models"
+
     # Load dataset
     ds_train = CptDatasetMemo(
-        root=root, fold_info=fold_info, concept=concept, split="train"
+        root=ds_root, fold_info=fold_info, concept=concept, split="train"
     )
     ds_val = CptDatasetMemo(
-        root=root, fold_info=fold_info, concept=concept, split="val"
+        root=ds_root, fold_info=fold_info, concept=concept, split="val"
     )
     ds_test = CptDatasetMemo(
-        root=root, fold_info=fold_info, concept=concept, split="test"
+        root=ds_root, fold_info=fold_info, concept=concept, split="test"
     )
 
     # Save dataset information to config
@@ -61,7 +65,7 @@ def pretrain_concept(
 
     # Define the checkpoint callback
     checkpoint_callback = ModelCheckpoint(
-        dirpath=train_config.tracking.checkpoint_dir,
+        dirpath=model_root,
         filename="best_model",
         monitor="val_loss",
         mode="min",
@@ -92,7 +96,8 @@ def pretrain_concept_from_files(
         model_config = yaml.load(file, Loader=yaml.Loader)
 
     pretrain_concept(
-        root=fold_path / "datasets",
+        concept=concept,
+        root=fold_path,
         fold_info=fold_info,
         model_config=model_config,
         train_config=pretrain_config,

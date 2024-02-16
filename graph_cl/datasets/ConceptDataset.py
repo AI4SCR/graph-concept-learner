@@ -4,7 +4,7 @@ import pandas as pd
 import torch
 from pathlib import Path
 import os.path as osp
-from torch_geometric.data import Dataset, InMemoryDataset
+from torch_geometric.data import InMemoryDataset
 
 
 class CptDatasetMemo(InMemoryDataset):

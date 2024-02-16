@@ -16,12 +16,22 @@ import pandas as pd
 
 
 def pretrain_concept(
-    root: Path, fold_meta_data: pd.DataFrame, model_config: dict, train_config: Training
+    root: Path,
+    fold_info: pd.DataFrame,
+    concept: str,
+    model_config: dict,
+    train_config: Training,
 ):
     # Load dataset
-    ds_train = CptDatasetMemo(root=root, fold_meta_data=fold_meta_data, split="train")
-    ds_val = CptDatasetMemo(root=root, fold_meta_data=fold_meta_data, split="val")
-    ds_test = CptDatasetMemo(root=root, fold_meta_data=fold_meta_data, split="test")
+    ds_train = CptDatasetMemo(
+        root=root, fold_info=fold_info, concept=concept, split="train"
+    )
+    ds_val = CptDatasetMemo(
+        root=root, fold_info=fold_info, concept=concept, split="val"
+    )
+    ds_test = CptDatasetMemo(
+        root=root, fold_info=fold_info, concept=concept, split="test"
+    )
 
     # Save dataset information to config
     model_config["num_classes"] = ds_train.num_classes
@@ -66,12 +76,13 @@ def pretrain_concept(
 
 
 def pretrain_concept_from_files(
-    root: Path,
-    fold_meta_data_path: Path,
+    concept: str,
+    fold_path: Path,
     model_config_path: Path,
     pretrain_config_path: Path,
 ):
-    fold_meta_data = pd.read_csv(fold_meta_data_path)
+    fold_info = pd.read_parquet(fold_path / "info.parquet")
+    assert concept in [i.name for i in (fold_path / "attributed_graphs").glob("*")]
 
     with open(pretrain_config_path) as file:
         pretrain_config = yaml.load(file, Loader=yaml.Loader)
@@ -81,8 +92,8 @@ def pretrain_concept_from_files(
         model_config = yaml.load(file, Loader=yaml.Loader)
 
     pretrain_concept(
-        root,
-        fold_meta_data=fold_meta_data,
+        root=fold_path / "datasets",
+        fold_info=fold_info,
         model_config=model_config,
         train_config=pretrain_config,
     )

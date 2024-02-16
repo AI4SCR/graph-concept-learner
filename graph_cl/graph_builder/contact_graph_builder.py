@@ -34,6 +34,9 @@ class ContactGraphBuilder(BaseGraphBuilder):
             int
         ).tolist()  # cast to int to avoid issues with numpy casting to uint16
 
+        if len(objs) == 0:
+            return nx.Graph()
+
         # Add nodes to graph
         self.graph.add_nodes_from(objs)
 

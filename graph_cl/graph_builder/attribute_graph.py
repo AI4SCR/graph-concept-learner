@@ -36,12 +36,12 @@ def attribute_graph(
     graph.feature_name = feat.columns.tolist()
 
     # add labels
-    label_names = attribute_config["labels"]
-    with open(processed_dir / "labels" / "samples" / f"{core}.parquet", "rb") as f:
-        labels = pd.read_parquet(f).squeeze()[label_names].tolist()
-
-    graph.labels = labels
-    graph.label_names = label_names
+    # label_names = attribute_config["labels"]
+    # with open(processed_dir / "labels" / "samples" / f"{core}.parquet", "rb") as f:
+    #     labels = pd.read_parquet(f).squeeze()[label_names].tolist()
+    #
+    # graph.labels = labels
+    # graph.label_names = label_names
     return graph
 
 

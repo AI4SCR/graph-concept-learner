@@ -12,6 +12,8 @@ class RadiusGraphBuilder(BaseGraphBuilder):
 
     def build_graph(self, mask: np.ndarray, **kwargs):
         ndata = self.object_coordinates(mask)
+        if len(ndata) == 0:
+            return nx.Graph()
 
         adj = radius_neighbors_graph(ndata.to_numpy(), **kwargs)
         df = pd.DataFrame(adj.A, index=ndata.index, columns=ndata.index)

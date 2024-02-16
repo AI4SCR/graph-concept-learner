@@ -1,12 +1,9 @@
-from graph_cl.datasets.ConceptDataset import ConceptDataset, CptDatasetMemo
-from graph_cl import CONFIG
+from graph_cl.datasets.ConceptDatasetV2 import ConceptDataset
+from pathlib import Path
 import pandas as pd
 
-root = CONFIG.project.root / "experiments" / CONFIG.experiment.name / "data"
-concept = "knn"
-fold_meta_data = pd.read_csv(root / "folds" / "fold_0.csv")
-
-# concept_dataset = ConceptDataset(root / "graphs"/ concept, fold_meta_data)
-# concept_dataset[0]
-
-concept_dataset = CptDatasetMemo(root / "graphs" / concept, fold_meta_data)
+experiment_path = Path(
+    "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2"
+)
+data_dir = Path("/Users/adrianomartinelli/data/ai4src/graph-concept-learner/data")
+ds = ConceptDataset(experiment_path, data_dir)

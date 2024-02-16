@@ -11,6 +11,8 @@ class KNNGraphBuilder(BaseGraphBuilder):
     def build_graph(self, mask: np.ndarray, **kwargs):
         # Extract location:
         ndata = self.object_coordinates(mask)
+        if len(ndata) == 0:
+            return nx.Graph()
 
         adj = kneighbors_graph(ndata.to_numpy(), **kwargs)
         df = pd.DataFrame(adj.A, index=ndata.index, columns=ndata.index)

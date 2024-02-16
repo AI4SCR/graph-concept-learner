@@ -93,6 +93,7 @@ class RawDataLoader:
         out_dir = self.features_observations_dir / "location"
         out_dir.mkdir(exist_ok=True, parents=True)
         for grp_name, grp_data in df.groupby("core"):
+            grp_data = grp_data.assign(core=grp_name)
             grp_data.to_parquet(out_dir / f"{grp_name}.parquet", index=False)
 
     def extract_observation_labels(self):
@@ -153,6 +154,7 @@ class RawDataLoader:
         df = df.rename(columns={"Cell type": "cell_type", "Class": "cell_class"})
 
         for grp_name, grp_data in df.groupby("core"):
+            grp_data = grp_data.assign(core=grp_name)
             grp_data.to_parquet(
                 self.labels_observations_dir / f"{grp_name}.parquet", index=False
             )
@@ -287,11 +289,17 @@ class RawDataLoader:
         spti_dir.mkdir(exist_ok=True, parents=True)
         for grp_name, grp_x in X.groupby("core"):
             grp_x = grp_x.pivot(index="CellId", columns="channel", values="mc_counts")
-            # grp_x.index.names = ["cell_id"]
+            grp_x = (
+                grp_x.assign(core=grp_name)
+                .reset_index(drop=False)
+                .set_index(["CellId", "core"])
+            )
 
             x_spatial = grp_x[spatial_feat]
             x_expr = grp_x.drop(columns=spatial_feat)
             x_expr = x_expr[valid_channels].rename(columns=map_channels)
 
-            x_expr.to_parquet(expr_dir / f"{grp_name}.parquet")
-            x_spatial.to_parquet(spti_dir / f"{grp_name}.parquet")
+            x_expr.reset_index(drop=False).to_parquet(expr_dir / f"{grp_name}.parquet")
+            x_spatial.reset_index(drop=False).to_parquet(
+                spti_dir / f"{grp_name}.parquet"
+            )

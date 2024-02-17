@@ -23,19 +23,23 @@ def pretrain_concept(
     train_config: Training,
 ):
 
-    ds_root = root / "datasets"
-    model_root = root / "models"
+    model_root = root / "models" / concept
 
     # Load dataset
     ds_train = CptDatasetMemo(
-        root=ds_root, fold_info=fold_info, concept=concept, split="train"
+        root=root, fold_info=fold_info, concept=concept, split="train"
     )
+    assert ds_train[0].concept == concept
+
     ds_val = CptDatasetMemo(
-        root=ds_root, fold_info=fold_info, concept=concept, split="val"
+        root=root, fold_info=fold_info, concept=concept, split="val"
     )
+    assert ds_val[0].concept == concept
+
     ds_test = CptDatasetMemo(
-        root=ds_root, fold_info=fold_info, concept=concept, split="test"
+        root=root, fold_info=fold_info, concept=concept, split="test"
     )
+    assert ds_test[0].concept == concept
 
     # Save dataset information to config
     model_config["num_classes"] = ds_train.num_classes

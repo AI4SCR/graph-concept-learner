@@ -29,11 +29,11 @@ class CptDatasetMemo(InMemoryDataset):
 
     @property
     def processed_dir(self) -> str:
-        return str(self.root)
+        return osp.join(self.root, "datasets", self.concept)
 
     @property
     def processed_paths(self) -> List[str]:
-        return [osp.join(self.root, self.split + ".pt")]
+        return [osp.join(self.processed_dir, self.split + ".pt")]
 
     @property
     def processed_file_names(self) -> list:

@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from torch_geometric import seed_everything
 import yaml
 import pandas as pd
@@ -10,6 +11,7 @@ from torch_geometric.loader import DataLoader
 from torch_geometric import seed_everything
 
 from graph_cl.models.gnn import GNN_plus_MPL
+from graph_cl.models.graph_concept_learnerV2 import GraphConceptLearner
 from graph_cl.train.lightning import LitModule
 
 from graph_cl.datasets.ConceptDataset import CptDatasetMemo
@@ -45,6 +47,9 @@ model_config_path = Path(
 )
 with open(model_config_path, "r") as f:
     model_config = yaml.safe_load(f)
+
+# Set seed
+seed_everything(model_config["seed"])
 
 fold_info = pd.read_parquet(fold_dir / "info.parquet")
 
@@ -103,21 +108,21 @@ for concept_model_chkpt in best_model_paths:
     model_dict[concept] = model
 
 # check if all models have the same output dimension
-assert len(set(model.gnn.out_channels for model in model_dict.values())) == 1
+n_out = set(model.gnn.out_channels for model in model_dict.values())
+assert len(n_out) == 1
+n_out = int(n_out.pop())
 
 # Compleat config
 # Save embedding size to variable
-gcl_cfg["emb_size"] = int(out_dims[0])
-gcl_cfg["num_classes"] = concept_dataset.num_classes
-gcl_cfg["num_concepts"] = dataset.num_concepts
+model_config["emb_size"] = n_out
+# model_config["num_classes"] = concept_dataset.num_classes  # this should not have changed
+model_config["num_concepts"] = len(best_model_paths)
 
-# Set seed
-seed_everything(model_config["seed"])
 
 # Insatiate full model. Concept GNN plus aggregator
 graph_concept_learner = GraphConceptLearner(
     concept_learners=nn.ModuleDict(model_dict),
-    config=gcl_cfg,
+    config=model_config,
     device=device,
 )
 

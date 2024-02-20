@@ -12,7 +12,7 @@ from torch_geometric import seed_everything
 
 from graph_cl.models.gnn import GNN_plus_MPL
 from graph_cl.models.graph_concept_learnerV2 import GraphConceptLearner
-from graph_cl.train.lightning import LitModule
+from graph_cl.train.lightning import LitGNN, LitGCL
 
 from graph_cl.datasets.ConceptDataset import CptDatasetMemo
 from graph_cl.configuration.configurator import Training
@@ -42,18 +42,23 @@ train_config_path = Path(
 with open(train_config_path, "r") as f:
     train_config = yaml.safe_load(f)
 
-model_config_path = Path(
-    "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/configuration/model.yaml"
+model_gcl_config_path = Path(
+    "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/configuration/model_gcl.yaml"
 )
-with open(model_config_path, "r") as f:
-    model_config = yaml.safe_load(f)
+with open(model_gcl_config_path, "r") as f:
+    model_gcl_config = yaml.safe_load(f)
+
+model_gnn_config_path = Path(
+    "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/configuration/model_gnn.yaml"
+)
+with open(model_gnn_config_path, "r") as f:
+    model_gnn_config = yaml.safe_load(f)
 
 # Set seed
-seed_everything(model_config["seed"])
+# TODO: this should not be part of the model config. Seed in this config should only be used to seed model init.
+seed_everything(model_gcl_config["seed"])
 
 fold_info = pd.read_parquet(fold_dir / "info.parquet")
-
-# for fold_path in fold_dir.iterdir():
 
 models_dir = fold_dir / "models"
 best_model_paths = list(models_dir.glob("**/best_model.ckpt"))
@@ -82,21 +87,21 @@ for concept_model_chkpt in best_model_paths:
     assert ds_train[0].concept == concept
 
     # Save dataset information to config
-    model_config["num_classes"] = ds_train.num_classes
-    model_config["in_channels"] = ds_train.num_node_features
-    model_config["hidden_channels"] = (
-        model_config["in_channels"] * model_config["scaler"]
+    model_gnn_config["num_classes"] = ds_train.num_classes
+    model_gnn_config["in_channels"] = ds_train.num_node_features
+    model_gnn_config["hidden_channels"] = (
+        model_gnn_config["in_channels"] * model_gnn_config["scaler"]
     )
 
     # Load model
-    model = GNN_plus_MPL(model_config, ds_train)
-    module = LitModule.load_from_checkpoint(
+    model = GNN_plus_MPL(model_gnn_config, ds_train)
+    module = LitGNN.load_from_checkpoint(
         concept_model_chkpt, model=model, config=train_config
     )
     model = module.model
 
     # note: we could also load just the model
-    # model = GNN_plus_MPL(model_config, ds_train)
+    # model = GNN_plus_MPL(model_gnn_config, ds_train)
     # state_dict = torch.load(concept_model_chkpt)['state_dict']
     # state_dict = {key.replace('model.', ''): value for key, value in state_dict.items() if key.startswith('model.')}
     # model.load_state_dict(state_dict)
@@ -114,44 +119,67 @@ n_out = int(n_out.pop())
 
 # Compleat config
 # Save embedding size to variable
-model_config["emb_size"] = n_out
-# model_config["num_classes"] = concept_dataset.num_classes  # this should not have changed
-model_config["num_concepts"] = len(best_model_paths)
+model_gcl_config["emb_size"] = n_out
+model_gcl_config[
+    "num_classes"
+] = ds_train.num_classes  # note: this should not have changed
+model_gcl_config["num_concepts"] = len(best_model_paths)
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Insatiate full model. Concept GNN plus aggregator
 graph_concept_learner = GraphConceptLearner(
     concept_learners=nn.ModuleDict(model_dict),
-    config=model_config,
-    device=device,
+    config=model_gcl_config,
 )
 
+gcl = LitGCL(model=graph_concept_learner, config=train_config)
+
+optim_gnn_kwargs = list(
+    filter(
+        lambda x: x["layer"] == "concept_learners",
+        train_config["optimizer"].get("layers", []),
+    )
+)
+gnn_lr = optim_gnn_kwargs[0]["lr"] if optim_gnn_kwargs else 0
+
 # If the gnns_lr = 0 the freeze parameters in model
-if gcl_cfg["gnns_lr"] == 0:
-    for parameter in graph_concept_learner.concept_learners.parameters():
+if gnn_lr == 0:
+    for parameter in gcl.model.concept_learners.parameters():
         parameter.requires_grad = False
-    optimizer = optimizer_class(
-        graph_concept_learner.parameters(), lr=gcl_cfg["agg_lr"]
-    )
-else:
-    # Initialize optimizer with different lrs for the aggregator and gnns
-    optimizer = optimizer_class(
-        [
-            {
-                "params": graph_concept_learner.concept_learners.parameters(),
-                "lr": gcl_cfg["gnns_lr"],
-            },
-            {"params": graph_concept_learner.aggregator.parameters()},
-        ],
-        lr=gcl_cfg["agg_lr"],
+    # remove the concept_learners from the optimizer
+    train_config["optimizer"]["layers"] = list(
+        filter(
+            lambda x: x["layer"] != "concept_learners",
+            train_config["optimizer"].get("layers", []),
+        )
     )
 
-# Define loss function.
-criterion = torch.nn.CrossEntropyLoss()
+models_dir = fold_dir / "model_gcl"
 
-# Define learning rate decay strategy
-scheduler = build_scheduler(gcl_cfg, optimizer)
+# Define the checkpoint callback
+checkpoint_callback = ModelCheckpoint(
+    dirpath=models_dir,
+    filename="best_model",
+    monitor="val_loss",
+    mode="min",
+    save_top_k=1,
+)
 
+dl_train = DataLoader(
+    ds_train,
+    batch_size=train_config.batch_size,
+    shuffle=True,
+)
+dl_val = DataLoader(ds_val, batch_size=train_config.batch_size)
+dl_test = DataLoader(ds_test, batch_size=train_config.batch_size)
+
+
+trainer = L.Trainer(
+    limit_train_batches=100, max_epochs=2, callbacks=[checkpoint_callback]
+)
+trainer.fit(model=gcl, train_dataloaders=dl_train, val_dataloaders=dl_val)
+trainer.test(model=module, dataloaders=dl_test)
 
 # Save attention maps to file
 if gcl_cfg["aggregator"] == "transformer":

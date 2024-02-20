@@ -3,7 +3,7 @@ from torch_geometric.loader import DataLoader
 from torch_geometric import seed_everything
 
 from graph_cl.models.gnn import GNN_plus_MPL
-from graph_cl.train.lightning import LitModule
+from graph_cl.train.lightning import LitGNN
 
 from graph_cl.datasets.ConceptDataset import CptDatasetMemo
 from graph_cl.configuration.configurator import Training
@@ -54,7 +54,7 @@ def pretrain_concept(
     # Build model.
     # Important to pass train_dataset in cpu, not cuda.
     model = GNN_plus_MPL(model_config, ds_train)
-    module = LitModule(model, train_config)
+    module = LitGNN(model, train_config)
 
     dl_train = DataLoader(
         ds_train,

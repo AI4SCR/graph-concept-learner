@@ -70,6 +70,7 @@ class Tracking(BaseModel):
 class Optimizer(BaseModel):
     name: str
     kwargs: dict
+    layers: list[dict] = []
 
 
 class Scheduler(BaseModel):
@@ -84,6 +85,8 @@ class Training(BaseModel):
     optimizer: Optimizer
     scheduler: Scheduler
     batch_size: int
+    n_epoch: int = 2
+    seed: int = 1
 
 
 class Model(BaseModel):

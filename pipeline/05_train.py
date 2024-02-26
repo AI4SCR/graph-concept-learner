@@ -1,11 +1,6 @@
 import torch
 import torch.nn as nn
-from torch_geometric import seed_everything
-import yaml
-import pandas as pd
-from pathlib import Path
-from graph_cl.models.gnn import GNN_plus_MPL
-from graph_cl.datasets.ConceptDataset import CptDatasetMemo
+
 import yaml
 from torch_geometric.loader import DataLoader
 from torch_geometric import seed_everything
@@ -42,6 +37,7 @@ train_config_path = Path(
 )
 with open(train_config_path, "r") as f:
     train_config = yaml.safe_load(f)
+    train_config = Training(**train_config)
 
 model_gcl_config_path = Path(
     "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/configuration/model_gcl.yaml"
@@ -150,7 +146,7 @@ gcl = LitGCL(model=graph_concept_learner, config=train_config)
 optim_gnn_kwargs = list(
     filter(
         lambda x: x["layer"] == "concept_learners",
-        train_config["optimizer"].get("layers", []),
+        train_config.optimizer.layers,
     )
 )
 gnn_lr = optim_gnn_kwargs[0]["lr"] if optim_gnn_kwargs else 0
@@ -160,7 +156,7 @@ if gnn_lr == 0:
     for parameter in gcl.model.concept_learners.parameters():
         parameter.requires_grad = False
     # remove the concept_learners from the optimizer
-    train_config["optimizer"]["layers"] = list(
+    train_config.optimizer.layers = list(
         filter(
             lambda x: x["layer"] != "concept_learners",
             train_config["optimizer"].get("layers", []),
@@ -181,23 +177,25 @@ checkpoint_callback = ModelCheckpoint(
 trainer = L.Trainer(
     limit_train_batches=100, max_epochs=2, callbacks=[checkpoint_callback]
 )
+# %%
 trainer.fit(model=gcl, train_dataloaders=dl_train, val_dataloaders=dl_val)
 trainer.test(model=gcl, dataloaders=dl_test)
 
+# TODO: save attetion map
 # Save attention maps to file
-if gcl_cfg["aggregator"] == "transformer":
-    graph_concept_learner.aggregator.return_attention_map()
-    generate_and_save_attention_maps(
-        model=graph_concept_learner,
-        loader=DataLoader(
-            dataset=dataset,
-            batch_size=1,
-            follow_batch=follow_this,
-        ),
-        device=device,
-        follow_this_metrics=follow_this_metrics,
-        out_dir=out_dir,
-    )
-
-# End run
-mlflow.end_run()
+# if gcl_cfg["aggregator"] == "transformer":
+#     graph_concept_learner.aggregator.return_attention_map()
+#     generate_and_save_attention_maps(
+#         model=graph_concept_learner,
+#         loader=DataLoader(
+#             dataset=dataset,
+#             batch_size=1,
+#             follow_batch=follow_this,
+#         ),
+#         device=device,
+#         follow_this_metrics=follow_this_metrics,
+#         out_dir=out_dir,
+#     )
+#
+# # End run
+# mlflow.end_run()

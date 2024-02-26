@@ -64,6 +64,9 @@ class LitBase(L.LightningModule):
         # }
         return Accuracy(task="multiclass", average="macro", num_classes=2)
 
+    def configure_criterion(self):
+        return nn.CrossEntropyLoss()
+
 
 class LitGNN(LitBase):
     def __init__(self, model: nn.Module, config: Training):
@@ -90,6 +93,7 @@ class LitGNN(LitBase):
 
     def validation_step(self, batch, batch_idx):
         out = self.model(batch)
+
         loss = self.criterion(out, batch.y)
         self.log("val_loss", loss)
 
@@ -104,18 +108,19 @@ class LitGCL(LitBase):
         super().__init__(model=model, config=config)
 
     def forward(self, x):
-        out = self.model(x)
-        y_pred = out.argmax(dim=1)
-        return y_pred
+        raise NotImplementedError
 
     def training_step(self, batch, batch_idx):
+        concept = self.model.concept_names[0]
+        y = batch[concept].y
+
         out = self.model(batch)
 
         # NOTE: instead of forward
         # y_pred = self(batch)
         # y_pred = out.argmax(dim=1)
 
-        loss = self.criterion(out, batch.y)
+        loss = self.criterion(out, y)
         # self.metrics(y_pred, batch.y)
 
         self.log("train_loss", loss)
@@ -123,25 +128,33 @@ class LitGCL(LitBase):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        concept = self.model.concept_names[0]
+        y = batch[concept].y
+
         out = self.model(batch)
-        loss = self.criterion(out, batch.y)
+
+        loss = self.criterion(out, y)
         self.log("val_loss", loss)
 
     def test_step(self, batch, batch_idx):
+        concept = self.model.concept_names[0]
+        y = batch[concept].y
+
         out = self.model(batch)
-        loss = self.criterion(out, batch.y)
+
+        loss = self.criterion(out, y)
         self.log("test_loss", loss)
 
     def configure_optimizers(self):
-        optimizer_layers = self.config.optimizer.get("layers", None)
+        optimizer_layers = self.config.optimizer.layers
 
         if optimizer_layers:
             config_optim = self.config.optimizer
-            optimizer_name = config_optim["name"]
-            optimizer_kwargs = config_optim["kwargs"]
+            optimizer_name = config_optim.name
+            optimizer_kwargs = config_optim.kwargs  # default kwargs
 
             optims = []
-            for item in optimizer_kwargs:
+            for item in config_optim.layers:
                 layer_name = item.pop("layer")
                 layer = getattr(self.model, layer_name)
                 optims.append({"params": layer.parameters(), **item})

@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch_geometric.data import Data
 from graph_cl.models.beta_transformer import ConceptGraphTransformer
 from graph_cl.models.linear_aggregator import LinearAggregator
 from graph_cl.models.concat_aggregator import ConcatAggregator
@@ -38,6 +37,7 @@ class GraphConceptLearner(nn.Module):
 
         super().__init__()
         self.concept_learners = concept_learners
+        self.concept_names = list(self.concept_learners.keys())
 
         # Get model class
         agg_class = aggregators[config["aggregator"]]
@@ -64,19 +64,33 @@ class GraphConceptLearner(nn.Module):
         """
 
         # For a batch of samples generate graph embedding for every concept
-        embeddings = torch.empty((len(batch.y), self.num_concepts, self.emb_size))
+
+        cont = []
+        for concept, val in batch.items():
+            cont.append(val.y)
+            assert len(set(val.concept)) == 1
+
+        n_samples = torch.stack(cont, dim=1).size(0)
+        assert torch.stack(cont, dim=1).to("cpu").unique(dim=1).size(dim=1) == 1
+
+        concept = self.concept_names[0]
+        device = batch[concept].x.device.type
+        embeddings = torch.empty(
+            (n_samples, self.num_concepts, self.emb_size), device=device
+        )
 
         for insert_at_dim, item in enumerate(self.concept_learners.items()):
             # Unpack concept name and corresponding model
             concept, model = item
+            data = batch[concept]
 
             # Get concept specific data from Paradigm_DatumBatch
-            x = batch[f"{concept}__x"]
-            edge_index = batch[f"{concept}__edge_index"]
-            x_batch = batch[f"{concept}__x_batch"]
+            # x = batch[f"{concept}__x"]
+            # edge_index = batch[f"{concept}__edge_index"]
+            # x_batch = batch[f"{concept}__x_batch"]
 
             # Integrate data in to Data object
-            data = Data(x=x, edge_index=edge_index, batch=x_batch)
+            # data = Data(x=x, edge_index=edge_index, batch=x_batch)
 
             # Save resulting embedding of shape (batch_size, emb_size)
             batch_embeddings = model(data)

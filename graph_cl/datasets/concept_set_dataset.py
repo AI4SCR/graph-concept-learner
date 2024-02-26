@@ -84,7 +84,7 @@ class ConceptSetDataset(Dataset):
         When the `self._indices` variable is not `None`
         (when `ConceptSetDataset` has been splitted) `[i]`
         returns the i'th index from the `self._indices` list.
-        Therefore `i` in the context of the subscript operator references
+        Therefor `i` in the context of the subscript operator references
         a position of the data in a dataset rather than its absolute index.
 
         Args:

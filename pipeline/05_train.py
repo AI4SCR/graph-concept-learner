@@ -15,6 +15,7 @@ from graph_cl.models.graph_concept_learnerV2 import GraphConceptLearner
 from graph_cl.train.lightning import LitGNN, LitGCL
 
 from graph_cl.datasets.ConceptDataset import CptDatasetMemo
+from graph_cl.datasets.ConceptSetDataset import ConceptSetDataset
 from graph_cl.configuration.configurator import Training
 
 import lightning as L
@@ -117,7 +118,18 @@ n_out = set(model.gnn.out_channels for model in model_dict.values())
 assert len(n_out) == 1
 n_out = int(n_out.pop())
 
-# Compleat config
+# dataset
+fold_info = pd.read_parquet(fold_dir / "info.parquet")
+ds_train = ConceptSetDataset(root=fold_dir, fold_info=fold_info, split="train")
+ds_val = ConceptSetDataset(root=fold_dir, fold_info=fold_info, split="val")
+ds_test = ConceptSetDataset(root=fold_dir, fold_info=fold_info, split="test")
+
+# dataloader
+dl_test = DataLoader(ds_test, batch_size=train_config.batch_size)
+dl_val = DataLoader(ds_val, batch_size=train_config.batch_size)
+dl_train = DataLoader(ds_test, batch_size=train_config.batch_size)
+
+# complete config
 # Save embedding size to variable
 model_gcl_config["emb_size"] = n_out
 model_gcl_config[
@@ -127,7 +139,7 @@ model_gcl_config["num_concepts"] = len(best_model_paths)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Insatiate full model. Concept GNN plus aggregator
+# instantiate full model. Concept GNN plus aggregator
 graph_concept_learner = GraphConceptLearner(
     concept_learners=nn.ModuleDict(model_dict),
     config=model_gcl_config,
@@ -166,20 +178,11 @@ checkpoint_callback = ModelCheckpoint(
     save_top_k=1,
 )
 
-dl_train = DataLoader(
-    ds_train,
-    batch_size=train_config.batch_size,
-    shuffle=True,
-)
-dl_val = DataLoader(ds_val, batch_size=train_config.batch_size)
-dl_test = DataLoader(ds_test, batch_size=train_config.batch_size)
-
-
 trainer = L.Trainer(
     limit_train_batches=100, max_epochs=2, callbacks=[checkpoint_callback]
 )
 trainer.fit(model=gcl, train_dataloaders=dl_train, val_dataloaders=dl_val)
-trainer.test(model=module, dataloaders=dl_test)
+trainer.test(model=gcl, dataloaders=dl_test)
 
 # Save attention maps to file
 if gcl_cfg["aggregator"] == "transformer":

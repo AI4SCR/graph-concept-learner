@@ -31,11 +31,8 @@ class Normalize(BaseModel):
 
 
 class Split(BaseModel):
-    method: str
-    n_folds: int
-    train_size: float
-    test_size: float
-    val_size: float
+    strategy: str
+    kwargs: dict
 
 
 class Processing(BaseModel):
@@ -92,3 +89,39 @@ class Training(BaseModel):
 class Model(BaseModel):
     GNN: None
     MLP: None
+
+
+class Graph(BaseModel):
+    topology: str
+    params: dict
+
+
+class ConceptConfig(BaseModel):
+    class Filter(BaseModel):
+        col_name: str
+        include_labels: list[str]
+
+    concept_name: str
+    graph: Graph
+    filter: Filter
+
+
+class DataConfig(BaseModel):
+    class Filter(BaseModel):
+        min_cells_per_graph: int
+
+    class Split(BaseModel):
+        strategy: str
+        kwargs: dict
+
+    class Normalize(BaseModel):
+        method: str
+        cofactor: int
+        censoring: float
+
+    target: str
+    filter: Filter
+    split: Split
+    normalize: Normalize
+    concepts: list[str]
+    features: dict

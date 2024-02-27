@@ -16,6 +16,7 @@ class RawDataLoader:
     def __init__(self, raw_dir: Path, processed_dir: Path):
         self.raw = raw_dir
         self.processed = processed_dir
+        self.processed.mkdir(exist_ok=True, parents=True)
 
         self.mask_dir = self.processed / "masks"
         self.mask_dir.mkdir(exist_ok=True, parents=True)

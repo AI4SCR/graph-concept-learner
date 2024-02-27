@@ -1,15 +1,20 @@
+import click
+
 from graph_cl.datasets.RawDataLoaderV2 import RawDataLoader
 from pathlib import Path
 from graph_cl.preprocessing.filterV2 import harmonize_index
 import logging
 
-if __name__ == "__main__":
-    raw_dir = Path(
-        "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/01_raw"
-    )
-    processed_dir = Path(
-        "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/02_processed"
-    )
+
+@click.group()
+def data():
+    pass
+
+
+@data.command()
+@click.argument("raw_dir", type=click.Path(exists=True))
+@click.argument("processed_dir", type=click.Path())
+def jackson(raw_dir: Path, processed_dir: Path):
     loader = RawDataLoader(raw_dir=raw_dir, processed_dir=processed_dir)
     loader.load()
 

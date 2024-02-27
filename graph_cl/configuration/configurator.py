@@ -77,13 +77,20 @@ class Scheduler(BaseModel):
     frequency: int = 1
 
 
-class Training(BaseModel):
+class Trainer(BaseModel):
+    max_epochs: int
+    limit_train_batches: int | float = 1.0
+    fast_dev_run: bool = False
+
+
+class TrainConfig(BaseModel):
     tracking: Tracking
     optimizer: Optimizer
     scheduler: Scheduler
     batch_size: int
     n_epoch: int = 2
     seed: int = 1
+    trainer: Trainer
 
 
 class Model(BaseModel):
@@ -116,8 +123,7 @@ class DataConfig(BaseModel):
 
     class Normalize(BaseModel):
         method: str
-        cofactor: int
-        censoring: float
+        kwargs: dict
 
     target: str
     filter: Filter
@@ -125,3 +131,27 @@ class DataConfig(BaseModel):
     normalize: Normalize
     concepts: list[str]
     features: dict
+
+
+from typing import Literal
+
+
+class ModelGNNConfig(BaseModel):
+    act: str
+    act_first: bool
+    dropout: bool
+    gnn: str = "GIN"
+    norm: str = "BatchNorm"
+    num_layers: int = 2
+    num_layers_MLP: int = 2
+    pool: str = "global_add_pool"
+    scaler: int = 2
+    seed: int = 2
+
+
+class ModelGCLConfig(ModelGNNConfig):
+    aggregator: Literal["transformer", "linear", "concat"] = "transformer"
+    mlp_num_layers: int = 2
+    mlp_act_key: Literal["relu", "tanh"] = "relu"
+    n_heads: int = 8
+    depth: int = 1

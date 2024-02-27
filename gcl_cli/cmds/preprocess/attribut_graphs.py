@@ -5,13 +5,12 @@ import torch
 from pathlib import Path
 
 import yaml
-from graph_cl.preprocessing.splitV2 import SPLIT_STRATEGIES
+from graph_cl.preprocessing.split import SPLIT_STRATEGIES
 from graph_cl.configuration.configurator import DataConfig
 from sklearn.preprocessing import LabelEncoder
 from torch_geometric.data import Data
 
 import click
-from . import preprocessing
 
 
 def gather_sample_counts(concepts: list[str], concept_graphs_dir: Path) -> pd.DataFrame:
@@ -99,7 +98,7 @@ def _attribute_graph(graph: Data, feat: pd.DataFrame) -> Data:
     assert feat.isna().any().any() == False
 
     feat.index = feat.index.droplevel("core").astype(int)
-    feat = feat.loc[graph.cell_ids, :]  # align the features with the graph
+    feat = feat.loc[graph.object_id, :]  # align the features with the graph
     graph.x = torch.tensor(feat.values, dtype=torch.float32)
     graph.feature_name = feat.columns.tolist()
 
@@ -130,24 +129,17 @@ def _attribute_graphs(
             torch.save(g_attr, concept_output_dir / f"{core}.pt")
 
 
-@preprocessing.command()
-@click.argument("experiment_dir", type=click.Path(exists=True), path_type=Path)
-@click.argument("data_dir", type=click.Path(exists=True), path_type=Path)
+@click.command()
+@click.argument("experiment_dir", type=click.Path(exists=True, path_type=Path))
+@click.argument("data_dir", type=click.Path(exists=True, path_type=Path))
 # def attribute_graphs(experiment_dir: Path, concept_graphs_dir: Path, processed_dir: Path):
 def attribute_graphs(experiment_dir: Path, data_dir: Path):
-    # paths
-    # experiment_dir = Path(
-    #     "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2"
-    # )
-    # data_dir = Path("/Users/adrianomartinelli/data/ai4src/graph-concept-learner/data")
-
     processed_dir = data_dir / "02_processed"
     concept_graphs_dir = data_dir / "03_concept_graphs"
     folds_dir = experiment_dir / "data" / "05_folds"
     folds_dir.mkdir(parents=True, exist_ok=True)
 
     # labels
-    # sample_labels_path = data_dir / "02_processed" / "labels" / "samples"
     sample_labels_path = processed_dir / "labels" / "samples"
     sample_labels = pd.read_parquet(sample_labels_path)
 
@@ -201,7 +193,8 @@ def attribute_graphs(experiment_dir: Path, data_dir: Path):
             feat=feat,
             fold_info=fold_info,
             output_dir=feat_norm_dir,
-            **data_config.normalize.to_dict(),
+            method=data_config.normalize.method,
+            **data_config.normalize.kwargs,
         )
 
         output_dir = fold_info_path.parent / "attributed_graphs"
@@ -210,5 +203,6 @@ def attribute_graphs(experiment_dir: Path, data_dir: Path):
             fold_info=fold_info,
             feat_dir=feat_norm_dir,
             concepts=data_config.concepts,
+            concept_graphs_dir=concept_graphs_dir,
             output_dir=output_dir,
         )

@@ -6,46 +6,30 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from pathlib import Path
 from graph_cl.configuration import load_config
-from spatialOmics import SpatialOmics
-
+from torch_geometric.data import Data
+import torch
 
 # %%
 
 
-def min_max(so, df_fold: pd.DataFrame, cofactor: int, censoring: float):
-    so_norm = SpatialOmics()
-    so_norm.spl = so.spl.loc[df_fold.index]
+def arcsinh(graphs: list[Data], cofactor: int):
+    for g in graphs:
+        X = g.x
+        torch.divide(X, torch.tensor(cofactor), out=X)
+        torch.arcsinh(X, out=X)
 
-    for grp_name, grp_data in df_fold.groupby("split"):
-        # gather all X across samples in the group
-        grp_x = pd.concat(
-            [
-                so.X[core].assign(core=core).set_index("core", append=True)
-                for core in grp_data.index
-            ]
-        )
 
-        # arcsinh transform
-        np.divide(grp_x, cofactor, out=grp_x)
-        np.arcsinh(grp_x, out=grp_x)
+def min_max(graphs: list[Data], censoring: float):
 
-        # censoring
-        for col_name in grp_x.columns:
-            thres = grp_x[col_name].quantile(censoring)
-            grp_x.loc[grp_x[col_name] > thres, col_name] = thres
+    # censoring
+    thres = X.quantile(censoring, dim=1)
+    for g in graphs:
+        for idx, t in enumerate(thres):
+            torch.where(g.x[:, idx] > t, t, g.x[:, idx], out=g.x[:, idx])
 
-        # min-max normalization
-        minMax = MinMaxScaler()
-        grp_x = pd.DataFrame(
-            minMax.fit_transform(grp_x), index=grp_x.index, columns=grp_x.columns
-        )
-
-        for core in grp_data.index:
-            so_norm.obs[core] = so.obs[core]
-            so_norm.X[core] = grp_x.loc[(slice(None), core), :].droplevel("core")
-            so_norm.masks[core] = so.masks[core]
-
-    return so_norm
+    X = torch.cat([g.x for g in graphs], dim=0)
+    # min-max normalization
+    _min, _max = X.min(), X.max()
 
 
 def normalize_fold(

@@ -26,5 +26,5 @@ if __name__ == "__main__":
                 concept=concept,
                 fold_path=fold_path,
                 model_config_path=model_config_path,
-                pretrain_config_path=pretrain_config_path,
+                train_config_path=pretrain_config_path,
             )

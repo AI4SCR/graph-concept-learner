@@ -174,9 +174,8 @@ checkpoint_callback = ModelCheckpoint(
     save_top_k=1,
 )
 
-trainer = L.Trainer(
-    limit_train_batches=100, max_epochs=2, callbacks=[checkpoint_callback]
-)
+trainer = L.Trainer(**train_config.trainer.dict(), callbacks=[checkpoint_callback])
+
 # %%
 trainer.fit(model=gcl, train_dataloaders=dl_train, val_dataloaders=dl_val)
 trainer.test(model=gcl, dataloaders=dl_test)

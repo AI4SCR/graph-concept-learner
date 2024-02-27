@@ -12,6 +12,7 @@ from torch_geometric.nn import (
     global_mean_pool,
     global_max_pool,
 )
+from graph_cl.configuration.configurator import ModelGNNConfig
 
 # Define dictionary with possible models.
 models = {"GCN": GCN, "SAGE": GraphSAGE, "GAT": GAT, "GIN": GIN, "PNA": PNA}

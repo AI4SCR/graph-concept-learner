@@ -3,11 +3,11 @@ import torch
 import torch.nn as nn
 from torchmetrics import Accuracy, Precision, Recall
 
-from ..configuration.configurator import Training
+from ..configuration.configurator import TrainConfig
 
 
 class LitBase(L.LightningModule):
-    def __init__(self, model: nn.Module, config: Training):
+    def __init__(self, model: nn.Module, config: TrainConfig):
         super().__init__()
         # self.save_hyperparameters()
 
@@ -69,7 +69,7 @@ class LitBase(L.LightningModule):
 
 
 class LitGNN(LitBase):
-    def __init__(self, model: nn.Module, config: Training):
+    def __init__(self, model: nn.Module, config: TrainConfig):
         super().__init__(model=model, config=config)
 
     def forward(self, x):
@@ -104,7 +104,7 @@ class LitGNN(LitBase):
 
 
 class LitGCL(LitBase):
-    def __init__(self, model: nn.Module, config: Training):
+    def __init__(self, model: nn.Module, config: TrainConfig):
         super().__init__(model=model, config=config)
 
     def forward(self, x):

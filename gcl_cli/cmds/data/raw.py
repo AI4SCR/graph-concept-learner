@@ -2,7 +2,7 @@ import click
 
 from graph_cl.datasets.RawDataLoaderV2 import RawDataLoader
 from pathlib import Path
-from graph_cl.preprocessing.filterV2 import harmonize_index
+from graph_cl.preprocessing.filter import harmonize_index
 import logging
 
 
@@ -12,14 +12,23 @@ def data():
 
 
 @data.command()
-@click.argument("raw_dir", type=click.Path(exists=True))
-@click.argument("processed_dir", type=click.Path())
-def jackson(raw_dir: Path, processed_dir: Path):
+@click.argument(
+    "raw_dir", type=click.Path(exists=True, resolve_path=True, path_type=Path)
+)
+@click.argument("processed_dir", type=click.Path(resolve_path=True, path_type=Path))
+@click.option(
+    "--remove",
+    is_flag=True,
+    default=True,
+    help="remove masks for which no metadata is available",
+)
+def jackson(raw_dir: Path, processed_dir: Path, remove: bool = True):
     loader = RawDataLoader(raw_dir=raw_dir, processed_dir=processed_dir)
     loader.load()
 
     cores = (processed_dir / "masks").glob("*.tiff")
     for core in cores:
+        remove_core = False
         core_name = core.stem
         mask_path = processed_dir / "masks" / f"{core_name}.tiff"
         labels_path = processed_dir / "labels" / "observations" / f"{core_name}.parquet"
@@ -47,15 +56,26 @@ def jackson(raw_dir: Path, processed_dir: Path):
 
         if labels_path.exists() is False:
             logging.info(f"{core}: Labels path does not exist")
-            continue
+            remove_core = True
+
         if loc_path.exists() is False:
             logging.info(f"{core}: Location path does not exist")
-            continue
+            remove_core = True
+
         if expr_path.exists() is False:
             logging.info(f"{core}: Expression path does not exist")
-            continue
+            remove_core = True
+
         if spat_path.exists() is False:
             logging.info(f"{core}: Spatial path does not exist")
+            remove_core = True
+
+        # note: if any metadata is missing, remove all data for this core
+        if remove and remove_core:
+            files = processed_dir.rglob(f"{core_name}*")
+            for file in files:
+                logging.info(f"removing {file}")
+                file.unlink()
             continue
 
         harmonize_index(

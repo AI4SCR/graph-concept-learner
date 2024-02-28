@@ -37,7 +37,7 @@ class GNN(nn.Module):
         forward(x: torch.Tensor, edge_index, batch) -> torch.Tensor: Performs a forward pass through the GNN model.
     """
 
-    def __init__(self, cfg, train_dataset):
+    def __init__(self, cfg):
         """
         Initializes the GNN model.
 
@@ -54,6 +54,7 @@ class GNN(nn.Module):
 
         # If PNA then get adddtional parametes.
         if cfg["gnn"] == "PNA":
+            raise NotImplementedError()
             get_additional_PNA_params(cfg, train_dataset)
 
         # Init GNN model
@@ -86,6 +87,8 @@ class GNN(nn.Module):
 
 
 def get_additional_PNA_params(cfg, train_dataset):
+    # TODO: Implement this function outside of the model class, or as a static method of the class
+    raise NotImplementedError()
     # Specify aggregators and scalars
     cfg["aggregators"] = ["min", "max", "mean", "std"]
     cfg["scalers"] = ["identity", "amplification", "attenuation"]
@@ -117,7 +120,7 @@ class GNN_plus_MPL(nn.Module):
         forward(x: torch.Tensor, edge_index, batch) -> torch.Tensor: Performs a forward pass through the GNN model and the prediction head.
     """
 
-    def __init__(self, cfg, train_dataset):
+    def __init__(self, cfg):
         """
         Initializes the GNN model and the prediction head.
 
@@ -128,7 +131,10 @@ class GNN_plus_MPL(nn.Module):
         """
         # Super init
         super().__init__()
-        self.gnn = GNN(cfg, train_dataset)
+
+        cfg["hidden_channels"] = cfg["in_channels"] * cfg["scaler"]
+
+        self.gnn = GNN(cfg)
         self.mlp = MLP(
             in_channels=cfg["hidden_channels"],
             num_layers=cfg["num_layers_MLP"],

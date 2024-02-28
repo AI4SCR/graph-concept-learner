@@ -13,7 +13,7 @@ CONFIG_PATH = Path(
 OUTPUT_DIR = Path(
     "~/data/ai4src/graph-concept-learner/test/03_concept_graphs/"
 ).expanduser()
-from gcl_cli.cmds.preprocess.build_graph import _build_graph
+from graph_cl.cli.preprocess import _build_graph
 
 
 def test_build_concept_graph():

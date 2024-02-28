@@ -61,13 +61,18 @@ class Configuration(BaseModel):
 
 class Tracking(BaseModel):
     mlflow_uri: str | None = None
-    checkpoint_dir: str
+    checkpoint_dir: str | Path = None
 
 
 class Optimizer(BaseModel):
+    class Layer(BaseModel):
+        name: str
+        freeze: bool
+        kwargs: dict
+
     name: str
     kwargs: dict
-    layers: list[dict] = []
+    layers: list[Layer] = []
 
 
 class Scheduler(BaseModel):
@@ -142,10 +147,14 @@ class ModelGNNConfig(BaseModel):
     dropout: bool
     gnn: str = "GIN"
     norm: str = "BatchNorm"
+
+    num_classes: int  # task dependent
     num_layers: int = 2
-    num_layers_MLP: int = 2
-    pool: str = "global_add_pool"
     scaler: int = 2
+    in_channels: int  # data dependent
+    num_layers_MLP: int = 2
+
+    pool: str = "global_add_pool"
     seed: int = 2
 
 

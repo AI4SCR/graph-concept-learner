@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from gcl_cli.cmds.preprocess.build_graph import build_concept_graph
+from graph_cl.cli.preprocess import build_concept_graph
 
 
 def test_build_concept_graph():

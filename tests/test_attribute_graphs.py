@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from gcl_cli.cmds.preprocess.attribut_graphs import attribute_graphs
+from graph_cl.cli.preprocess import attribute_graphs
 
 
 def test_attribute_graphs():

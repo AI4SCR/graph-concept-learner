@@ -1,6 +1,6 @@
-from graph_cl.train.pretrain import pretrain_concept, pretrain_concept_from_files
+from graph_cl.train.pretrain import pretrain_concept_from_files
 from pathlib import Path
-from gcl_cli.cmds.pretrain import pretrain
+from graph_cl.cli.model import pretrain
 
 
 def test_pretrain_concept():

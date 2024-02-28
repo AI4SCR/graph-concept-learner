@@ -1,5 +1,12 @@
 # Graph Concept Learner
 
+## ToDos
+ - Further modularize the code:
+   - Create functions that just create models
+   - train functions just load the model and train it
+   - create function that create datasets
+ - download dataset for easy deployment on the cloud
+
 Learning using concept graphs for general prediction tasks.
 
 ## Environment

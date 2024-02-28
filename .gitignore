@@ -291,3 +291,6 @@ rsconnect/
 
 # Mac
 .DS_Store
+
+# lightning
+lightning_logs/

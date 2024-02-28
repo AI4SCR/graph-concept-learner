@@ -154,10 +154,20 @@ class LitGCL(LitBase):
             optimizer_kwargs = config_optim.kwargs  # default kwargs
 
             optims = []
-            for item in config_optim.layers:
-                layer_name = item.pop("layer")
-                layer = getattr(self.model, layer_name)
-                optims.append({"params": layer.parameters(), **item})
+            for layer in config_optim.layers:
+                layer_name = layer.name
+
+                if layer.freeze:
+                    for name, param in self.model.named_parameters():
+                        # note: this should work even for nested layers where name is like "layer1.layer2.layer3"
+                        #   it would be enough to specify "layer2" to freeze all parameters in layer2 even though the full name is "layer1.layer2"
+                        #   the questions is more: is this robust enough?
+                        #   an alternative could be to use getattr(self.model, layer_name).parameters() which would require to specify the full layer name
+                        if layer_name in name:
+                            param.requires_grad = False
+                else:
+                    layer_model = getattr(self.model, layer_name)
+                    optims.append({"params": layer_model.parameters(), **layer.kwargs})
 
             optimizer = getattr(torch.optim, optimizer_name)(optims, **optimizer_kwargs)
             scheduler = self.configure_scheduler(optimizer)

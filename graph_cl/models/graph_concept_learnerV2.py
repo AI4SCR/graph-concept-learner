@@ -38,19 +38,22 @@ class GraphConceptLearner(nn.Module):
         super().__init__()
         self.concept_learners = concept_learners
         self.concept_names = list(self.concept_learners.keys())
+        self.num_concepts = len(self.concept_names)
+
+        # check and infer emb_size from first concept learner
+        n_out = set(model.gnn.out_channels for model in self.concept_learners.values())
+        assert len(n_out) == 1
+        self.emb_size = n_out.pop()
 
         # Get model class
         agg_class = aggregators[config["aggregator"]]
 
         # Add mlp activation function to the config dictionary
+        # getattr(nn, config["mlp_act_key"]) --> getattr(nn, "Tanh")
         config["mlp_act"] = activation_functions[config["mlp_act_key"]]
 
         # Init model
-        self.aggregator = agg_class(**config)
-
-        # Get some additional information from config
-        self.num_concepts = config["num_concepts"]
-        self.emb_size = config["emb_size"]
+        self.aggregator = agg_class(emb_size=self.emb_size, **config)
 
     def forward(self, batch):
         """

@@ -15,6 +15,7 @@
  - refine Pydantic models
  - refactor tests and complete tests
  - write evaluation code
+ - refactor ./bin
 
 Learning using concept graphs for general prediction tasks.
 

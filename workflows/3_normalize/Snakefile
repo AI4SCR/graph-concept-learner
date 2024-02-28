@@ -1,6 +1,0 @@
-if config["normalize_with"] == "min_max":
-    include: "rules/min_max_normalize.smk"
-elif config["normalize_with"] == "standard":
-    include: "rules/standard_normalize.smk"
-else:
-    assert False, f"config['normalize_with'] = {config['normalize_with']}, not supported."

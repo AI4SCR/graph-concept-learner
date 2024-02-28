@@ -1,4 +1,0 @@
-Rule names:
-- workflows/7_model_selection/scripts/gen_performance_scatterplot.smk
-- workflows/7_model_selection/scripts/select_best_model_per_concept.py
-- workflows/9_model_selection/rules/select_best_gcls.smk

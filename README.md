@@ -5,7 +5,16 @@
    - Create functions that just create models
    - train functions just load the model and train it
    - create function that create datasets
+ - exclude testing from training scripts
+ - create plotting utilities -> some are in utils/mlflow
+ - unify configs where possible
+ - create configs from pydantic models
+ - parameterize LitModules
  - download dataset for easy deployment on the cloud
+ - use relative paths within the graph_cl module
+ - refine Pydantic models
+ - refactor tests and complete tests
+ - write evaluation code
 
 Learning using concept graphs for general prediction tasks.
 

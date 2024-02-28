@@ -1,3 +1,0 @@
-include: "rules/gen_performance_scatterplot.smk"
-include: "rules/select_best_model_per_concept.smk"
-include: "rules/collect_concept_models.smk" # Gather the best models for each concept

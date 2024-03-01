@@ -1,8 +1,8 @@
 import click
 
-from graph_cl.datasets.RawDataLoaderV2 import RawDataLoader
+from graph_cl.datasets.RawDataset import RawDataset
 from pathlib import Path
-from graph_cl.preprocessing.filter import harmonize_index
+from graph_cl.preprocessing.harmonize import harmonize_index
 import logging
 
 
@@ -23,7 +23,7 @@ def data():
     help="remove masks for which no metadata is available",
 )
 def jackson(raw_dir: Path, processed_dir: Path, remove: bool = True):
-    loader = RawDataLoader(raw_dir=raw_dir, processed_dir=processed_dir)
+    loader = RawDataset(raw_dir=raw_dir, processed_dir=processed_dir)
     loader.load()
 
     cores = (processed_dir / "masks").glob("*.tiff")

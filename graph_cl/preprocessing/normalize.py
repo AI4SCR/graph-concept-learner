@@ -1,15 +1,43 @@
 # %%
-import pickle
 import pandas as pd
 import numpy as np
 
 from sklearn.preprocessing import MinMaxScaler
 from pathlib import Path
-from graph_cl.configuration import load_config
 from torch_geometric.data import Data
 import torch
 
 # %%
+def normalize(
+    feat: pd.DataFrame, fold_info: pd.DataFrame, output_dir: Path, method: str, **kwargs
+):
+    scaler = MinMaxScaler()
+    for split in ["train", "val", "test"]:
+        split_feat = feat.loc[fold_info[fold_info.split == split].index, :]
+        assert split_feat.index.get_level_values("cell_id").isna().any() == False
+
+        feat_norm = _normalize_features(split, split_feat, scaler=scaler, **kwargs)
+        for core, grp_data in feat_norm.groupby("core"):
+            grp_data.to_parquet(output_dir / f"{core}.parquet")
+
+
+def _normalize_features(split, split_feat, scaler, cofactor, censoring):
+    X = split_feat.values.copy()
+
+    # arcsinh transform
+    np.divide(X, cofactor, out=X)
+    np.arcsinh(X, out=X)
+
+    # censoring
+    thres = np.quantile(X, censoring, axis=0)
+    for idx, t in enumerate(thres):
+        X[:, idx] = np.where(X[:, idx] > t, t, X[:, idx])
+    if split == "train":
+        X = scaler.fit_transform(X)
+    else:
+        X = scaler.transform(X)
+
+    return pd.DataFrame(X, index=split_feat.index, columns=split_feat.columns)
 
 
 def arcsinh(graphs: list[Data], cofactor: int):
@@ -30,31 +58,3 @@ def min_max(graphs: list[Data], censoring: float):
     X = torch.cat([g.x for g in graphs], dim=0)
     # min-max normalization
     _min, _max = X.min(), X.max()
-
-
-def normalize_fold(
-    so_path: Path, fold_path: Path, output_dir: Path, config_path: Path, **kwargs
-):
-    config = load_config(config_path)
-    method = config.data.processing.normalize.method
-
-    with open(so_path, "rb") as f:
-        so = pickle.load(f)
-
-    df_fold = pd.read_csv(fold_path, index_col="core")
-
-    if method == "min_max":
-        cofactor = config.data.processing.normalize.cofactor
-        censoring = config.data.processing.normalize.censoring
-        so_norm = min_max(
-            so=so,
-            df_fold=df_fold,
-            cofactor=cofactor,
-            censoring=censoring,
-        )
-    else:
-        raise NotImplementedError()
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    with open(output_dir / f"{fold_path.stem}.pkl", "wb") as f:
-        pickle.dump(so_norm, f)

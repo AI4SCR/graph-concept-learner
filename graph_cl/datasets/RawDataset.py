@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 # %%
 
 
-class RawDataLoader:
+class RawDataset:
     def __init__(self, raw_dir: Path, processed_dir: Path):
         self.raw = raw_dir
         self.processed = processed_dir

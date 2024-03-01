@@ -1,6 +1,6 @@
 import numpy as np
 from skimage.morphology import binary_dilation
-from .base_graph_builder import BaseGraphBuilder
+from .BaseGraphBuilder import BaseGraphBuilder
 import networkx as nx
 from tqdm import tqdm
 

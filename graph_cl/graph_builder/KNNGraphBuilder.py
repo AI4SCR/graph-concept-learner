@@ -2,7 +2,7 @@ from sklearn.neighbors import kneighbors_graph
 import networkx as nx
 import pandas as pd
 import numpy as np
-from .base_graph_builder import BaseGraphBuilder
+from .BaseGraphBuilder import BaseGraphBuilder
 
 
 class KNNGraphBuilder(BaseGraphBuilder):

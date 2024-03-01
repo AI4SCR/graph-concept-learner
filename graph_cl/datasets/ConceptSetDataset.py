@@ -113,15 +113,6 @@ class ConceptSetDatasetMemo(InMemoryDataset):
                     )
                     data_dict[concept].append(concept_graph)
 
-                    # for key, value in ['edge_index', 'x', 'cell_ids']:
-                    #     data[f"{concept}__{key}"] = value
-                    #
-                    # for key in ['y', 'feature_name', 'core', 'num_nodes', 'concept']:
-                    #     if key in concept_graph:
-                    #         data[key].append(concept_graph[key])
-                    #     else:
-                    #         data[key] = concept_graph[key]
-
             torch.save(data_dict, osp.join(self.processed_dir, f"{grp_name}.pt"))
 
     def len(self):

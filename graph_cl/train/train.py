@@ -4,7 +4,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from graph_cl.configuration.configurator import TrainConfig
 
 
-def train(model: L.LightningModule, train_config: TrainConfig, data="asdf"):
+def train(model: L.LightningModule, train_config: TrainConfig, data):
     ds_train = data["train"]
     ds_val = data["val"] if data["val"] else None
 

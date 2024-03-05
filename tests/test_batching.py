@@ -1,5 +1,5 @@
 from torch_geometric.loader import DataLoader
-from graph_cl.datasets.ConceptDataset import CptDatasetMemo
+from graph_cl.dataloader.ConceptDataset import CptDatasetMemo
 from pathlib import Path
 import pandas as pd
 

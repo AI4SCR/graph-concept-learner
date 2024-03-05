@@ -88,13 +88,17 @@ class Trainer(BaseModel):
     fast_dev_run: bool = False
 
 
+class Dataloader(BaseModel):
+    batch_size: int = 2
+    num_workers: int = 1
+
+
 class TrainConfig(BaseModel):
+    seed: int = 1
     tracking: Tracking
     optimizer: Optimizer
     scheduler: Scheduler
-    batch_size: int
-    n_epoch: int = 2
-    seed: int = 1
+    dataloader: Dataloader
     trainer: Trainer
 
 
@@ -113,14 +117,14 @@ class ConceptConfig(BaseModel):
         col_name: str
         include_labels: list[str]
 
-    concept_name: str
+    name: str
     graph: Graph
     filter: Filter
 
 
 class DataConfig(BaseModel):
     class Filter(BaseModel):
-        min_cells_per_graph: int
+        min_num_nodes: int
 
     class Split(BaseModel):
         strategy: str

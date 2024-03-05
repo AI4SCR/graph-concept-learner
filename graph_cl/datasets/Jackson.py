@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 # %%
 
 
-class RawDataset:
+class Jackson:
     def __init__(self, raw_dir: Path, processed_dir: Path):
         self.raw = raw_dir
         self.processed = processed_dir
@@ -43,11 +43,12 @@ class RawDataset:
 
     def load(self):
         self.extract_metadata()
-        self.extract_sample_labels()
-        self.extract_observation_labels()
-        self.extract_observation_locations()
-        self.extract_observation_features()
-        self.extract_masks()
+        s1 = self.extract_sample_labels()
+        s2 = self.extract_observation_labels()
+        s3 = self.extract_observation_locations()
+        s4 = self.extract_observation_features()
+        s5 = self.extract_masks()
+        return pd.concat([s1, s2, s3, s4, s5], axis=1, join="outer")
 
     def extract_masks(self):
         logging.info("Extracting masks")
@@ -59,7 +60,7 @@ class RawDataset:
         with zipfile.ZipFile(zip_ext_buffer) as zip_ref_inner:
             zip_ref_inner.extractall(self.mask_dir)
 
-        self.rename_masks()
+        return self.rename_masks()
 
     def rename_masks(self):
         # TODO: this only moves cores which are present in the samples metadata (there are masks that are not listed there)
@@ -68,12 +69,15 @@ class RawDataset:
         mask_file_name = [f"{Path(f).stem}_maks.tiff" for f in df["FileName_FullStack"]]
         df = df.assign(mask_file_name=mask_file_name)
 
+        samples = []
         for core, mask_file_name in zip(df.index, df["mask_file_name"]):
             mask_path_old = self.mask_dir / "Basel_Zuri_masks" / mask_file_name
             mask_path_new = self.mask_dir / f"{core}.tiff"
             mask_path_old.rename(mask_path_new)
+            samples.append({"sample": core, "mask_path": mask_path_new})
 
         shutil.rmtree(self.mask_dir / "Basel_Zuri_masks")
+        return pd.DataFrame(samples).set_index("sample")
 
     def extract_observation_locations(self):
         logging.info("Extracting observation locations")
@@ -93,9 +97,13 @@ class RawDataset:
         df = pd.concat(locs.values())
         out_dir = self.features_observations_dir / "location"
         out_dir.mkdir(exist_ok=True, parents=True)
+        samples = []
         for grp_name, grp_data in df.groupby("core"):
             grp_data = grp_data.assign(core=grp_name)
-            grp_data.to_parquet(out_dir / f"{grp_name}.parquet", index=False)
+            filepath = out_dir / f"{grp_name}.parquet"
+            grp_data.to_parquet(filepath, index=False)
+            samples.append({"sample": grp_name, "obs_loc_path": filepath})
+        return pd.DataFrame(samples).set_index("sample")
 
     def extract_observation_labels(self):
         logging.info("Extracting observation labels")
@@ -153,12 +161,13 @@ class RawDataset:
         # Make map for numerica cell_type class
         df = df.assign(cell_class_id=df.groupby("Class").ngroup())
         df = df.rename(columns={"Cell type": "cell_type", "Class": "cell_class"})
-
+        samples = []
         for grp_name, grp_data in df.groupby("core"):
             grp_data = grp_data.assign(core=grp_name)
-            grp_data.to_parquet(
-                self.labels_observations_dir / f"{grp_name}.parquet", index=False
-            )
+            filepath = self.labels_observations_dir / f"{grp_name}.parquet"
+            grp_data.to_parquet(filepath, index=False)
+            samples.append({"sample": grp_name, "obs_labels_path": filepath})
+        return pd.DataFrame(samples).set_index("sample")
 
     def extract_metadata(self):
         logging.info("Extracting metadata")
@@ -223,13 +232,23 @@ class RawDataset:
 
         labels = df[list(intx - metadata_cols)]
         labels = labels.astype(str).set_index("core")
+        samples_labels = []
         for core in labels.index:
-            labels.loc[[core]].to_parquet(self.labels_samples_dir / f"{core}.parquet")
+            labels_path = self.labels_samples_dir / f"{core}.parquet"
+            labels.loc[[core]].to_parquet(labels_path)
+            samples_labels.append({"sample": core, "sample_labels_path": labels_path})
 
         out_dir = self.meta_dir / "samples"
         out_dir.mkdir(exist_ok=True, parents=True)
+        samples_meta = []
         for core in labels.index:
+            filepath = out_dir / f"{core}.parquet"
             metadata.loc[[core]].to_parquet(out_dir / f"{core}.parquet")
+            samples_meta.append({"sample": core, "sample_meta_path": filepath})
+
+        s1 = pd.DataFrame(samples_labels).set_index("sample")
+        s2 = pd.DataFrame(samples_meta).set_index("sample")
+        return s1.join(s2, how="outer")
 
     def extract_observation_features(self):
         logging.info("Extracting observation features")
@@ -288,6 +307,7 @@ class RawDataset:
         expr_dir.mkdir(exist_ok=True, parents=True)
         spti_dir = self.features_observations_dir / "spatial"
         spti_dir.mkdir(exist_ok=True, parents=True)
+        samples = []
         for grp_name, grp_x in X.groupby("core"):
             grp_x = grp_x.pivot(index="CellId", columns="channel", values="mc_counts")
             grp_x = (
@@ -300,7 +320,18 @@ class RawDataset:
             x_expr = grp_x.drop(columns=spatial_feat)
             x_expr = x_expr[valid_channels].rename(columns=map_channels)
 
-            x_expr.reset_index(drop=False).to_parquet(expr_dir / f"{grp_name}.parquet")
-            x_spatial.reset_index(drop=False).to_parquet(
-                spti_dir / f"{grp_name}.parquet"
+            expr_path = expr_dir / f"{grp_name}.parquet"
+            x_expr.reset_index(drop=False).to_parquet(expr_path)
+
+            spatial_path = spti_dir / f"{grp_name}.parquet"
+            x_spatial.reset_index(drop=False).to_parquet(spatial_path)
+
+            samples.append(
+                {
+                    "sample": grp_name,
+                    "obs_expr_path": expr_path,
+                    "obs_spatial_path": spatial_path,
+                }
             )
+
+        return pd.DataFrame(samples).set_index("sample")

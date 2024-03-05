@@ -12,28 +12,30 @@ def collect_metadata(
     """Collect metadata from samples relevant for filtering"""
 
     metadata = pd.read_parquet(labels_dir)[[target, "cohort"]]
+    metadata.index.name = "sample"
     metadata = metadata.rename(columns={target: "target"})
     for concept_graphs_dir in concept_graphs_dirs:
         concept_name = concept_graphs_dir.name
         for graph_path in concept_graphs_dir.glob("*.pt"):
-            core = graph_path.stem
+            sample = graph_path.stem
             g = torch.load(graph_path)
-            metadata.loc[core, f"{concept_name}__num_nodes"] = g.num_nodes
+            metadata.loc[sample, f"{concept_name}__num_nodes"] = g.num_nodes
+            metadata.loc[sample, f"{concept_name}__graph_path"] = graph_path
 
     # assert metadata.isna().any() == False
     return metadata
 
 
-def filter_samples(metadata, min_num_nodes: int) -> pd.DataFrame:
-    targets = metadata["target"]
+def filter_samples(samples, min_num_nodes: int) -> pd.DataFrame:
+    targets = samples["target"]
     # TODO: how to handle nan strings?
-    valid_samples = metadata[(targets.notna()) & (targets != "nan")]
+    valid_samples = samples[(targets.notna()) & (targets != "nan")]
 
     cols = valid_samples.columns.str.endswith("num_nodes")
-    m = (valid_samples[cols] >= min_num_nodes).all(1)
+    m = (valid_samples.loc[:, cols] >= min_num_nodes).all(1)
     valid_samples = valid_samples[m]
 
-    assert metadata.isna().any() == False
+    assert valid_samples.isna().any().any() == False
     return valid_samples
 
 

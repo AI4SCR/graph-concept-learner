@@ -1,4 +1,4 @@
-from graph_cl.datasets.ConceptSetDataset import ConceptSetDataset
+from graph_cl.dataloader.ConceptSetDataset import ConceptSetDataset
 from pathlib import Path
 import pandas as pd
 from torch_geometric.loader import DataLoader

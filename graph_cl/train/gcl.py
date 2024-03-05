@@ -9,7 +9,7 @@ from graph_cl.models.gnn import GNN_plus_MPL
 from graph_cl.models.graph_concept_learnerV2 import GraphConceptLearner
 from graph_cl.train.lightning import LitGCL
 
-from graph_cl.datasets.ConceptSetDataset import ConceptSetDataset
+from graph_cl.dataloader.ConceptSetDataset import ConceptSetDataset
 from graph_cl.configuration.configurator import (
     TrainConfig,
     ModelGCLConfig,

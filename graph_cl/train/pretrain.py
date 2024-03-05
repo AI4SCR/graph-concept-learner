@@ -7,7 +7,7 @@ from torch_geometric import seed_everything
 from graph_cl.models.gnn import GNN_plus_MPL
 from graph_cl.train.lightning import LitGNN
 
-from graph_cl.datasets.ConceptDataset import CptDatasetMemo
+from graph_cl.dataloader.ConceptDataset import CptDatasetMemo
 from graph_cl.configuration.configurator import TrainConfig, ModelGNNConfig
 
 import lightning as L

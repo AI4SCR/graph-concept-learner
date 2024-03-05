@@ -10,7 +10,7 @@ def train_val_basel_test_zurich(
     test_size: float = None,
     random_state: int = None,
 ) -> pd.DataFrame:
-    samples = samples.assign(split=None)
+    samples = samples.assign(stage=None)
 
     bs = samples[samples.cohort == "basel"]
     test = samples[samples.cohort == "zurich"]
@@ -24,38 +24,13 @@ def train_val_basel_test_zurich(
         stratify=bs["target"],
     )
 
-    train = pd.DataFrame(train, columns=bs.columns, index=bs.index)
-    val = pd.DataFrame(val, columns=bs.columns, index=bs.index)
+    # train = pd.DataFrame(train, columns=bs.columns, index=bs.index)
+    # val = pd.DataFrame(val, columns=bs.columns, index=bs.index)
 
-    train = train.assign(stage="train")
+    train = train.assign(stage="fit")
     val = val.assign(stage="val")
 
     return pd.concat([train, val, test])
-
-
-# def split_basel_leave_zurich_as_external(
-#         samples: pd.DataFrame, n_folds: int, train_size: float
-# ) -> list[pd.DataFrame]:
-#     samples = samples.assign(stage=None)
-#
-#     bs = samples[samples.cohort == "basel"]
-#     zh = samples[samples.cohort == "zurich"]
-#     zh = zh.assign(stage="test")
-#
-#     sss = StratifiedShuffleSplit(
-#         n_splits=n_folds, train_size=train_size, random_state=0
-#     )
-#     split_iter = sss.stage(bs.index.values, bs["target"])
-#
-#     folds = []
-#     for i, idcs in enumerate(split_iter):
-#         train_idc, val_idc = idcs
-#         bs.iloc[train_idc, bs.columns.get_loc("stage")] = "train"
-#         bs.iloc[val_idc, zh.columns.get_loc("stage")] = "val"
-#
-#         fold = pd.concat([bs, zh])
-#         folds.append(fold)
-#     return folds
 
 
 def split_both_cohorts():

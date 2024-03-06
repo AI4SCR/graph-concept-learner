@@ -26,25 +26,17 @@ include: "rules/helper_functions.smk"
 # Make folder structure and default config files
 include: "rules/make_folder_structure.smk"
 
-# MLflow
-#include: "rules/delete_mlflow_runs.smk" # Delete some mlflow run. Dont use unless you know what you are donig.
-#include: "rules/parse_pretrain_mlflow_runs.smk" # Checks against mlflow if all concept configs combinations have been pretrained.
-#include: "rules/parse_train_mlflow_runs.smk" # Parse the train runs.
-
-
 # Normalize data
 include: "rules/normalize_all_folds.smk"
 
 # Gen datasets
 include: "rules/gen_all_graphs.smk" # Generates all concept graph datasets.
-# include: "rules/gen_all_rand_datasets.smk" # Generates all random concept graph datasets.
 
 # Attribute graphs
 include: "rules/gen_all_attributed_graphs.smk"
 
 # Pretrain
 include: "rules/pretrain_all.smk" # Pretrains all models
-# include: "rules/pretrain_all_rnd.smk" # Pretrain selected randomly permuted models.
 
 # Select pretrain models
 include: "rules/select_best_pretrain_models.smk"
@@ -56,13 +48,6 @@ include: "rules/train_all.smk" # Train all models.
 
 # Train baselines
 # include: "rules/train_all_space_gm.smk" # Run all the space gm training configurations.
-
-# Train multiple seeds
-# include: "rules/train_best_space_gm.smk"
-# include: "rules/train_best_concepts.smk"
-# include: "rules/train_best_gcls.smk"
-# include: "rules/train_rnd_concepts.smk"
-# include: "rules/train_rnd_gcls.smk"
 
 ##### Load workflow rules #####
 # Include baselines
@@ -97,9 +82,3 @@ include: "8_train/Snakefile"
 
 # Select best GCL models
 include: "9_model_selection/Snakefile"
-
-# Randomization sanity check
-# include: "80_rand_sanity_check/Snakefile"
-
-# Train models with rando seed
-# include: "81_train_seeds/Snakefile"

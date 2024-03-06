@@ -14,6 +14,8 @@ rule make_folder_structure:
         queue="x86_1h",
     params:
         path_to_cfgs=f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs"
+    log:
+        f"{root}/logs/make_folder_structure/make_folder_structure"
     shell:
         "scripts/make_folder_structure.py {input.main_cfg} && "
         "cp {input.c1} {input.c2} {params.path_to_cfgs}/concept_configs/ && "

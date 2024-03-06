@@ -11,18 +11,8 @@ import sys
     cell_type_csv_path,
     filered_samples,
     path_to_count,
-    path_to_norm,
     path_to_count_HRless,
-    path_to_norm_HRless,
 ) = sys.argv
-
-# # inputs
-# so_file="/Users/ast/Documents/GitHub/datasets/jakson/intermediate_data/so.pkl"
-# cell_type_csv_path = "/Users/ast/Documents/GitHub/datasets/jakson/raw_data/unzipped/Cluster_labels/Metacluster_annotations.csv"
-# filered_samples = "/Users/ast/Documents/GitHub/datasets/jakson/prediction_tasks/ERStatus/meta_data/filtered_sample_ids_and_labels.csv"
-# # outputs
-# path_to_count = "/Users/ast/Documents/GitHub/datasets/jakson/prediction_tasks/ERStatus/non_spatial_baseline/data/composition_vectors.csv"
-# path_to_norm = "/Users/ast/Documents/GitHub/datasets/jakson/prediction_tasks/ERStatus/non_spatial_baseline/data/composition_vectors_norm.csv"
 
 # Load so obj
 with open(so_file, "rb") as f:
@@ -33,7 +23,7 @@ filters_samples_csv = pd.read_csv(filered_samples)
 y = filters_samples_csv["ERStatus"].values
 spls = filters_samples_csv["core"].values
 
-# Get aray of cell types from the dataset.
+# Get array of cell types from the dataset.
 cell_type_csv = pd.read_csv(cell_type_csv_path, delimiter=";")
 cell_type_csv.rename(str.lower, axis="columns", inplace=True)
 cell_type_csv.columns = cell_type_csv.columns.str.replace(" ", "_")
@@ -52,7 +42,7 @@ for spl in spls:
     new_vec = np.array(list(new_vec.values()))
     X = np.vstack([X, new_vec])
 
-# Get rid of empty samples, or smaples with not cell type info
+# Get rid of empty samples, or samples with not cell type info
 # list_of_indexes = []
 # list_of_samples = []
 # for i in range(X.shape[0]):
@@ -65,7 +55,7 @@ for spl in spls:
 # Normalize X
 X_norm = (X.T / X.sum(axis=1)).T
 
-# Make into a dataframes and save to file.
+# Make into a data frames and save to file.
 df = pd.DataFrame(
     X, columns=dict(zip(cell_types, [0] * len(cell_types))).keys(), index=spls
 )
@@ -87,5 +77,3 @@ for cell_type in cell_types:
 cell_types = np.append(cell_types, "y")
 df.to_csv(path_to_count)
 df[cell_types].to_csv(path_to_count_HRless)
-df_norm.to_csv(path_to_norm)
-df_norm[cell_types].to_csv(path_to_norm_HRless)

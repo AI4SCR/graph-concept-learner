@@ -8,7 +8,7 @@ def get_gcl_checkpoints(wildcards):
         cfg_ids_models=[os.path.splitext(f)[0] for f in os.listdir(f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/models") if f.endswith(".yaml")],
     )
 
-# If this is ievaluated before the previous step is executed things might break
+# If this is evaluated before the previous step is executed things might break
 def get_concept_sets_ids(wildcards):
     p = f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/configs/train_configs/concept_sets/{wildcards.attribute_config}/{wildcards.labels_permuted}"
     return [os.path.splitext(f)[0] for f in os.listdir(p) if f.endswith(".yaml")]

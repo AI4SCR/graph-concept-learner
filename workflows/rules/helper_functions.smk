@@ -96,7 +96,7 @@ def get_paths_to_pretrained_models(wildcards):
     ATTR_CFG_IDS = [os.path.splitext(f)[0] for f in os.listdir(path_to_file) if f.endswith(".yaml")]
 
     return expand(
-        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/single_concepts/{{labels_permuted}}/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
+        f"{root}/prediction_tasks/{prediction_target}/{normalized_with}/checkpoints/single_concepts/{{attribute_config}}/{{concept}}/{{cfg_id}}/{{labels_permuted}}/{{fold}}/{{seed}}/best_val_{{metric_name}}.pt",
         fold=FOLD_IDS,
         seed=SEEDS,
         concept=CONCEPT_NAMES,

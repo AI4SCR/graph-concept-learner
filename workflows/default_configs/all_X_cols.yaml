@@ -12,3 +12,6 @@ attrs_params:
   from_X: true
   # If from_X is true, which columns (specify list of column names) from so.X[<spl>] to add as attributes.
   X_cols: all
+
+X_randomized: false
+seed: 42

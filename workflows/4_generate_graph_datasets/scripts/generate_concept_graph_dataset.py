@@ -46,6 +46,15 @@ for spl in all_samples:
     # Extract centroid
     ath.pp.extract_centroids(so, spl, mask_key="cellmasks")
 
+    randomize = cfg.pop("randomize", {})
+    randomize_cell_labels = randomize.pop("cell_labels", False)
+    if randomize_cell_labels:
+        randomize_seed = randomize.pop("seed", 42)
+        col_name = cfg["concept_params"]["filter_col"]
+        so.obs[spl][col_name] = so.obs[spl][col_name].sample(
+            frac=1, replace=False, random_state=randomize_seed
+        )
+
     # Build graph
     ath.graph.build_graph(so, spl, config=cfg, key_added=concept_name)
 

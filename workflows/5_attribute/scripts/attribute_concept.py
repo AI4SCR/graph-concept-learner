@@ -57,6 +57,12 @@ os.makedirs(output_dir, exist_ok=True)
 # For every spl id, attribute the graph using attribute functionality form athena
 # and save such graph to file usign torch geometric
 for spl in spls:
+    X_randomized = cfg.pop("X_randomized", False)
+    seed = cfg.pop("seed", 42)
+
+    if X_randomized:
+        so.X[spl] = so.X[spl].sample(frac=1, replace=False, random_state=seed)
+
     add_node_features(
         so=so,
         spl=spl,

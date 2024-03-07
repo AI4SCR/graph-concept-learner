@@ -36,3 +36,7 @@ concept_params:
   - Immune
   - Stroma
   - Tumor
+
+randomize:
+  cell_label: false
+  seed: 42

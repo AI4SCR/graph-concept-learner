@@ -1,0 +1,30 @@
+# Config file defining location of the data and other information. No / in the end of path.
+# root: "/Users/adrianomartinelli/data/graph-concept-learning/jackson"
+root: "/cluster/scratch/scastro/jackson"
+
+# Prediction target. Must be a column present in the so.spl data frame.
+prediction_target: "ERStatus"
+
+# Normalization strategy to be used. Supported options: "min_max", "standard" or "None" (no normalization)
+normalize_with: "min_max"
+
+# Splitting strategy to be used. Supported options must match available rules/scrips.
+# Supported options: "both_cohorts", "split_zurich_leave_basel_as_external" or "split_basel_leave_zurich_as_external"
+split_how: "split_basel_leave_zurich_as_external"
+
+# Number of cross-validation folds to use
+n_folds: 3
+
+# Number of seeds to use. Must be an integer greater or equal to 1. Values greater than 1 will result in multiple training runs with the same configuration but different initializations.
+n_seeds: 2
+
+# Define metrics that should be used to save checkpoints. Supported options are: balanced_accuracy, weighted_f1_score, weighted_recall, weighted_precision, loss
+follow_this_metrics:
+  - "balanced_accuracy"
+  - "weighted_f1_score"
+
+# Log frequency. The metrics will be logged into MLFlow every epochs.
+log_frequency: 1
+
+# Low the mlflow experiments to a remote server or in the local file system? (False = local, True = remote)
+mlflow_on_remote_server: False

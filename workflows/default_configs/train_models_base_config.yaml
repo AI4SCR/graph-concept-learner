@@ -18,7 +18,7 @@ optim:
 
 # Number of epochs
 n_epoch:
-  - 200
+  - 20
 
 # Learning rate decay strategy to use.
 # For ExponentialLR, the second value in the list corresponds to the gamma parameter.

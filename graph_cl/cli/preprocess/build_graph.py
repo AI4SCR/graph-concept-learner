@@ -1,47 +1,17 @@
 import logging
-
-from skimage.io import imread
-import pandas as pd
-import yaml
 from pathlib import Path
+
 import torch
+from ...data_models.Concept import ConceptConfig
+from ...preprocessing.filter import filter_mask_objects
+from ...graph_builder.build_graph import build_pyg_graph
+from ...data_models.ProjectSettings import ProjectSettings
+from ...data_models.Sample import Sample
 
-from graph_cl.graph_builder.build_graph import build_pyg_graph
-from graph_cl.preprocessing.filter import filter_mask_objects
-from graph_cl.configuration.configurator import ConceptConfig
-import click
 
-
-@click.command()
-@click.argument("mask_path", type=click.Path(exists=True, path_type=Path))
-@click.argument("labels_path", type=click.Path(exists=True, path_type=Path))
-@click.argument("concept_path", type=click.Path(exists=True, path_type=Path))
-@click.argument("output_path", type=click.Path(dir_okay=False, path_type=Path))
-@click.option(
-    "--force", is_flag=True, default=False, help="Force overwrite of existing graph."
-)
-def build_concept_graph(
-    mask_path: Path,
-    labels_path: Path,
-    concept_path: Path,
-    output_path: Path,
-    force: bool = False,
-):
-    logging.info(f"Building graph for {mask_path.stem}")
-
-    with open(concept_path) as f:
-        concept_config = yaml.load(f, Loader=yaml.Loader)
-        concept_config = ConceptConfig(**concept_config)
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    if not force and output_path.exists():
-        logging.info(f"Graph for {mask_path.stem} already exists.")
-        return
-
-    labels = pd.read_parquet(labels_path)
-    labels = labels[concept_config.filter.col_name]
-
-    mask = imread(mask_path, plugin="tifffile")
+def build_concept_graph(sample: Sample, concept_config: ConceptConfig):
+    labels = sample.labels.cell_class
+    mask = sample.mask
     mask = filter_mask_objects(
         mask, labels=labels, include_labels=concept_config.filter.include_labels
     )
@@ -52,4 +22,30 @@ def build_concept_graph(
         params=concept_config.graph.params,
     )
 
-    torch.save(graph, output_path)
+    return graph
+
+
+def build_concept_graph_from_paths(
+    sample_path: Path,
+    concept_config_path: Path,
+    concept_graph_path: Path,
+    overwrite: bool = False,
+):
+    concept_config = ConceptConfig.from_yaml(concept_config_path)
+    sample = Sample.from_pickle(sample_path)
+
+    if concept_graph_path.exists() and overwrite is False:
+        logging.info(
+            f"Concept graph for {concept_config.name} and {sample.name} exists.\n...skipping"
+        )
+        return
+    elif concept_graph_path.exists() and overwrite is True:
+        logging.info(
+            f"Concept graph for {concept_config.name} and {sample.name} exists.\n...overwriting"
+        )
+
+    graph = build_concept_graph(sample, concept_config)
+
+    # note: this will enable us to transition to a Sample() object that can load lazily
+    concept_graph_path.parent.mkdir(parents=True, exist_ok=True)
+    torch.save(graph, concept_graph_path)

@@ -1,9 +1,9 @@
 import lightning as L
 import torch
 import torch.nn as nn
-from torchmetrics import Accuracy, Precision, Recall
+from torchmetrics import Accuracy
 
-from ..configuration.configurator import TrainConfig
+from graph_cl.data_models.Train import TrainConfig
 
 
 class LitBase(L.LightningModule):
@@ -38,7 +38,7 @@ class LitBase(L.LightningModule):
         return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
     def configure_scheduler(self, optimizer):
-        from torch.optim.lr_scheduler import LambdaLR, ExponentialLR
+        from torch.optim.lr_scheduler import ExponentialLR
 
         scheduler_name = self.config.scheduler.name
         scheduler_kwargs = self.config.scheduler.kwargs

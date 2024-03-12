@@ -7,10 +7,10 @@ import torch
 from pathlib import Path
 
 from graph_cl.preprocessing.split import SPLIT_STRATEGIES
-from graph_cl.configuration.configurator import DataConfig
+from ..data_models.Data import DataConfig
 from sklearn.preprocessing import LabelEncoder
 
-from ..preprocessing.filter import collect_metadata, filter_samples
+from ..preprocessing.filter import filter_samples
 from ..preprocessing.normalize import Normalizer
 from ..preprocessing.attribute import collect_features, attribute_graph
 
@@ -68,7 +68,7 @@ class ConceptDataModule(L.LightningDataModule):
         self.dataset_path = root / "attributed_graphs"
 
     def prepare_data(self):
-        samples = filter_samples(samples=self.samples, **self.config.filter.dict())
+        samples = filter_samples(metadata=self.samples, **self.config.filter.dict())
         assert samples.isna().any() == False
 
         # TODO: it would be better to encode on the train split only

@@ -1,12 +1,34 @@
 from pathlib import Path
 import torch
-from graph_cl.configuration.configurator import DataConfig
 
 import numpy as np
 import pandas as pd
 
+from graph_cl.data_models.Sample import Sample
 
-def collect_metadata(
+
+def collect_sample_metadata(sample: Sample, target: str):
+    metadata = sample.metadata[[target, "cohort"]]
+    metadata.index.name = "sample"
+    metadata = metadata.rename(columns={target: "target"})
+    concept_graphs = sample.concept_graphs
+
+    for concept_graph_name, concept_graph in concept_graphs:
+        metadata.loc[
+            sample, f"{concept_graph_name}__num_nodes"
+        ] = concept_graph.num_nodes
+
+    return metadata
+
+
+def collect_metadata(samples: list[Sample], target: str) -> pd.DataFrame:
+    """Collect metadata from samples relevant for filtering"""
+    cont = [collect_sample_metadata(sample, target) for sample in samples]
+    metadata = pd.concat(cont)
+    return metadata
+
+
+def _collect_metadata(
     target: str, labels_dir: Path, concept_graphs_dirs: list[Path]
 ) -> pd.DataFrame:
     """Collect metadata from samples relevant for filtering"""
@@ -26,10 +48,10 @@ def collect_metadata(
     return metadata
 
 
-def filter_samples(samples, min_num_nodes: int) -> pd.DataFrame:
-    targets = samples["target"]
+def filter_samples(metadata, min_num_nodes: int) -> pd.DataFrame:
+    targets = metadata["target"]
     # TODO: how to handle nan strings?
-    valid_samples = samples[(targets.notna()) & (targets != "nan")]
+    valid_samples = metadata[(targets.notna()) & (targets != "nan")]
 
     cols = valid_samples.columns.str.endswith("num_nodes")
     m = (valid_samples.loc[:, cols] >= min_num_nodes).all(1)

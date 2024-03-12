@@ -18,7 +18,7 @@ from graph_cl.cli.preprocess import _build_graph
 
 def test_build_concept_graph():
     from skimage.io import imread
-    from graph_cl.configuration.configurator import ConceptConfig
+    from graph_cl.data_models.Concept import ConceptConfig
     import yaml
 
     with open(CONFIG_PATH) as f:

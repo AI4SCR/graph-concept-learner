@@ -2,35 +2,37 @@ import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 
 from sklearn.model_selection import train_test_split
+from ..data_models.Sample import Sample
 
 
 def train_val_basel_test_zurich(
-    samples: pd.DataFrame,
+    samples: list[Sample],
     train_size: float = None,
     test_size: float = None,
     random_state: int = None,
-) -> pd.DataFrame:
-    samples = samples.assign(stage=None)
+) -> dict[str, list[Sample]]:
 
-    bs = samples[samples.cohort == "basel"]
-    test = samples[samples.cohort == "zurich"]
-    test = test.assign(stage="test")
+    test = list(filter(lambda s: s.cohort == "zurich", samples))
+    for s in test:
+        s.split = "test"
 
+    bs = list(filter(lambda s: s.cohort == "basel", samples))
+    stratify = [s.target for s in samples]
     train, val = train_test_split(
         bs,
         test_size=test_size,
         train_size=train_size,
         random_state=random_state,
-        stratify=bs["target"],
+        stratify=stratify,
     )
 
-    # train = pd.DataFrame(train, columns=bs.columns, index=bs.index)
-    # val = pd.DataFrame(val, columns=bs.columns, index=bs.index)
+    for s in train:
+        s.split = "fit"
 
-    train = train.assign(stage="fit")
-    val = val.assign(stage="val")
+    for s in val:
+        s.split = "val"
 
-    return pd.concat([train, val, test])
+    return {"fit": train, "val": val, "test": test}
 
 
 def split_both_cohorts():

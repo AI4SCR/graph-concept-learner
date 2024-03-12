@@ -50,6 +50,12 @@ def harmonize_index(
     assert expr.isna().any().any() == False
     assert spat.isna().any().any() == False
 
+    # align all indices
+    idx = expr.index
+    lab = lab.loc[idx]
+    loc = loc.loc[idx]
+    spat = spat.loc[idx]
+
     lab.drop(columns=["CellId"]).to_parquet(labels_path)
     expr.drop(columns=["CellId"]).to_parquet(expr_path)
     loc.to_parquet(loc_path)

@@ -1,6 +1,6 @@
 import lightning as L
 from lightning.pytorch.callbacks import ModelCheckpoint
-from graph_cl.configuration.configurator import TrainConfig
+from graph_cl.data_models.Train import TrainConfig
 
 
 def train(

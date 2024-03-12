@@ -3,6 +3,27 @@ import pandas as pd
 from torch_geometric.data import Data
 import torch
 
+from ..data_models.Sample import Sample
+
+
+def collect_sample_features_new(sample: Sample, config: dict) -> pd.Series:
+    features = []
+    for feat_name, feat_dict in config.items():
+        include = feat_dict.get("include", False)
+        if include:
+            feat_path = sample[f"obs_{feat_name}_path"]
+            feat = pd.read_parquet(feat_path)
+            if isinstance(include, bool):
+                features.append(feat)
+            elif isinstance(include, list):
+                features.append(feat[include])
+
+    # add features
+    feat = pd.concat(features)
+    assert feat.isna().any().any() == False
+
+    return feat
+
 
 # TODO: implement on the sample level?
 def collect_sample_features(sample: pd.Series, config: dict) -> pd.Series:

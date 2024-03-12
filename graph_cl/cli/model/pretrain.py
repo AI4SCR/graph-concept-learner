@@ -4,10 +4,11 @@ import pandas as pd
 import yaml
 from sklearn.preprocessing import LabelEncoder
 
-from ...configuration.configurator import TrainConfig, ModelGNNConfig
+from ...data_models.Model import ModelGNNConfig
+from ...data_models.Train import TrainConfig
 from ...dataloader.ConceptDataModule import ConceptDataModule
 from ...preprocessing.split import SPLIT_STRATEGIES
-from ...configuration.configurator import DataConfig
+from ...data_models.Data import DataConfig
 from ...models.gnn import GNN_plus_MPL
 from ...train.lightning import LitGNN
 from ...train.train import train
@@ -53,7 +54,7 @@ def pretrain(data_dir: Path, experiment_dir: Path, concept_name: str):
     )
     assert set(samples_pp.index) == set(samples_info.index)
     samples = pd.concat([samples_pp, samples_info], axis=1)
-    samples = filter_samples(samples=samples, **data_config.filter.dict())
+    samples = filter_samples(metadata=samples, **data_config.filter.dict())
 
     # TODO: it would be better to encode on the train split only
     target_encoder = LabelEncoder()
@@ -62,14 +63,14 @@ def pretrain(data_dir: Path, experiment_dir: Path, concept_name: str):
     assert samples.isna().any().any() == False
 
     func = SPLIT_STRATEGIES[data_config.split.strategy]
+    # TODO: remove
     import numpy as np
 
     samples = samples.assign(
         target=np.random.choice(["negative", "positive"], len(samples))
     )
-    samples = func(samples, **data_config.split.kwargs)
 
-    # feats = collect_features(processed_dir=processed_dir, config=data_config.features)
+    samples = func(samples, **data_config.split.kwargs)
     feats = collect_features(samples=samples, config=data_config.features)
 
     datamodule = ConceptDataModule(

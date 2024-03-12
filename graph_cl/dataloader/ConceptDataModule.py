@@ -1,5 +1,3 @@
-import logging
-
 import lightning as L
 import pandas as pd
 from torch_geometric.data import Dataset
@@ -7,13 +5,10 @@ from torch_geometric.loader import DataLoader
 import torch
 from pathlib import Path
 
-from graph_cl.preprocessing.split import SPLIT_STRATEGIES
-from graph_cl.configuration.configurator import DataConfig
-from sklearn.preprocessing import LabelEncoder
+from ..data_models.Data import DataConfig
 
-from ..preprocessing.filter import collect_metadata, filter_samples
 from ..preprocessing.normalize import Normalizer
-from ..preprocessing.attribute import collect_features, attribute_graph
+from ..preprocessing.attribute import attribute_graph
 
 
 class ConceptDataset(Dataset):

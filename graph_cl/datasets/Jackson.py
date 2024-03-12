@@ -13,6 +13,8 @@ logging.basicConfig(level=logging.INFO)
 
 
 class Jackson:
+    name = "jackson"
+
     def __init__(self, raw_dir: Path, processed_dir: Path):
         self.raw = raw_dir
         self.processed = processed_dir
@@ -48,7 +50,34 @@ class Jackson:
         s3 = self.extract_observation_locations()
         s4 = self.extract_observation_features()
         s5 = self.extract_masks()
-        return pd.concat([s1, s2, s3, s4, s5], axis=1, join="outer")
+        df_samples = pd.concat([s1, s2, s3, s4, s5], axis=1, join="outer")
+        return df_samples
+
+    @classmethod
+    def load_samples(cls, df: pd.DataFrame):
+        from ..data_models.Sample import Sample
+
+        samples = []
+        for sample_name in df.index:
+            sample_data = df.loc[sample_name]
+            metadata = pd.concat(
+                [
+                    pd.read_parquet(sample_data["sample_labels_path"]).squeeze(),
+                    pd.read_parquet(sample_data["sample_meta_path"]).squeeze(),
+                ]
+            )
+            sample = Sample(
+                name=sample_name,
+                expression=pd.read_parquet(sample_data["obs_expr_path"]),
+                location=pd.read_parquet(sample_data["obs_loc_path"]),
+                spatial=pd.read_parquet(sample_data["obs_spatial_path"]),
+                # img_url=sample_data["img_path"],
+                labels=pd.read_parquet(sample_data["obs_labels_path"]),
+                mask_url=sample_data["mask_path"],
+                metadata=metadata,
+            )
+            samples.append(sample)
+        return samples
 
     def extract_masks(self):
         logging.info("Extracting masks")

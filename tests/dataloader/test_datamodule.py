@@ -1,5 +1,5 @@
 from graph_cl.dataloader.ConceptDataModule import ConceptDataModule
-from graph_cl.configuration.configurator import DataConfig
+from graph_cl.data_models.Data import DataConfig
 from pathlib import Path
 import yaml
 

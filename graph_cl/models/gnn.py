@@ -108,6 +108,8 @@ def get_additional_PNA_params(cfg, train_dataset):
 
 
 class GNN_plus_MPL(nn.Module):
+    name = "GNN_plus_MPL"
+
     """
     A graph neural network (GNN) with a classification head.
 

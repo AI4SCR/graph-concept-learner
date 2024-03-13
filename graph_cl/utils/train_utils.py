@@ -327,7 +327,7 @@ def get_dict_of_metric_names_and_paths(out_file_1, out_file_2):
     follow_this_metrics = {}
     for file in [out_file_1, out_file_2]:
         name_plus_ext = os.path.basename(file)
-        name = os.path.splitext(name_plus_ext)[0].split("best_")[1]
+        name = os.path.splitext(name_plus_ext)[0].split_samples("best_")[1]
         follow_this_metrics[name] = [0, file]
     return follow_this_metrics
 
@@ -350,7 +350,7 @@ def permute_labels(splits_df, pred_target, splitted_datasets):
         # For each sample in the split put it in a list and change its label
         in_mem_data = []
         for i, file_name_ext in enumerate(splitted_datasets[split].file_names):
-            file_name = file_name_ext.split(".")[0]
+            file_name = file_name_ext.split_samples(".")[0]
             in_mem_data.append(splitted_datasets[split].get(i))
             in_mem_data[i].y = torch.tensor([split_map.loc[file_name][pred_target]])
 

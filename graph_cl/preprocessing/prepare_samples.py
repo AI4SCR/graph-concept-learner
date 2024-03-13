@@ -11,7 +11,7 @@ def prepare_samples(samples: list[Sample], data_config):
         samples=samples,
         target=data_config.target,
     )
-    samples = filter_samples(metadata=metadata, **data_config.filter.dict())
+    samples = filter_samples(metadata=metadata, **data_config.filter_samples.dict())
 
     # TODO: it would be better to encode on the train split only
     target_encoder = LabelEncoder()
@@ -19,7 +19,7 @@ def prepare_samples(samples: list[Sample], data_config):
     samples = samples.assign(y=targets_encoded)
     assert samples.isna().any().any() == False
 
-    func = SPLIT_STRATEGIES[data_config.split.strategy]
+    func = SPLIT_STRATEGIES[data_config.split_samples.strategy]
     # TODO: remove
     import numpy as np
 
@@ -27,7 +27,7 @@ def prepare_samples(samples: list[Sample], data_config):
         target=np.random.choice(["negative", "positive"], len(samples))
     )
 
-    samples = func(samples, **data_config.split.kwargs)
+    samples = func(samples, **data_config.split_samples.kwargs)
 
 
 def prepare_samples_from_files(

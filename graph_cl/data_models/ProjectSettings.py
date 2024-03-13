@@ -136,37 +136,45 @@ class ProjectSettings(BaseSettings):
     def attributes_dir(self) -> None | Path:
         if self.experiment_dir is None:
             return None
-        return self.dataset_dir / "05_attributes"
+        return self.experiment_dir / "05_attributes"
 
     @computed_field
     def prediction_dir(self) -> None | Path:
-        if self.dataset_name is None or self.model_name is None:
+        if (
+            self.experiment_dir is None
+            or self.model_name is None
+            or self.dataset_name is None
+        ):
             return None
-        return self.data_dir / "predictions" / self.dataset_name / self.model_name
+        return self.experiment_dir / "predictions" / self.dataset_name / self.model_name
 
     @computed_field
-    def prediction_path(self) -> None | Path:
-        if self.prediction_dir is None or self.sample_name is None:
+    def prediction_path(self, sample_name: str) -> None | Path:
+        if self.prediction_dir:
             return None
-        return self.prediction_dir / self.sample_name
+        return self.prediction_dir / sample_name
 
     @computed_field
     def model_dir(self) -> None | Path:
-        if self.model_name is None:
+        if self.experiment_dir is None or self.model_name is None:
             return None
-        return self.data_dir / "models" / self.model_name
+        return self.experiment_dir / "models" / self.model_name
 
     @computed_field()
     def result_dir(self) -> None | Path:
-        if self.model_name is None or self.dataset_name is None:
+        if (
+            self.experiment_dir is None
+            or self.dataset_name is None
+            or self.model_name is None
+        ):
             return None
-        return self.data_dir / "results" / self.model_name / self.dataset_name
+        return self.experiment_dir / "results" / self.model_name / self.dataset_name
 
     @computed_field()
-    def result_path(self) -> None | Path:
-        if self.result_dir is None or self.sample_name is None:
+    def result_path(self, sample_name: str) -> None | Path:
+        if self.result_dir is None:
             return None
-        return self.result_dir / self.sample_name
+        return self.result_dir / sample_name
 
     @field_validator("data_dir")
     @classmethod

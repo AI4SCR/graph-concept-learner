@@ -5,7 +5,9 @@ from sklearn.preprocessing import LabelEncoder
 from pathlib import Path
 
 
-def encode_target(samples: list[Sample], data_config: DataConfig):
+def encode_target(
+    samples: list[Sample], data_config: DataConfig
+) -> (list[Sample], int):
     target = data_config.target
     for s in samples:
         s.target = s.metadata[target]
@@ -15,7 +17,7 @@ def encode_target(samples: list[Sample], data_config: DataConfig):
     target_encoder.fit(targets)
     for s in samples:
         s.target_encoded = target_encoder.transform([s.target])[0]
-    return samples
+    return samples, target_encoder.classes_
 
 
 def encode_target_from_paths(samples_dir: Path, data_config_path: Path):

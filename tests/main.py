@@ -1,3 +1,4 @@
+import pandas as pd
 import torch
 
 from graph_cl.data_models.ProjectSettings import ProjectSettings
@@ -51,8 +52,8 @@ for concept_name in concept_names:
 ##### END OF 1 #####
 from graph_cl.data_models.Data import DataConfig
 from graph_cl.cli.preprocess.encode_target import encode_target
-from graph_cl.cli.preprocess.filter import filter
-from graph_cl.cli.preprocess.split import split
+from graph_cl.cli.preprocess.filter import filter_samples
+from graph_cl.cli.preprocess.split import split_samples
 
 experiment_name = "test"
 ps = ProjectSettings(dataset_name=dataset_name, experiment_name=experiment_name)
@@ -71,27 +72,31 @@ for concept_name in concept_names:
 # note: create config files
 data_config = DataConfig.from_yaml(ps.data_config_path)
 # note: encode on all samples
-samples = encode_target(samples, data_config)
-samples = filter(samples, data_config)
-split_info = split(samples, data_config)
+samples, num_cls = encode_target(samples, data_config)
+samples = filter_samples(samples, data_config)
+split_info = split_samples(samples, data_config)
 split_info.to_parquet(ps.split_info_path)
 ##### END OF 1 #####
 
 ##### END OF 1 #####
+ps = ProjectSettings(dataset_name=dataset_name, experiment_name=experiment_name)
+split_info = pd.read_parquet(str(ps.split_info_path))
+stages = split_info.split.unique()
+splits = {
+    stage: [
+        Sample.from_pickle(ps.get_sample_path(s))
+        for s in split_info.set_index("stage")["sample_name"].loc[stage]
+    ]
+    for stage in stages
+}
+for concept_name in concept_names:
+    for _, samples in splits.items():
+        encode_target(samples, data_config)
+        for sample in samples:
+            sample.concept_graphs[concept_name] = torch.load(
+                ps.get_concept_graph_path(concept_name, sample.name)
+            )
 
-# dm.setup('fit')
-# dl = dm.train_dataloader()
-# batch = next(iter(dl))
-
-# dm = ConceptDataModule(samples=samples,
-#                        concepts=data_config.concepts,
-#                        config=data_config)
-# dm.setup('fit')
-# dl = dm.train_dataloader()
-# batch = next(iter(dl))
-
-##### END OF 1 #####
-ps = ProjectSettings(experiment_name="test")
 from graph_cl.data_models.Model import ModelGNNConfig
 from graph_cl.data_models.Train import TrainConfig
 from graph_cl.models.gnn import GNN_plus_MPL
@@ -99,12 +104,20 @@ from graph_cl.train.lightning import LitGNN
 from graph_cl.train.train import train
 from graph_cl.dataloader.ConceptDataModuleNew import ConceptDataModule
 
-dm = ConceptDataModule(samples=samples, concepts="concept_1", config=data_config)
-model_config = ModelGNNConfig.from_yaml(ps.model_gnn_config_path)
-train_config = TrainConfig.from_yaml(ps.model_gnn_config_path)
+ps = ProjectSettings(
+    dataset_name=dataset_name,
+    experiment_name=experiment_name,
+    model_name=LitGNN.__name__,
+)
 
-model_config.num_classes = dm.num_classes
+dm = ConceptDataModule(splits=splits, concepts="concept_1", config=data_config)
+
+model_config = ModelGNNConfig.from_yaml(ps.model_gnn_config_path)
+model_config.num_classes = split_info.target.nunique()
 model_config.in_channels = dm.num_features
+
+train_config = TrainConfig.from_yaml(ps.pretrain_config_path)
+train_config.tracking.checkpoint_dir = ps.model_dir / f"{concept_name}"
 
 model = GNN_plus_MPL(model_config.dict())
 module = LitGNN(model, config=train_config)

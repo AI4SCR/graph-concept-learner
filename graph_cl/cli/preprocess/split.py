@@ -5,7 +5,7 @@ from ...data_models.Data import DataConfig
 import pandas as pd
 
 
-def split(samples: list[Sample], config: DataConfig):
+def split_samples(samples: list[Sample], config: DataConfig):
     func = SPLIT_STRATEGIES[config.split.strategy]
     splits = func(samples, **config.split.kwargs)
 
@@ -16,7 +16,8 @@ def split(samples: list[Sample], config: DataConfig):
                 {
                     "sample_id": s.id,
                     "sample_name": s.name,
-                    "split": s.split,
+                    "target": s.target,
+                    "split": stage,
                     "stage": stage,
                 }
                 for s in splits[stage]

@@ -2,7 +2,6 @@ import click
 
 from graph_cl.datasets.Jackson import Jackson
 from pathlib import Path
-from graph_cl.preprocessing.harmonize import harmonize_index
 import logging
 
 

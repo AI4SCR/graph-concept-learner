@@ -24,7 +24,7 @@ class ConceptDataset(Dataset):
 class ConceptDataModule(L.LightningDataModule):
     def __init__(
         self,
-        samples: list[Sample],
+        splits: dict[str, list[Sample]],
         concepts: str | list[str],
         config: DataConfig,
         batch_size: int = 8,
@@ -33,8 +33,8 @@ class ConceptDataModule(L.LightningDataModule):
         super().__init__()
 
         # init params
+        self.splits = splits
         self.concepts = concepts
-        self.samples = samples
         self.config = config
 
         self.batch_size = batch_size
@@ -55,10 +55,15 @@ class ConceptDataModule(L.LightningDataModule):
             if hasattr(self, f"{_stage}_data"):
                 continue
 
+            if _stage not in self.splits:
+                continue
+
             samples = self.splits[_stage]
             ds = []
             for s in samples:
-                assert s.split == _stage
+                # TODO: are those assertions necessary?
+                if s.split:
+                    assert s.split == _stage
                 assert (
                     s.attributes is None
                 )  # could it happen that we attribute multiple times, except for running fit/test multiple times?
@@ -68,7 +73,7 @@ class ConceptDataModule(L.LightningDataModule):
                     cg = s.attributed_graph(self.concepts)
                 else:
                     cg = {
-                        s.attributed_graph(concept_name)
+                        concept_name: s.attributed_graph(concept_name)
                         for concept_name in self.concepts
                     }
                 ds.append(cg)

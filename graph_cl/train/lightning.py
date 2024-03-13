@@ -69,6 +69,8 @@ class LitBase(L.LightningModule):
 
 
 class LitGNN(LitBase):
+    name = "LitGNN"
+
     def __init__(self, model: nn.Module, config: TrainConfig):
         super().__init__(model=model, config=config)
 

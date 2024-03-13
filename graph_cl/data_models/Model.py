@@ -4,11 +4,6 @@ from pydantic import BaseModel
 from .MixIns import FromYamlMixIn
 
 
-class Model(BaseModel):
-    GNN: None
-    MLP: None
-
-
 class ModelGNNConfig(BaseModel, FromYamlMixIn):
     act: str
     act_first: bool

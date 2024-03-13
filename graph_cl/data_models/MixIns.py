@@ -18,12 +18,19 @@ class FromYamlMixIn:
 
 class PickleMixIn:
     def to_pickle(
-        self, path: Path | str, overwrite: bool = False, check_integrity: bool = True
+        self, path: Path | str, exists: str = "skip", check_integrity: bool = True
     ):
-        if check_integrity:
+        if check_integrity and hasattr(self, "check_integrity"):
             assert self.check_integrity()
-        if overwrite is False:
-            assert Path(path).exists() is False
+
+        if Path(path).exists():
+            if exists == "skip":
+                return
+            elif exists == "overwrite":
+                pass
+            elif exists == "raise":
+                raise FileExistsError(f"{path} already exists")
+
         with open(path, "wb") as f:
             pickle.dump(self, f)
 

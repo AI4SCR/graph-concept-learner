@@ -1,7 +1,6 @@
 from graph_cl.datasets.Jackson import Jackson
 from pathlib import Path
 from graph_cl.preprocessing.harmonize import harmonize_index
-import logging
 from ...data_models.ProjectSettings import ProjectSettings
 import pandas as pd
 

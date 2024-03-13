@@ -9,7 +9,7 @@ from graph_cl.models.gnn import GNN_plus_MPL
 from graph_cl.models.graph_concept_learnerV2 import GraphConceptLearner
 from graph_cl.train.lightning import LitGCL
 
-from graph_cl.dataloader.ConceptSetDataset import ConceptSetDataset
+from graph_cl.dataloader.ConceptDataModule import ConceptDataModule
 from graph_cl.data_models.Model import ModelGNNConfig, ModelGCLConfig
 from graph_cl.data_models.Train import TrainConfig
 
@@ -26,7 +26,7 @@ import pandas as pd
 def train_gcl(
     model_gcl_config: ModelGCLConfig,
     concept_models: dict[str, nn.Module],
-    datasets: dict[str, ConceptSetDataset],
+    datasets: dict[str, ConceptDataModule],
     train_config: TrainConfig,
 ):
     # Set seed

@@ -1,4 +1,4 @@
-from graph_cl.dataloader.ConceptSetDataset import ConceptSetDataset
+from graph_cl.dataloader.ConceptDataModule import ConceptDataModule
 from pathlib import Path
 import pandas as pd
 from torch_geometric.loader import DataLoader
@@ -10,9 +10,9 @@ def test_in_memory_dataset():
     )
     fold_info = pd.read_parquet(fold_path / "info.parquet")
 
-    ds_train = ConceptSetDataset(root=fold_path, fold_info=fold_info, split="train")
-    ds_val = ConceptSetDataset(root=fold_path, fold_info=fold_info, split="val")
-    ds_test = ConceptSetDataset(root=fold_path, fold_info=fold_info, split="test")
+    ds_train = ConceptDataModule(root=fold_path, fold_info=fold_info, split="train")
+    ds_val = ConceptDataModule(root=fold_path, fold_info=fold_info, split="val")
+    ds_test = ConceptDataModule(root=fold_path, fold_info=fold_info, split="test")
 
     s1 = ds_train[0]
     s2 = ds_train[1]

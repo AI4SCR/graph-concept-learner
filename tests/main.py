@@ -102,7 +102,7 @@ from graph_cl.data_models.Train import TrainConfig
 from graph_cl.models.gnn import GNN_plus_MPL
 from graph_cl.train.lightning import LitGNN
 from graph_cl.train.train import train
-from graph_cl.dataloader.ConceptDataModuleNew import ConceptDataModule
+from graph_cl.dataloader.ConceptDataModule import ConceptDataModule
 
 ps = ProjectSettings(
     dataset_name=dataset_name,

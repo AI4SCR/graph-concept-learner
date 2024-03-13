@@ -11,7 +11,6 @@ def train_val_basel_test_zurich(
     test_size: float = None,
     random_state: int = None,
 ) -> dict[str, list[Sample]]:
-
     test = list(filter(lambda s: s.cohort == "zurich", samples))
     for s in test:
         s.split = "test"
@@ -46,14 +45,3 @@ def split_zurich_leave_basel_as_external():
 SPLIT_STRATEGIES = {
     "split_basel_leave_zurich_as_external": train_val_basel_test_zurich,
 }
-
-
-# def split_samples_into_folds(
-#         samples, split_strategy: str, **kwargs
-# ) -> list[pd.DataFrame]:
-#     if split_strategy not in SPLIT_STRATEGIES:
-#         raise ValueError(f"Unknown split strategy: {split_strategy}")
-#
-#     func = SPLIT_STRATEGIES[split_strategy]
-#     folds = func(samples, **kwargs)
-#     return folds

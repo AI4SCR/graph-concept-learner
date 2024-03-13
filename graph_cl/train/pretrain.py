@@ -7,7 +7,7 @@ from torch_geometric import seed_everything
 from graph_cl.models.gnn import GNN_plus_MPL
 from graph_cl.train.lightning import LitGNN
 
-from graph_cl.dataloader.ConceptDataset import CptDatasetMemo
+from graph_cl.dataloader.ConceptDataModule import ConceptDataModule
 from graph_cl.data_models.Model import ModelGNNConfig
 from graph_cl.data_models.Train import TrainConfig
 
@@ -30,17 +30,17 @@ def pretrain_concept(
     logging.info(f"Pretraining model root {model_root}")
 
     # Load dataset
-    ds_train = CptDatasetMemo(
+    ds_train = ConceptDataModule(
         root=root, fold_info=fold_info, concept=concept, split="train"
     )
     assert ds_train[0].concept == concept
 
-    ds_val = CptDatasetMemo(
+    ds_val = ConceptDataModule(
         root=root, fold_info=fold_info, concept=concept, split="val"
     )
     assert ds_val[0].concept == concept
 
-    ds_test = CptDatasetMemo(
+    ds_test = ConceptDataModule(
         root=root, fold_info=fold_info, concept=concept, split="test"
     )
     assert ds_test[0].concept == concept

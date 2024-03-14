@@ -1,8 +1,11 @@
 import lightning as L
 import pandas as pd
-from torch_geometric.data import Dataset
+from torch_geometric.data import Dataset, Data
 from torch_geometric.loader import DataLoader
+from pathlib import Path
+import torch
 
+from ..utils.log import logger
 from ..data_models.Data import DataConfig
 
 from ..preprocessing.normalize import Normalizer
@@ -10,15 +13,15 @@ from ..data_models.Sample import Sample
 
 
 class ConceptDataset(Dataset):
-    def __init__(self, samples: list[Sample]):
-        self.samples = samples
+    def __init__(self, data: list[Data] | list[dict[str, Data]]):
+        self.data = data
         super().__init__()
 
     def len(self):
-        return len(self.samples)
+        return len(self.data)
 
     def get(self, idx):
-        return self.samples[idx]
+        return self.data[idx]
 
 
 class ConceptDataModule(L.LightningDataModule):
@@ -27,6 +30,9 @@ class ConceptDataModule(L.LightningDataModule):
         splits: dict[str, list[Sample]],
         concepts: str | list[str],
         config: DataConfig,
+        save_samples_dir: Path,
+        save_attributes_dir: Path,
+        save_dataset_dir: Path,
         batch_size: int = 8,
         shuffle: bool = True,
     ):
@@ -36,38 +42,45 @@ class ConceptDataModule(L.LightningDataModule):
         self.splits = splits
         self.concepts = concepts
         self.config = config
+        self.save_samples_dir = save_samples_dir
+        self.save_attributes_dir = save_attributes_dir
+        self.save_dataset_dir = save_dataset_dir
 
         self.batch_size = batch_size
         self.shuffle = shuffle
 
+        # computed field
         self.normalize = Normalizer(**self.config.normalize.kwargs)
+        self.num_features = self.splits["fit"][0].expression.shape[1]
 
+        # datasets
+        self.ds_fit = None
+        self.ds_val = None
+        self.ds_test = None
+
+    def prepare_data(self):
         # TODO: use the `collect_sample_features` function here to aggregate the features
         feat = pd.concat([s.expression for s in self.splits["fit"]])
-        self.normalize.fit(feat)  # we fit the normalizer on the training data once
-
+        self.normalize.fit(feat)
         self.num_features = feat.shape[1]
 
-    def setup(self, stage: str):
-        # note: it seems to be necessary to setup all dataloaders or at least the fit, val loaders.
-        #   the val_dataloader is called after just running the setup with stage='fit'. Unclear why.
-        for _stage in ["fit", "val", "test"]:
-            if hasattr(self, f"{_stage}_data"):
+        for stage in ["fit", "val", "test", "predict"]:
+            if stage not in self.splits:
                 continue
 
-            if _stage not in self.splits:
-                continue
-
-            samples = self.splits[_stage]
+            samples = self.splits[stage]
             ds = []
             for s in samples:
-                # TODO: are those assertions necessary?
-                if s.split:
-                    assert s.split == _stage
-                assert (
-                    s.attributes is None
-                )  # could it happen that we attribute multiple times, except for running fit/test multiple times?
-                s.attributes = self.normalize.transform(s.expression)
+                if s.attributes is None:
+                    attributes = self.normalize.transform(s.expression)
+                    s.attributes_url = (
+                        self.save_attributes_dir / stage / f"{s.name}.parquet"
+                    )
+                    attributes.to_parquet(s.attributes_url)
+                    with (self.save_samples_dir / f"{s.name}.json").open(
+                        "w", encoding="utf-8"
+                    ) as file:
+                        file.write(s.model_dump_json(indent=4))
 
                 if isinstance(self.concepts, str):
                     cg = s.attributed_graph(self.concepts)
@@ -78,24 +91,30 @@ class ConceptDataModule(L.LightningDataModule):
                     }
                 ds.append(cg)
 
-            dataset = ConceptDataset(ds)
-            setattr(self, f"{_stage}_data", dataset)
+            torch.save(ds, self.save_dataset_dir / f"{stage}.pt")
+            logger.info(f"saved `{stage}.pt` dataset to {self.save_dataset_dir}")
+
+    def setup(self, stage: str):
+        # note: it seems to be necessary to setup all dataloaders or at least the fit, val loaders.
+        #   the val_dataloader is called after just running the setup with stage='fit'. Unclear why.
+
+        if stage == "fit":
+            self.ds_fit = torch.load(self.save_dataset_dir / f"{stage}.pt")
+
+        if stage == "test":
+            self.ds_test = torch.load(self.save_dataset_dir / f"{stage}.pt")
+
+        if stage == "val":
+            self.ds_val = torch.load(self.save_dataset_dir / f"{stage}.pt")
 
     def train_dataloader(self):
-        dataset = getattr(self, "fit_data", None)
-        return DataLoader(dataset, batch_size=self.batch_size, shuffle=self.shuffle)
+        return DataLoader(self.ds_fit, batch_size=self.batch_size, shuffle=self.shuffle)
 
     def val_dataloader(self):
-        dataset = getattr(self, "val_data", None)
-        return DataLoader(dataset, batch_size=self.batch_size)
+        return DataLoader(self.ds_val, batch_size=self.batch_size)
 
     def test_dataloader(self):
-        dataset = getattr(self, "test_data", None)
-        return DataLoader(dataset, batch_size=self.batch_size)
-
-    def predict_dataloader(self):
-        dataset = getattr(self, "predict_data", None)
-        return DataLoader(dataset, batch_size=self.batch_size)
+        return DataLoader(self.ds_test, batch_size=self.batch_size)
 
     def teardown(self, stage: str):
         # Used to clean-up when the run is finished

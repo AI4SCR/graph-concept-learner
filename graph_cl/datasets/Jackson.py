@@ -4,12 +4,9 @@ from io import BytesIO
 import pandas as pd
 from pathlib import Path
 import shutil
-import logging
-import json
-from ..data_models.PathFactory import PathFactory
+from ..data_models.DatasetPathFactory import DatasetPathFactory
 from ..data_models.Sample import Sample
-
-logging.basicConfig(level=logging.INFO)
+from ..utils.log import logger
 
 
 # %%
@@ -18,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 class Jackson:
     name = "jackson"
 
-    def __init__(self, factory: PathFactory):
+    def __init__(self, factory: DatasetPathFactory):
         self.factory = factory
         self.sample_path = self.factory.processed_dir / "samples.parquet"
         self.sample_names = []
@@ -27,9 +24,27 @@ class Jackson:
         paths = self.factory.get_sample_paths("test_sample", [])
         for k, v in paths.items():
             v.parent.mkdir(exist_ok=True, parents=True)
+        self.factory.processed_samples_dir.mkdir(exist_ok=True, parents=True)
 
-    def load(self, force=False):
-        if not self.sample_path.exists() or force:
+    def download(self):
+        raise NotImplementedError("Download not implemented")
+
+    @staticmethod
+    def harmonize_indices(df_samples: pd.DataFrame):
+        logger.info("Harmonizing indices")
+        from graph_cl.preprocessing.harmonize import harmonize_index
+
+        for sample in df_samples.index:
+            harmonize_index(
+                mask_path=df_samples.loc[sample].mask_url,
+                expr_path=df_samples.loc[sample].expression_url,
+                labels_path=df_samples.loc[sample].labels_url,
+                loc_path=df_samples.loc[sample].location_url,
+                spat_path=df_samples.loc[sample].spatial_url,
+            )
+
+    def process(self, force=False):
+        if not self.factory.info_path.exists() or force:
             self.extract_metadata()
             self.extract_sample_labels()
             self.extract_observation_labels()
@@ -49,24 +64,34 @@ class Jackson:
 
             paths = pd.DataFrame(paths).set_index("sample_name")
             paths = paths.map(lambda x: str(x) if x.exists() else None)
-            paths.to_parquet(self.sample_path)
+            paths.to_parquet(self.factory.info_path)
+
+            # TODO: we can only harmonize indices if we have all the data
+            cols = [
+                "mask_url",
+                "expression_url",
+                "labels_url",
+                "location_url",
+                "spatial_url",
+            ]
+            self.harmonize_indices(paths[cols].dropna())
         else:
-            paths = pd.read_parquet(self.sample_path)
+            paths = pd.read_parquet(self.factory.info_path)
 
         paths.index.name = "name"
         samples = [Sample(**data) for data in paths.reset_index().to_dict("records")]
 
-        self.factory.samples_dir.mkdir(exist_ok=True, parents=True)
+        self.factory.processed_samples_dir.mkdir(exist_ok=True, parents=True)
 
         for sample in samples:
-            file_path = self.factory.samples_dir / f"{sample.name}.json"
+            file_path = self.factory.processed_samples_dir / f"{sample.name}.json"
             with file_path.open("w", encoding="utf-8") as file:
                 file.write(sample.model_dump_json(indent=4))
 
         return samples
 
     def extract_masks(self):
-        logging.info("Extracting masks")
+        logger.info("Extracting masks")
         with zipfile.ZipFile(
             self.factory.raw_dir / "OMEandSingleCellMasks.zip", "r"
         ) as zip_ref:
@@ -95,7 +120,7 @@ class Jackson:
         shutil.rmtree(self.factory.mask_dir / "Basel_Zuri_masks")
 
     def extract_observation_locations(self):
-        logging.info("Extracting observation locations")
+        logger.info("Extracting observation locations")
 
         files_to_extract = {
             "bs_sc_locations.csv": "Basel_SC_locations.csv",
@@ -119,7 +144,7 @@ class Jackson:
             self.sample_names.append(sample_name)
 
     def extract_observation_labels(self):
-        logging.info("Extracting observation labels")
+        logger.info("Extracting observation labels")
         files_to_extract = {
             "metacluster_annotations.csv": "Cluster_labels/Metacluster_annotations.csv",
             "zh_pg.csv": "Cluster_labels/PG_basel.csv",
@@ -181,7 +206,7 @@ class Jackson:
             self.sample_names.append(sample_name)
 
     def extract_metadata(self):
-        logging.info("Extracting metadata")
+        logger.info("Extracting metadata")
         files_to_extract = {
             "staining_panel.csv": "Data_publication/Basel_Zuri_StainingPanel.csv",
         }
@@ -196,7 +221,7 @@ class Jackson:
                     )
 
     def extract_sample_labels(self):
-        logging.info("Extracting sample labels")
+        logger.info("Extracting sample labels")
         files_to_extract = {
             "bs_patient_meta_data.csv": "Data_publication/BaselTMA/Basel_PatientMetadata.csv",
             "zh_patient_meta_data.csv": "Data_publication/ZurichTMA/Zuri_PatientMetadata.csv",
@@ -262,7 +287,7 @@ class Jackson:
             self.sample_names.append(sample_name)
 
     def extract_observation_features(self):
-        logging.info("Extracting observation features")
+        logger.info("Extracting observation features")
 
         files_to_extract = {
             "bs_sc_dat.csv": "Data_publication/BaselTMA/SC_dat.csv",

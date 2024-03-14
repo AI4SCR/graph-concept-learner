@@ -1,8 +1,8 @@
-import pandas as pd
-from sklearn.model_selection import StratifiedShuffleSplit
-
 from sklearn.model_selection import train_test_split
 from ..data_models.Sample import Sample
+from ..data_models.Data import DataConfig
+
+import pandas as pd
 
 
 def train_val_basel_test_zurich(
@@ -45,3 +45,24 @@ def split_zurich_leave_basel_as_external():
 SPLIT_STRATEGIES = {
     "split_basel_leave_zurich_as_external": train_val_basel_test_zurich,
 }
+
+
+def split_samples(samples: list[Sample], config: DataConfig):
+    func = SPLIT_STRATEGIES[config.split.strategy]
+    splits = func(samples, **config.split.kwargs)
+
+    cont = []
+    for stage in ["fit", "val", "test"]:
+        cont.extend(
+            [
+                {
+                    "sample_id": s.id,
+                    "sample_name": s.name,
+                    "target": s.target,
+                    "split": stage,
+                    "stage": stage,
+                }
+                for s in splits[stage]
+            ]
+        )
+    return pd.DataFrame(cont)

@@ -1,41 +1,39 @@
+import pandas as pd
+
 from graph_cl.dataloader.ConceptDataModule import ConceptDataModule
 from graph_cl.data_models.Data import DataConfig
 from pathlib import Path
 import yaml
+from graph_cl.data_models.ProjectSettings import ProjectSettings
+from graph_cl.data_models.Sample import Sample
 
 
 def test_ConceptDataModule():
-    labels_dir = Path(
-        "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/02_processed/labels/samples/"
+    ps = ProjectSettings(
+        dataset_name="jackson",
+        experiment_name="test",
+        model_name="my_model",
     )
-    concept_graphs_dirs = [
-        p
-        for p in Path(
-            "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/03_concept_graphs"
-        ).iterdir()
-        if p.is_dir()
-    ]
-    processed_dir: Path = Path(
-        "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/data/02_processed"
-    )
-    config_path = Path(
-        "/Users/adrianomartinelli/data/ai4src/graph-concept-learner/experiments/ERStatusV2/configuration/data.yaml"
-    )
-    batch_size = 8
-    shuffle = True
-    cache_dir = None
 
-    with open(config_path, "r") as file:
-        config = yaml.safe_load(file)
-        config = DataConfig(**config)
+    split_info = pd.read_parquet(str(ps.split_info_path))
+    stages = set(split_info.split)
 
-    concept_data_module = ConceptDataModule(
-        labels_dir=labels_dir,
-        concept_graphs_dirs=concept_graphs_dirs,
-        processed_dir=processed_dir,
-        config=config,
-        batch_size=batch_size,
-        shuffle=shuffle,
-        cache_dir=cache_dir,
+    splits = {
+        stage: [
+            Sample.from_pickle(ps.get_sample_path(s))
+            for s in split_info.set_index("stage")["sample_name"].loc[stage]
+        ]
+        for stage in stages
+    }
+
+    data_config = DataConfig.from_yaml(ps.data_config_path)
+
+    dm = ConceptDataModule(
+        splits=splits,
+        concepts="concept_1",
+        config=data_config,
+        save_samples_dir=ps.experiment_samples_dir,
+        save_dataset_dir=ps.experiment_dataset_dir,
+        save_attributes_dir=ps.experiment_attributes_dir,
     )
-    concept_data_module.setup(stage="fit")
+    dm.setup(stage="fit")

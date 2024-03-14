@@ -1,11 +1,11 @@
 from pathlib import Path
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict, field_validator, computed_field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator, computed_field
 from dotenv import find_dotenv
 
 
 class ProjectSettings(BaseSettings):
-    model_config = ConfigDict(
+    model_config = SettingsConfigDict(
         env_file=find_dotenv(".env", usecwd=True),
         protected_namespaces=("settings_",),
         extra="ignore",
@@ -95,6 +95,27 @@ class ProjectSettings(BaseSettings):
         if self.experiment_dir is None:
             return None
         return self.experiment_config_dir / "train.yaml"
+
+    @computed_field
+    @property
+    def experiment_attributes_dir(self) -> None | Path:
+        if self.experiment_dir is None:
+            return None
+        return self.experiment_dir / "05_attributes"
+
+    @computed_field
+    @property
+    def experiment_samples_dir(self) -> None | Path:
+        if self.experiment_dir is None:
+            return None
+        return self.experiment_dir / "06_samples"
+
+    @computed_field
+    @property
+    def experiment_dataset_dir(self) -> None | Path:
+        if self.experiment_dir is None:
+            return None
+        return self.experiment_dir / "07_datasets"
 
     @computed_field
     def raw_dir(self) -> None | Path:

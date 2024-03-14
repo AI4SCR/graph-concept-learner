@@ -14,6 +14,7 @@ class DataConfig(BaseModel, FromYamlMixIn):
         method: str
         kwargs: dict
 
+    dataset_name: str
     target: str
     filter: Filter
     split: Split

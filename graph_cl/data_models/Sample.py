@@ -4,17 +4,18 @@ import pandas as pd
 from torch_geometric.data import Data
 from skimage.io import imread
 import torch
-from pydantic import BaseModel, Field, computed_field
-from .MixIns import PickleMixIn
+from pydantic import BaseModel, Field
+from .MixIns import PickleMixIn, ModelIOMixIn
 from pathlib import Path
 
 
-class Sample(BaseModel, PickleMixIn):
+class Sample(BaseModel, PickleMixIn, ModelIOMixIn):
     model_config = dict(arbitrary_types_allowed=True)
 
     # IDs
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
+    # observation_ids: list[tuple] | pd.Index  # TODO: should we add this?
 
     # OBSERVATION DATA
     expression_url: None | Path = None
@@ -64,30 +65,47 @@ class Sample(BaseModel, PickleMixIn):
     @property
     def sample_labels(self) -> pd.DataFrame:
         return (
-            pd.read_parquet(self.sample_labels_url) if self.sample_labels_url else None
+            pd.read_parquet(self.sample_labels_url).squeeze()
+            if self.sample_labels_url
+            else None
+        )
+
+    @property
+    def metadata(self) -> pd.DataFrame:
+        return (
+            pd.read_parquet(self.metadata_url).squeeze() if self.metadata_url else None
         )
 
     @property
     def cohort(self) -> str:
-        return self.metadata["cohort"]
+        return self.sample_labels["cohort"]
+
+    @property
+    def attributes(self) -> pd.DataFrame:
+        return pd.read_parquet(self.attributes_url) if self.attributes_url else None
+
+    def concept_graph(self, concept_name: str) -> Data:
+        return (
+            torch.load(self.concept_graph_url[concept_name])
+            if concept_name in self.concept_graph_url
+            else None
+        )
 
     def attributed_graph(self, concept_name: str) -> Data:
+        from ..preprocessing.attribute import attribute_graph
+
         assert self.attributes_url is not None
         assert self.attributes.isna().any().any() == False
 
-        graph = self.concept_graphs[concept_name]
+        graph = self.concept_graph(concept_name)
         attrs = self.attributes
-        # note: since the concept graph is a subgraph of the full graph, we can assume that the object_ids are a subset of the features
-        assert set([int(i) for i in graph.object_id]).issubset(
-            set(attrs.index.get_level_values("cell_id"))
-        )
+        graph = attribute_graph(graph, attrs)
 
-        attrs = attrs.droplevel("core").loc[
-            graph.object_id, :
-        ]  # align the features with the graph
-        graph.x = torch.tensor(attrs.values, dtype=torch.float32)
         graph.y = torch.tensor(self.target_encoded, dtype=torch.int32)
-        graph.feature_name = attrs.columns.tolist()
+        graph.sample_id = self.id
+        graph.name = self.name
+        graph.cohort = self.cohort
+        graph.target = self.target
 
         return graph
 
@@ -107,10 +125,10 @@ class Sample(BaseModel, PickleMixIn):
         object_ids.remove(0)
         assert set(self.expression.index.get_level_values("cell_id")) == object_ids
 
-        if self.concept_graphs:
-            for concept, graph in self.concept_graphs.items():
-                # check that graph contains subset of object_ids
-                assert set([int(i) for i in graph.object_id]) <= object_ids
+        for concept_name in self.concept_graph_url:
+            graph = self.concept_graph(concept_name)
+            # check that graph contains subset of object_ids
+            assert set([int(i) for i in graph.object_id]) <= object_ids
 
         if self.attributes:
             assert (self.expression.index == self.attributes.index).all()

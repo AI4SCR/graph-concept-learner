@@ -2,6 +2,20 @@ import pickle
 from pathlib import Path
 
 
+class ModelIOMixIn:
+    @classmethod
+    def model_validate_from_file(cls, path):
+        import json
+
+        with open(path, "r") as f:
+            data = json.load(f)
+        return cls.model_validate(data)
+
+    def model_dump_to_file(self, path: Path | str):
+        with open(path, "w") as f:
+            f.write(self.model_dump_json())
+
+
 class FromYamlMixIn:
     # TODO: add typing
     @classmethod

@@ -4,7 +4,7 @@ from pydantic import field_validator, computed_field
 from dotenv import find_dotenv
 
 
-class PathFactory(BaseSettings):
+class DatasetPathFactory(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=find_dotenv(".env", usecwd=True),
         protected_namespaces=("settings_",),
@@ -30,7 +30,6 @@ class PathFactory(BaseSettings):
             "img_url": self.processed_dir / "imgs" / f"{sample_name}.tiff",
             # "concept_graph_url": {concept_name: self.get_concept_graph_path(concept_name, sample_name)
             #                       for concept_name in concept_names},
-            # "attributes_url": self.attributes_dir / f"{sample_name}.parquet",
             "metadata_url": self.metadata_dir / "samples" / f"{sample_name}.parquet",
             "sample_labels_url": self.processed_dir
             / "labels"
@@ -58,20 +57,6 @@ class PathFactory(BaseSettings):
         return self.data_dir / "datasets" / self.dataset_name
 
     @computed_field
-    def concepts_dir(self) -> Path:
-        return self.data_dir / "concepts"
-
-    @computed_field
-    def experiments_dir(self) -> Path:
-        return self.data_dir / "experiments"
-
-    @computed_field
-    def concept_graphs_dir(self) -> None | Path:
-        if self.dataset_dir is None:
-            return None
-        return self.dataset_dir / "04_concept_graphs"
-
-    @computed_field
     def raw_dir(self) -> None | Path:
         if self.dataset_dir is None:
             return None
@@ -84,10 +69,23 @@ class PathFactory(BaseSettings):
         return self.dataset_dir / "02_processed"
 
     @computed_field
+    def concept_graphs_dir(self) -> None | Path:
+        if self.dataset_dir is None:
+            return None
+        return self.dataset_dir / "03_concept_graphs"
+
+    @computed_field
+    @property
     def samples_dir(self) -> None | Path:
         if self.dataset_dir is None:
             return None
-        return self.dataset_dir / "03_samples"
+        return self.dataset_dir / "04_samples"
+
+    @computed_field
+    def processed_samples_dir(self) -> None | Path:
+        if self.dataset_dir is None:
+            return None
+        return self.processed_dir / "samples"
 
     @computed_field
     @property
@@ -102,6 +100,13 @@ class PathFactory(BaseSettings):
         if self.processed_dir is None:
             return None
         return self.processed_dir / "masks"
+
+    @computed_field
+    @property
+    def info_path(self) -> None | Path:
+        if self.dataset_dir is None:
+            return None
+        return self.processed_dir / "info.parquet"
 
     @field_validator("data_dir")
     @classmethod

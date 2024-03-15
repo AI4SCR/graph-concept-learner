@@ -1,0 +1,30 @@
+seed: 0
+tracking:
+    mlflow_uri: null
+    checkpoint_dir: ./checkpoints
+optimizer:
+    name: Adam
+    kwargs:
+        lr: 0.0001
+    layers:
+    -   name: aggregator
+        freeze: false
+        kwargs:
+            lr: 0.001
+    -   name: concept_learners
+        freeze: true
+        kwargs:
+            lr: 1.0e-05
+scheduler:
+    name: ExponentialLR
+    kwargs:
+        gamma: 0.98
+    interval: epoch
+dataloader:
+    batch_size: 8
+    num_workers: 1
+    shuffle: true
+trainer:
+    max_epochs: 2
+    limit_train_batches: 20
+    fast_dev_run: true

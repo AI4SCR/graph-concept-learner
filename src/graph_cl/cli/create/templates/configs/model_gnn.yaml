@@ -1,0 +1,12 @@
+act: ReLU
+act_first: false
+dropout: false
+gnn: GIN
+norm: BatchNorm
+num_classes: null
+num_layers: 2
+scaler: 2
+in_channels: null
+num_layers_MLP: 2
+pool: global_add_pool
+seed: 2

@@ -1,0 +1,26 @@
+dataset_name: jackson
+target: ERStatus
+filter:
+    min_num_nodes: 10
+split:
+    strategy: split_basel_leave_zurich_as_external
+    kwargs:
+        train_size: 0.7
+        random_state: 0
+# TODO: it would be better to move this to the features dict and have for each feature dict a list of transform steps
+normalize:
+    method: min_max
+    kwargs:
+        cofactor: 5
+        censoring: 0.999
+features:
+    - name: expression
+      attribute_name: expression
+      include: true
+    - name: location
+      attribute_name: location
+      include: false
+    - name: spatial
+      attribute_name: spatial
+      include: false
+seed: 42

@@ -1,6 +1,0 @@
-# gcl preprocess jackson [raw_data_dir, output_dir]
-# gcl preprocess build-concept-graph [mask_path, config_path, output_dir]
-# gcl preprocess attribute []
-# gcl model pretrain
-# gcl model train
-# gcl model predict

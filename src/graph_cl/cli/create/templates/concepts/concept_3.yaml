@@ -1,0 +1,12 @@
+name: concept_3
+graph:
+  topology: contact
+  params:
+    dilation_kernel: disk
+    radius: 4
+    include_self: false
+filter:
+  col_name: cell_class
+  include_labels:
+    - Immune
+    - Tumor

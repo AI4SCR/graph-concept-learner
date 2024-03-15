@@ -1,0 +1,18 @@
+name: concept_2
+graph:
+  topology: knn
+  params:
+    n_neighbors: 4
+    mode: connectivity
+    metric: minkowski
+    p: 2
+    metric_params:
+    include_self: false
+    n_jobs: -1
+filter:
+  col_name: cell_class
+  include_labels:
+    - Vessel
+    - Immune
+    - Stroma
+    - Tumor

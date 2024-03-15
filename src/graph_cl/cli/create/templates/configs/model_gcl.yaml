@@ -1,0 +1,21 @@
+act: ReLU
+act_first: false
+dropout: false
+gnn: GIN
+jk: null
+norm: BatchNorm
+num_layers: 2
+num_classes: null
+in_channels: null
+scaler: 4
+num_layers_MLP: 2
+pool: global_add_pool
+seed: 2
+aggregator: transformer
+mlp_num_layers: 2
+mlp_act_key: relu
+n_heads: 8
+depth: 1
+concepts:
+  - concept_1
+  - concept_2

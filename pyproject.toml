@@ -1,8 +1,3 @@
-# configuration approach followed:
-# - whenever possible, prefer pyproject.toml
-# - for configurations insufficiently supported by pyproject.toml, use setup.cfg instead
-# - setup.py discouraged; minimal stub included only for compatibility with legacy tools
-
 [build-system]
 requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
@@ -11,13 +6,17 @@ build-backend = "setuptools.build_meta"
 name = "graph_cl"
 description = "Learning using concept graphs for general prediction tasks. "
 authors = [
-    { name = "Santiago Castro Dau", email = "santiago.castro.dau@ibm.com" },
+    { name = "Santiago Castro Dau", email = "sanntiago5@gmail.com" },
+    { name = "Adriano Martinelli", email = "adriano.martinelli@chuv.ch" },
 ]
 readme = "README.md"
 # due to how PEP 440 defines version matching, prefer [incl, excl) definitions like below:
-requires-python = ">=3.7, <3.11"
+requires-python = ">=3.11, <3.12"
 dependencies = ["click"]
 dynamic = ["version"]
+
+[project.entry-points."console_scripts"]
+graph_cl = "graph_cl.cli.main:cli"
 
 [project.optional-dependencies]
 test = [
@@ -43,7 +42,7 @@ dev = [
 version_scheme = "post-release"
 
 [project.urls]
-repository = "https://github.ibm.com/Santiago-Castro-Dau/graph-concept-learner"
+repository = "https://github.com/AI4SCR/graph-concept-learner"
 
 [tool.semantic_release]
 # for default values check:
@@ -64,13 +63,9 @@ build_command = "git restore --staged CHANGELOG.md && python -m build"
 
 github_token_var="GITHUB_TOKEN"
 
-hvcs_domain="github.ibm.com"
-hvcs_api_domain="github.ibm.com/api/v3"  # see https://ibm-analytics.slack.com/archives/C3SSJ6CSE/p1660313562338669?thread_ts=1660300230.162449&cid=C3SSJ6CSE
-
 [tool.black]
 line-length = 88
 skip-string-normalization = false
-target-version = ['py37']
 
 [tool.isort]
 multi_line_output = 3
@@ -87,3 +82,9 @@ check_untyped_defs = true
 [[tool.mypy.overrides]]
 module = "pytest.*"
 ignore_missing_imports = true
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]

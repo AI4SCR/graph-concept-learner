@@ -59,6 +59,7 @@ fsspec==2023.6.0
 geopandas==0.14.3
 gitdb==4.0.11
 GitPython==3.1.41
+-e git+ssh://git@github.com/AI4SCR/graph-concept-learner.git@0469f485db5f2f7999d9d7734f1dbe1d122f335e#egg=graph_cl
 gunicorn==21.2.0
 h5py==3.10.0
 HeapDict==1.0.1

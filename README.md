@@ -1,33 +1,12 @@
 # Graph Concept Learner
-
-## ToDos
- - Further modularize the code:
-   - Create functions that just create models
-   - train functions just load the model and train it
-   - create function that create datasets
- - exclude testing from training scripts
- - create plotting utilities -> some are in utils/mlflow
- - unify configs where possible
- - create configs from pydantic models
- - parameterize LitModules
- - download dataset for easy deployment on the cloud
- - use relative paths within the graph_cl module
- - refine Pydantic models
- - refactor tests and complete tests
- - write evaluation code
- - refactor ./bin
-
 Learning using concept graphs for general prediction tasks.
-
-## Environment
-Using a virtual environment for all commands in this guide is strongly recommended.
 
 ## Installation
 
 ### Package installation
 ```sh
 # assuming you have an SSH key set up on GitHub
-pip install "git+ssh://git@github.com:AI4SCR/graph-concept-learner.git@main"
+pip install "git+ssh://git@github.com:AI4SCR/graph-concept-learner.git@refactoring"
 ```
 
 ### Suggested setup for development
@@ -38,5 +17,28 @@ pip install -e .
 pre-commit install
 ```
 
+### CLI
+Start exploring the CLI by running `graph_cl --help`
+
 ## Usage
 Check workflow [Workflow tutorial](https://github.com/AI4SCR/graph-concept-learner/wiki/Workflow-tutorial)
+
+
+
+## ToDos
+- [ ] Further modularize the code:
+   - [x] Create functions that just create models
+   - [x] train functions just load the model and train it
+   - [x] create function that create datasets
+- [ ] Refactor and unify base models, remove custom transformers if possible
+- [x] exclude testing from training scripts
+- [ ] create plotting utilities -> some are in utils/mlflow
+- [x] unify configs where possible
+- [x] create configs from pydantic models
+- [x] parameterize LitModules
+- [ ] download dataset for easy deployment on the cloud
+- [x] use relative paths within the graph_cl module
+- [x] refine Pydantic models
+- [x] refactor tests and complete tests
+- [ ] write evaluation code
+- [x] refactor ./bin

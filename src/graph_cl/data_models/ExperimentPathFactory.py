@@ -27,17 +27,17 @@ class ExperimentPathFactory(ProjectPathFactory):
 
     @computed_field
     @property
-    def attributes_dir(self) -> Path:
+    def _attributes_dir(self) -> Path:
         return self.experiment_dir / "05_attributes"
 
     @computed_field
     @property
-    def experiment_samples_dir(self) -> Path:
+    def _experiment_samples_dir(self) -> Path:
         return self.experiment_dir / "06_samples"
 
     @computed_field
     @property
-    def experiment_dataset_dir(self) -> Path:
+    def _experiment_dataset_dir(self) -> Path:
         return self.experiment_dir / "07_datasets"
 
     @computed_field
@@ -52,7 +52,7 @@ class ExperimentPathFactory(ProjectPathFactory):
 
     @computed_field
     @property
-    def model_gnn_dir(self) -> Path:
+    def _model_gnn_dir(self) -> Path:
         return self.experiment_dir / "08_models" / "gnn"
 
     @computed_field
@@ -91,16 +91,21 @@ class ExperimentPathFactory(ProjectPathFactory):
         return self.config_dir / "train.yaml"
 
     def get_sample_path(self, sample_name: str) -> Path:
-        return self.experiment_samples_dir / f"{sample_name}.json"
+        return self._experiment_samples_dir / f"{sample_name}.json"
 
     def get_attribute_dir(self, stage: str, mkdir=True) -> Path:
-        path = self.attributes_dir / stage
+        path = self._attributes_dir / stage
         if mkdir:
             path.mkdir(parents=True, exist_ok=True)
         return path
 
+    def get_experiment_dataset_path(self, model_name: str, concept_name: str) -> Path:
+        path = self._experiment_dataset_dir / model_name / concept_name
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
     def get_concept_model_dir(self, concept_name) -> Path:
-        return self.model_gnn_dir / concept_name
+        return self._model_gnn_dir / concept_name
 
     def get_prediction_path(
         self, dataset_name: str, model_name: str, sample_name: str

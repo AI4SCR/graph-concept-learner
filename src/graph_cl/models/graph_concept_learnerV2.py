@@ -71,7 +71,7 @@ class GraphConceptLearner(nn.Module):
         cont = []
         for concept, val in batch.items():
             cont.append(val.y)
-            assert len(set(val.concept)) == 1
+            assert len(set(val.concept_name)) == 1
 
         n_samples = torch.stack(cont, dim=1).size(0)
         assert torch.stack(cont, dim=1).to("cpu").unique(dim=1).size(dim=1) == 1

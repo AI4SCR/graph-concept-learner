@@ -1,7 +1,5 @@
-import torch.nn as nn
 import pandas as pd
 
-from ...models.gnn import GNN_plus_MPL
 from ...data_models.Data import DataConfig
 from ...data_models.Sample import Sample
 from ...data_models.ExperimentPathFactory import ExperimentPathFactory
@@ -16,6 +14,7 @@ from ...train.train import train_model
 from ...dataloader.ConceptDataModule import ConceptDataModule
 from ...data_models.Model import ModelGCLConfig
 from ...train.lightning import LitGCL
+from ...utils.log import logger
 
 
 def preprocess_samples(experiment_name: str):
@@ -86,10 +85,16 @@ def pretrain(experiment_name: str, concept_name: str):
     model_config = ModelGNNConfig.from_yaml(
         factory.model_gnn_config_path, num_classes=num_classes, in_channels=num_features
     )
-    assert concept_name in model_config.concepts
+    assert (
+        concept_name
+        in ModelGCLConfig.from_yaml(
+            factory.model_gcl_config_path, num_classes=-1, in_channels=-1
+        ).concepts
+    )
 
     dm = ConceptDataModule(
         splits=splits,
+        model_name=model_config.name,
         concepts=concept_name,
         config=data_config,
         factory=factory,
@@ -118,6 +123,7 @@ def train(experiment_name: str):
 
     dm = ConceptDataModule(
         splits=splits,
+        model_name=model_config.name,
         concepts=model_config.concepts,
         config=data_config,
         factory=factory,

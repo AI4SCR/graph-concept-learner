@@ -18,5 +18,5 @@ def test_pretrain(concept_name):
 def test_train():
     from graph_cl.cli.experiment.cmd import train
 
-    train(experiment_name="test")
+    train(experiment_name="exp_1")
     assert True

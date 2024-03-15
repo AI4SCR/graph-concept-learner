@@ -29,7 +29,7 @@ LEVEL_COLORS = {
 class ColorFormatter(logging.Formatter):
     def format(self, record):
         levelname = record.levelname
-        if levelname in LEVEL_COLORS:
+        if record.levelno in LEVEL_COLORS:
             levelname_color = LEVEL_COLORS[record.levelno] + levelname + COLORS["ENDC"]
             record.levelname = levelname_color
         return super().format(record)

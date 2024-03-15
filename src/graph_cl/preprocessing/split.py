@@ -16,7 +16,7 @@ def train_val_basel_test_zurich(
         s.split = "test"
 
     bs = list(filter(lambda s: s.cohort == "basel", samples))
-    stratify = [s.target for s in samples]
+    stratify = [s.target for s in bs]
     train, val = train_test_split(
         bs,
         test_size=test_size,

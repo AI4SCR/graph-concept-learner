@@ -21,8 +21,11 @@ def build_concept_graph(sample: Sample, concept_config: ConceptConfig):
         params=concept_config.graph.params,
     )
 
+    # TODO: should we just add the whole sample to the graph?
+    # graph.sample = sample
     graph.sample_id = sample.id
     graph.sample_name = sample.name
+    graph.cohort = sample.cohort
     graph.concept_name = concept_config.name
 
     return graph

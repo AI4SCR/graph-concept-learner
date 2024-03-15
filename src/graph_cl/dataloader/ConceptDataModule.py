@@ -27,6 +27,7 @@ class ConceptDataModule(L.LightningDataModule):
     def __init__(
         self,
         splits: dict[str, list[Sample]],
+        model_name: str,
         concepts: str | list[str],
         config: DataConfig,
         factory: ExperimentPathFactory,
@@ -43,11 +44,26 @@ class ConceptDataModule(L.LightningDataModule):
 
         # init params
         self.splits = splits
+        self.model_name = model_name
         self.concepts = concepts
+        if self.model_name == "gnn":
+            assert isinstance(self.concepts, str)
+        elif self.model_name == "gcl":
+            assert isinstance(self.concepts, list)
+        else:
+            raise ValueError(f"model_name={self.model_name} not supported")
+
         self.config = config
         self.factory = factory
-        self.save_samples_dir = self.factory.experiment_samples_dir
-        self.save_dataset_dir = self.factory.experiment_dataset_dir
+        self.save_samples_dir = self.factory._experiment_samples_dir
+
+        # NOTE: we cannot use a simpler solution and just overwrite the current datasets for each
+        #   model and concept, because if we train in parallel and share the storage we might load the wrong
+        #   dataset.
+        concept_name = self.concepts if self.model_name == "gnn" else ""
+        self.save_dataset_dir = self.factory.get_experiment_dataset_path(
+            model_name=self.model_name, concept_name=concept_name
+        )
 
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -109,16 +125,20 @@ class ConceptDataModule(L.LightningDataModule):
     def setup(self, stage: str):
         # note: it seems to be necessary to setup all dataloaders or at least the fit, val loaders.
         #   the val_dataloader is called after just running the setup with stage='fit'. Unclear why.
+        #   -> probably because if we `fit` we also have to validate, thus lightning forces you to setup both.
         #   I would prefer a syntax like this, but the call order is setup('fit') -> val_dataloader('val')
         # if stage == "fit":
         #     self.ds_fit = torch.load(self.save_dataset_dir / f"fit.pt")
 
         if "fit" in self.splits:
-            self.ds_fit = torch.load(self.save_dataset_dir / f"fit.pt")
-        if "val" in self.splits:
-            self.ds_val = torch.load(self.save_dataset_dir / f"val.pt")
+            path_save = self.save_dataset_dir / f"fit.pt"
+            self.ds_fit = torch.load(path_save)
+        if "val" in self.splits or "validate" in self.splits:
+            path_save = self.save_dataset_dir / f"val.pt"
+            self.ds_val = torch.load(path_save)
         if "test" in self.splits:
-            self.ds_test = torch.load(self.save_dataset_dir / f"test.pt")
+            path_save = self.save_dataset_dir / f"test.pt"
+            self.ds_val = torch.load(path_save)
 
     def train_dataloader(self):
         return DataLoader(self.ds_fit, batch_size=self.batch_size, shuffle=self.shuffle)

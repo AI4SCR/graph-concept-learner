@@ -106,9 +106,6 @@ class Sample(BaseModel, PickleMixIn, ModelIOMixIn):
         graph = attribute_graph(graph, attrs)
 
         graph.y = torch.tensor(self.target_encoded, dtype=torch.int32)
-        graph.sample_id = self.id
-        graph.name = self.name
-        graph.cohort = self.cohort
         graph.target = self.target
 
         return graph

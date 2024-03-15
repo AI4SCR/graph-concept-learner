@@ -7,7 +7,7 @@ from graph_cl.data_models.Sample import Sample
 
 
 def test_ConceptDataModule():
-    experiment_name = "test"
+    experiment_name = "exp_1"
     factory = ExperimentPathFactory(experiment_name=experiment_name)
 
     split_info = pd.read_parquet(factory.split_info_path).set_index("stage")
@@ -24,7 +24,12 @@ def test_ConceptDataModule():
 
     data_config = DataConfig.from_yaml(factory.data_config_path)
     dm = ConceptDataModule(
-        splits=splits, concepts="concept_1", config=data_config, factory=factory
+        splits=splits,
+        model_name="gnn",
+        concepts="concept_1",
+        config=data_config,
+        factory=factory,
+        force_attr_computation=True,
     )
     dm.prepare_data()
     dm.setup(stage="fit")

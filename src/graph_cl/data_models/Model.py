@@ -5,6 +5,7 @@ from .MixIns import FromYamlMixIn
 
 
 class ModelGNNConfig(BaseModel, FromYamlMixIn):
+    name: str = "gnn"
     act: str
     act_first: bool
     dropout: bool
@@ -23,6 +24,7 @@ class ModelGNNConfig(BaseModel, FromYamlMixIn):
 
 # TODO: GCL should not be a superset of GNN, why would we need to define the gnn attribute for example?
 class ModelGCLConfig(ModelGNNConfig, FromYamlMixIn):
+    name: str = "gcl"
     concepts: list[str]
     aggregator: Literal["transformer", "linear", "concat"] = "transformer"
     mlp_num_layers: int = 2

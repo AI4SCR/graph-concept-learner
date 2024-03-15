@@ -1,0 +1,84 @@
+configfile: "config.yaml"
+
+import glob
+import os
+
+# Define global parameters
+DATA_DIR = "/Users/adrianomartinelli/data/ai4src/graph-concept-learner-test"
+DATASET_NAME = "jackson"
+DATASET_PATH = os.path.join(DATA_DIR,"datasets",DATASET_NAME)
+CONCEPTS_DIR = os.path.join(DATA_DIR,"concepts")
+EXPERIMENT_NAME = "exp_1"
+
+# List of raw data files to create symlinks for
+raw_data_files = glob.glob("/Users/adrianomartinelli/data/ai4src/graph-concept-learner/jackson/raw_data/zipped/*")
+
+# Get all concept files
+concept_files = glob.glob(os.path.join(CONCEPTS_DIR,"*.yaml"))
+
+# Determine processed sample files based on a pattern
+processed_samples = glob.glob(os.path.join(DATASET_PATH,"02_processed/samples","*.json"))
+
+rule all:
+    input:
+        expand("{dataset_path}/03_concept_graphs/{sample_base}_{concept_base}.graph",
+            dataset_path=DATASET_PATH,
+            sample_base=[os.path.splitext(os.path.basename(f))[0] for f in processed_samples],
+            concept_base=[os.path.splitext(os.path.basename(f))[0] for f in concept_files])
+
+rule symlink_raw_data:
+    input:
+        raw_data_files=raw_data_files
+    output:
+        touch(os.path.join(DATASET_PATH,"01_raw/.symlinked"))
+    shell:
+        """
+        mkdir -p {DATASET_PATH}/01_raw
+        for file in {input.raw_data_files}; do
+            ln -s $file {DATASET_PATH}/01_raw/$(basename $file)
+        done
+        """
+
+rule process_dataset:
+    input:
+        os.path.join(DATASET_PATH,"01_raw/.symlinked")
+    output:
+        touch(os.path.join(DATASET_PATH,"02_processed/.processed"))
+    shell:
+        "graph_cl dataset process -d {DATASET_NAME}"
+
+rule create_concept_graph:
+    input:
+        sample="{dataset_path}/02_processed/samples/{sample_base}.json",
+        concept="{concepts_dir}/{concept_base}.yaml",
+        processed=os.path.join(DATASET_PATH,"02_processed/.processed")
+    output:
+        graph="{dataset_path}/03_concept_graphs/{sample_base}_{concept_base}.graph"
+    shell:
+        """
+        mkdir -p $(dirname {output.graph})
+        graph_cl concept-graph create -d {DATASET_NAME} -s {wildcards.sample_base} -c {wildcards.concept_base}
+        """
+
+
+# Preprocess experiment
+rule preprocess_experiment:
+    shell:
+        """
+        graph_cl experiment preprocess -e "{EXPERIMENT_NAME}"
+        """
+
+# Pretrain concept graphs
+rule pretrain_concept_graphs:
+    shell:
+        """
+        graph_cl experiment pretrain -e "{EXPERIMENT_NAME}" -c "concept_1"
+        graph_cl experiment pretrain -e "{EXPERIMENT_NAME}" -c "concept_2"
+        """
+
+# Train GCL
+rule train_gcl:
+    shell:
+        """
+        graph_cl experiment train -e "{EXPERIMENT_NAME}"
+        """

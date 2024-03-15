@@ -1,15 +1,18 @@
 # Graph Concept Learner
+
 Learning using concept graphs for general prediction tasks.
 
 ## Installation
 
 ### Package installation
+
 ```sh
 # assuming you have an SSH key set up on GitHub
 pip install "git+ssh://git@github.com:AI4SCR/graph-concept-learner.git@refactoring"
 ```
 
 ### Suggested setup for development
+
 ```sh
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
@@ -18,18 +21,33 @@ pre-commit install
 ```
 
 ### CLI
+
 Start exploring the CLI by running `graph_cl --help`
 
+### Run the Workflow
+
+#### Nextflow
+
+```bash
+nextflow run workflow.nf --data_dir "/new/data/dir" --dataset_name "new_dataset" --experiment_name "exp_2"
+```
+
+#### SnakeMake
+
+```bash
+snakemake --cores [N]
+```
+
 ## Usage
+
 Check workflow [Workflow tutorial](https://github.com/AI4SCR/graph-concept-learner/wiki/Workflow-tutorial)
 
-
-
 ## ToDos
+
 - [ ] Further modularize the code:
-   - [x] Create functions that just create models
-   - [x] train functions just load the model and train it
-   - [x] create function that create datasets
+    - [x] Create functions that just create models
+    - [x] train functions just load the model and train it
+    - [x] create function that create datasets
 - [ ] Refactor and unify base models, remove custom transformers if possible
 - [x] exclude testing from training scripts
 - [ ] create plotting utilities -> some are in utils/mlflow

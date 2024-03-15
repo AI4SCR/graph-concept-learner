@@ -1,0 +1,3 @@
+data_dir: "/path/to/data/dir"
+dataset_name: "my_dataset"
+experiment_name: "exp_2"

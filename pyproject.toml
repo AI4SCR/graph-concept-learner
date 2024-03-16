@@ -25,19 +25,18 @@ graph_cl = "graph_cl.cli.main:cli"
 test = [
     "pytest",
     "pytest-cov",
-    "pandas"
 ]
 dev = [
-    "black",
-    "flake8",
     "mypy",
+    "black",
+    "isort",
+    "flake8",
+    "pre-commit",
+    "setuptools_scm[toml]",
 ]
 
 [project.urls]
 repository = "https://github.com/AI4SCR/graph-concept-learner"
-
-[tool.setuptools_scm]
-version_scheme = "post-release"
 
 [tool.black]
 line-length = 88

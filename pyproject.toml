@@ -12,7 +12,10 @@ authors = [
 readme = "README.md"
 # due to how PEP 440 defines version matching, prefer [incl, excl) definitions like below:
 requires-python = ">=3.11, <3.12"
-dependencies = ["click"]
+dependencies = [
+    "click",
+    "ai4bmr-core @ git+ssh://git@github.com/AI4SCR/ai4bmr-core.git@main"
+]
 dynamic = ["version"]
 
 [project.entry-points."console_scripts"]
@@ -22,46 +25,19 @@ graph_cl = "graph_cl.cli.main:cli"
 test = [
     "pytest",
     "pytest-cov",
+    "pandas"
 ]
 dev = [
-    "pytest",
-    "pytest-cov",
     "black",
     "flake8",
-    "pep8-naming",
     "mypy",
-    "sphinx",
-    "sphinx-autodoc-typehints",
-    "better-apidoc",
-    "six",
-    "sphinx_rtd_theme",
-    "myst-parser",
 ]
-
-[tool.setuptools_scm]
-version_scheme = "post-release"
 
 [project.urls]
 repository = "https://github.com/AI4SCR/graph-concept-learner"
 
-[tool.semantic_release]
-# for default values check:
-# https://github.com/relekang/python-semantic-release/blob/master/semantic_release/defaults.cfg
-
-version_source = "tag_only"
-branch = "main"
-
-# configure types which should trigger minor and patch version bumps respectively
-# (note that they must be a subset of the configured allowed types):
-parser_angular_allowed_types = "build,chore,ci,docs,feat,fix,perf,style,refactor,test"
-parser_angular_minor_types = "feat"
-parser_angular_patch_types = "fix,perf"
-
-# unstaging the changelog (i.e. command part before &&) is a workaround for
-# https://github.com/relekang/python-semantic-release/issues/381:
-build_command = "git restore --staged CHANGELOG.md && python -m build"
-
-github_token_var="GITHUB_TOKEN"
+[tool.setuptools_scm]
+version_scheme = "post-release"
 
 [tool.black]
 line-length = 88
@@ -74,7 +50,7 @@ force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
 line_length = 88
-force_to_top = ["rdkit", "scikit-learn"]
+force_to_top = []
 
 [tool.mypy]
 check_untyped_defs = true
@@ -83,8 +59,6 @@ check_untyped_defs = true
 module = "pytest.*"
 ignore_missing_imports = true
 
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
+[tool.setuptools_scm]
+version_scheme = "post-release"
+write_to = "src/graph_cl/_version.py"  # Example path where version info could be written

@@ -2,6 +2,22 @@
 
 Learning using concept graphs for general prediction tasks.
 
+## Environment
+Make sure your in the root of the project.
+
+```bash
+python3.11 -m venv ~/.venv/graph_cl
+source ~/.venv/graph_cl/bin/activate
+```
+If you do not want to use the workflow defaults, you can set the environment variables in a `.env` file.
+
+- AI4BMR_CACHE_DIR: The directory where the datasets are stored. This is used by the workflow to download the datasets.
+  Defaults to `~/.cache/ai4bmr/`.
+
+```bash
+echo "AI4BMR_CACHE_DIR=<PATH_TO_DATASET_CACHE>" >> .env
+```
+
 ## Installation
 
 ### Package installation
@@ -20,19 +36,28 @@ pip install -e .
 pre-commit install
 ```
 
-### CLI
+## CLI
 
 Start exploring the CLI by running `graph_cl --help`
 
-### Run the Workflow
+## Run the Workflow
 
-#### Nextflow
+### Nextflow
 
 ```bash
-nextflow run workflow.nf --data_dir "/new/data/dir" --dataset_name "new_dataset" --experiment_name "exp_2"
+wget -qO- https://get.nextflow.io | bash
+chmod +x nextflow
+mv nextflow /usr/local/bin
 ```
 
-#### SnakeMake
+```bash
+nextflow run workflow.nf \
+--data_dir "/new/data/dir" \
+--dataset_name "new_dataset" --experiment_name "exp_2" \
+-log "nextflow/logs/nextflow.log"
+```
+
+### SnakeMake
 
 ```bash
 snakemake --cores [N]

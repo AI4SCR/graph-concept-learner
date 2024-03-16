@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-params.data_dir = '/Users/adrianomartinelli/data/ai4src/graph-concept-learner-test'
+params.data_dir = '/Users/adrianomartinelli/data/ai4src/graph-concept-learner-test-2'
 params.dataset_name = 'jackson'
 params.concepts_dir = "$params.data_dir/concepts"
 params.experiment_name = "exp_1"

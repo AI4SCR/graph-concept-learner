@@ -1,3 +1,4 @@
+-e git+ssh://git@github.com/AI4SCR/ai4bmr-core.git@ad33663dd9d55094b0c252d0cba9549199eefcf2#egg=ai4bmr_core
 -e git+ssh://git@github.com/AI4SCR/ATHENA.git@bbfc16cec21a4156f6ff1ca5d74dfe3ddba7c30c#egg=ai4scr_athena
 -e git+ssh://git@github.com/AI4SCR/spatial-omics.git@4416169e304cb9c484cf88334badd70e72c99f1c#egg=ai4scr_spatial_omics
 aiobotocore==2.5.4
@@ -11,6 +12,7 @@ annotated-types==0.6.0
 app-model==0.2.4
 appdirs==1.4.4
 appnope==0.1.3
+argparse-dataclass==2.0.0
 array_api_compat==1.4.1
 asciitree==0.3.3
 astropy==6.0.0
@@ -31,12 +33,16 @@ cligj==0.7.2
 cloudpickle==3.0.0
 colorcet==3.0.1
 comm==0.2.1
+conda-inject==1.3.1
+ConfigArgParse==1.7
+connection-pool==0.0.3
 contourpy==1.2.0
 cycler==0.12.1
 dask==2024.1.1
 dask-image==2023.8.1
 databricks-cli==0.18.0
 datashader==0.16.0
+datrie==0.8.2
 debugpy==1.8.0
 decorator==5.1.1
 distributed==2024.1.1
@@ -44,11 +50,13 @@ docker==7.0.0
 docrep==0.3.2
 docstring-parser==0.15
 docutils==0.20.1
+dpath==2.1.6
 einops==0.7.0
 entrypoints==0.4
 et-xmlfile==1.1.0
 executing==2.0.1
 fasteners==0.19
+fastjsonschema==2.19.1
 filelock==3.13.1
 fiona==1.9.5
 Flask==3.0.2
@@ -59,15 +67,17 @@ fsspec==2023.6.0
 geopandas==0.14.3
 gitdb==4.0.11
 GitPython==3.1.41
--e git+ssh://git@github.com/AI4SCR/graph-concept-learner.git@0469f485db5f2f7999d9d7734f1dbe1d122f335e#egg=graph_cl
+-e git+ssh://git@github.com/AI4SCR/graph-concept-learner.git@b698b3b1da1159d716f2f73ea78f46ad156effee#egg=graph_cl
 gunicorn==21.2.0
 h5py==3.10.0
 HeapDict==1.0.1
 hsluv==5.0.4
+humanfriendly==10.0
 idna==3.6
 igraph==0.11.3
 imageio==2.33.1
 imagesize==1.4.1
+immutables==0.20
 importlib-metadata==7.0.1
 importlib_resources==6.1.2
 in-n-out==0.1.9
@@ -114,6 +124,7 @@ napari-plugin-engine==0.2.0
 napari-plugin-manager==0.1.0a2
 napari-svg==0.1.10
 natsort==8.4.0
+nbformat==5.10.3
 ndindex==1.7
 nest-asyncio==1.6.0
 networkx==3.2.1
@@ -137,6 +148,7 @@ pexpect==4.9.0
 pillow==10.2.0
 PIMS==0.6.1
 Pint==0.23
+plac==1.4.3
 platformdirs==4.2.0
 pluggy==1.4.0
 pooch==1.8.0
@@ -145,6 +157,7 @@ protobuf==4.25.2
 psutil==5.9.8
 psygnal==0.9.5
 ptyprocess==0.7.0
+PuLP==2.8.0
 pure-eval==0.2.2
 py-cpuinfo==9.0.0
 pyarrow==15.0.0
@@ -179,6 +192,7 @@ QtPy==2.4.1
 querystring-parser==1.2.4
 referencing==0.33.0
 requests==2.31.0
+reretry==0.11.8
 rich==13.7.0
 rpds-py==0.17.1
 s3fs==2023.6.0
@@ -191,7 +205,13 @@ session-info==1.0.0
 shapely==2.0.2
 six==1.16.0
 slicerator==1.1.0
+smart-open==7.0.1
 smmap==5.0.1
+snakemake==8.8.0
+snakemake-interface-common==1.17.1
+snakemake-interface-executor-plugins==9.0.0
+snakemake-interface-report-plugins==1.0.0
+snakemake-interface-storage-plugins==3.1.1
 snowballstemmer==2.2.0
 sortedcontainers==2.4.0
 spatial_image==0.3.0
@@ -209,6 +229,7 @@ squidpy==1.3.1
 stack-data==0.6.3
 statsmodels==0.14.1
 stdlib-list==0.10.0
+stopit==1.1.2
 superqt==0.6.1
 sympy==1.12
 tables==3.9.2
@@ -216,9 +237,11 @@ tabulate==0.9.0
 tblib==3.0.0
 texttable==1.7.0
 threadpoolctl==3.2.0
+throttler==1.2.2
 tifffile==2024.1.30
 tomli_w==1.0.0
 toolz==0.12.1
+toposort==1.10
 torch==2.2.0
 torch_geometric==2.4.0
 torchmetrics==1.3.0.post0
@@ -242,6 +265,7 @@ xarray-datatree==0.0.13
 xarray-schema==0.0.3
 xarray-spatial==0.3.7
 yarl==1.9.4
+yte==1.5.4
 zarr==2.16.1
 zict==3.0.0
 zipp==3.17.0

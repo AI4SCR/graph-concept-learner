@@ -14,8 +14,9 @@ def experiment():
     pass
 
 
-from .cli import preprocess, pretrain, train
+from .cli import create_concept_graph, preprocess, pretrain, train
 
+experiment.add_command(create_concept_graph)
 experiment.add_command(preprocess)
 experiment.add_command(pretrain)
 experiment.add_command(train)

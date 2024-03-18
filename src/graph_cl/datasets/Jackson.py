@@ -36,14 +36,12 @@ class Jackson(GCLDataset):
         if not self.info_path.exists():
             return []
         paths = pd.read_parquet(self.info_path)
-        return paths.name.map(
-            lambda x: self.processed_samples_dir / f"{x}.json"
-        ).tolist()
+        return paths.name.map(lambda x: self.samples_dir / f"{x}.json").tolist()
 
     def load_cache(self) -> list[Sample]:
-        paths = pd.read_parquet(self.info_path)
-        samples = [Sample(**data) for data in paths.reset_index().to_dict("records")]
-        return samples
+        return [
+            Sample.model_validate_from_json(p) for p in self.samples_dir.glob("*.json")
+        ]
 
     def save_cache(self, samples: list[Sample]) -> None:
         for sample in samples:

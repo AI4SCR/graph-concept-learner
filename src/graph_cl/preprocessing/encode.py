@@ -1,17 +1,12 @@
+from pathlib import Path
+
+from sklearn.preprocessing import LabelEncoder
+
 from ..data_models.Data import DataConfig
 from ..data_models.Sample import Sample
 
-from sklearn.preprocessing import LabelEncoder
-from pathlib import Path
 
-
-def encode_target(
-    samples: list[Sample], data_config: DataConfig
-) -> (list[Sample], int):
-    target = data_config.target
-    for s in samples:
-        s.target = s.sample_labels[target]
-
+def encode_target(samples: list[Sample]) -> list[Sample]:
     target_encoder = LabelEncoder()
     targets = [s.target for s in samples]
     target_encoder.fit(targets)

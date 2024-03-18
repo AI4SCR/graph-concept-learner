@@ -88,20 +88,20 @@ class Sample(BaseModel, PickleMixIn, JSONMixIn):
     def stage(self) -> str:
         return self.split
 
-    def concept_graph(self, concept_name: str) -> Data:
+    def get_concept_graph(self, concept_name: str) -> Data:
         return (
             torch.load(self.concept_graph_url[concept_name])
             if concept_name in self.concept_graph_url
             else None
         )
 
-    def attributed_graph(self, concept_name: str) -> Data:
+    def get_attributed_graph(self, concept_name: str) -> Data:
         from ..preprocessing.attribute import attribute_graph
 
         assert self.attributes_url is not None
         assert self.attributes.isna().any().any() == False
 
-        graph = self.concept_graph(concept_name)
+        graph = self.get_concept_graph(concept_name)
         attrs = self.attributes
         graph = attribute_graph(graph, attrs)
 
@@ -127,7 +127,7 @@ class Sample(BaseModel, PickleMixIn, JSONMixIn):
         assert set(self.expression.index.get_level_values("cell_id")) == object_ids
 
         for concept_name in self.concept_graph_url:
-            graph = self.concept_graph(concept_name)
+            graph = self.get_concept_graph(concept_name)
             # check that graph contains subset of object_ids
             assert set([int(i) for i in graph.object_id]) <= object_ids
 

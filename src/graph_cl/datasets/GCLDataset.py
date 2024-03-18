@@ -1,5 +1,4 @@
 from pathlib import Path
-
 from ai4bmr_core.datasets.Dataset import BaseDataset
 from pydantic import computed_field
 
@@ -88,3 +87,6 @@ class GCLDataset(BaseDataset):
 
     def get_concept_graph_path(self, concept_name: str, sample_name: str) -> Path:
         return self.concept_graphs_dir / concept_name / f"{sample_name}.pt"
+
+    def get_sample_path_by_name(self, sample_name: str):
+        return self.samples_dir / f"{sample_name}.json"

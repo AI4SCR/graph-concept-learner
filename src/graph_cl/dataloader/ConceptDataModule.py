@@ -111,10 +111,10 @@ class ConceptDataModule(L.LightningDataModule):
                     s.model_dump_to_json(self.save_samples_dir / f"{s.name}.json")
 
                 if isinstance(self.concepts, str):
-                    cg = s.attributed_graph(self.concepts)
+                    cg = s.get_attributed_graph(self.concepts)
                 else:
                     cg = {
-                        concept_name: s.attributed_graph(concept_name)
+                        concept_name: s.get_attributed_graph(concept_name)
                         for concept_name in self.concepts
                     }
                 ds.append(cg)

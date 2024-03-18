@@ -21,7 +21,7 @@ processed_samples = glob.glob(os.path.join(DATASET_PATH,"02_processed/samples","
 
 rule all:
     input:
-        expand("{dataset_path}/03_concept_graphs/{sample_base}_{concept_base}.graph",
+        expand("{dataset_path}/03_concept_graphs/{concept_base}/{sample_base}.pt",
             dataset_path=DATASET_PATH,
             sample_base=[os.path.splitext(os.path.basename(f))[0] for f in processed_samples],
             concept_base=[os.path.splitext(os.path.basename(f))[0] for f in concept_files])

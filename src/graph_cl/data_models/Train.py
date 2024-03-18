@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from .MixIns import FromYamlMixIn
+from .MixIns import YAMLMixIN
 
 
 class Tracking(BaseModel):
@@ -39,7 +39,7 @@ class Trainer(BaseModel):
     fast_dev_run: bool = False
 
 
-class TrainConfig(BaseModel, FromYamlMixIn):
+class TrainConfig(BaseModel, YAMLMixIN):
     seed: int = 42
     tracking: Tracking
     optimizer: Optimizer

@@ -1,4 +1,4 @@
-import logging
+from ai4bmr_core.log.log import logger
 from pathlib import Path
 
 import pandas as pd
@@ -62,7 +62,7 @@ def harmonize_index(
     spat.drop(columns=["CellId"]).to_parquet(spat_path)
 
     if removed_masks:
-        logging.info(f"Removing masks_ids from {mask.stem}: {removed_masks}")
+        logger.info(f"Removing masks_ids from {mask.stem}: {removed_masks}")
         for mask_id in removed_masks:
             mask[mask == mask_id] = 0
 

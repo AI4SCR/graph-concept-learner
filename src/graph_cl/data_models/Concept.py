@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from .MixIns import FromYamlMixIn
+from .MixIns import YAMLMixIN
 
 
 class Graph(BaseModel):
@@ -12,7 +12,7 @@ class Filter(BaseModel):
     include_labels: list[str]
 
 
-class ConceptConfig(BaseModel, FromYamlMixIn):
+class ConceptConfig(BaseModel, YAMLMixIN):
     name: str
     graph: Graph
     filter: Filter

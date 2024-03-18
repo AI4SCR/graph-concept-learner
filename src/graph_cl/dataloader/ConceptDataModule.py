@@ -3,12 +3,12 @@ from torch_geometric.data import Dataset, Data
 from torch_geometric.loader import DataLoader
 import torch
 
-from ..utils.log import logger
+from ai4bmr_core.log.log import logger
 from ..data_models.Data import DataConfig
 
 from ..preprocessing.normalize import Normalizer
 from ..data_models.Sample import Sample
-from ..data_models.ExperimentPathFactory import ExperimentPathFactory
+from ..data_models.Experiment import GCLExperiment
 
 
 class ConceptDataset(Dataset):
@@ -30,7 +30,7 @@ class ConceptDataModule(L.LightningDataModule):
         model_name: str,
         concepts: str | list[str],
         config: DataConfig,
-        factory: ExperimentPathFactory,
+        factory: GCLExperiment,
         batch_size: int = 8,
         shuffle: bool = True,
         force_attr_computation: bool = False,
@@ -108,7 +108,7 @@ class ConceptDataModule(L.LightningDataModule):
                     )
                     s.attributes_url = attributes_url
                     attributes.to_parquet(s.attributes_url)
-                    s.model_dump_to_file(self.save_samples_dir / f"{s.name}.json")
+                    s.model_dump_to_json(self.save_samples_dir / f"{s.name}.json")
 
                 if isinstance(self.concepts, str):
                     cg = s.attributed_graph(self.concepts)

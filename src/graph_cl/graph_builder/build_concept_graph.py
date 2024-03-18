@@ -1,4 +1,4 @@
-import logging
+from ai4bmr_core.log.log import logger
 from pathlib import Path
 
 import torch
@@ -37,16 +37,16 @@ def build_concept_graph_from_paths(
     concept_graph_path: Path,
     overwrite: bool = False,
 ):
-    concept_config = ConceptConfig.from_yaml(concept_config_path)
-    sample = Sample.model_validate_from_file(sample_path)
+    concept_config = ConceptConfig.model_validate_from_json(concept_config_path)
+    sample = Sample.model_validate_from_json(sample_path)
 
     if concept_graph_path.exists() and overwrite is False:
-        logging.info(
+        logger.info(
             f"Concept graph for {concept_config.name} and {sample.name} exists.\n...skipping"
         )
         return
     elif concept_graph_path.exists() and overwrite is True:
-        logging.info(
+        logger.info(
             f"Concept graph for {concept_config.name} and {sample.name} exists.\n...overwriting"
         )
 

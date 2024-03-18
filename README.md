@@ -30,11 +30,18 @@ pip install "git+ssh://git@github.com:AI4SCR/graph-concept-learner.git@refactori
 ### Suggested setup for development
 
 ```sh
-pip install --upgrade pip setuptools wheel
-pip install -r requirements.txt
-pip install -e .
+pip install "git+https://github.com/AI4SCR/ai4bmr-core.git@main#egg=ai4bmr-core"
+# for private repositories
+pip install "git+ssh://git@github.com/AI4SCR/ai4bmr-core.git@main#egg=ai4bmr-core"
+
+# or for development
+git clone git+ssh://git@github.com/AI4SCR/ai4bmr-core.git
+git clone git+ssh://git@github.com:AI4SCR/graph-concept-learner.git@refactoring
+cd ai4bmr-core
+pip install -e ".[dev, test]"
 pre-commit install
 ```
+
 
 ## CLI
 
@@ -69,6 +76,10 @@ Check workflow [Workflow tutorial](https://github.com/AI4SCR/graph-concept-learn
 
 ## ToDos
 
+- [ ] Dataset design is still flawed, we need to deconstruct the model loading from the path factory. For example to
+  get the path of a sample, the current implementation requires to load all samples. This is not efficient.
+  We could introduce an explicit load call, add a prevent_load flag or add the path definitions as MixIn to the dataset
+  class (which could be very convoluted).
 - [ ] Further modularize the code:
     - [x] Create functions that just create models
     - [x] train functions just load the model and train it

@@ -1,33 +1,55 @@
 # %%
+import shutil
 import zipfile
 from io import BytesIO
-import pandas as pd
 from pathlib import Path
-import shutil
-from ..data_models.DatasetPathFactory import DatasetPathFactory
+
+import pandas as pd
+from ai4bmr_core.log.log import logger
+
+from .GCLDataset import GCLDataset
 from ..data_models.Sample import Sample
-from ..utils.log import logger
 
 
 # %%
 
 
-class Jackson:
-    name = "jackson"
+class Jackson(GCLDataset):
+    # dataset fields, required
+    _id: str = "jackson-v1.0.0"
+    _name: str = "jackson"
+    _data: list[Sample] = []
+    # setting the _urls field will enable the download method
+    _urls = {
+        "OMEandSingleCellMasks.zip": "https://zenodo.org/records/4607374/files/OMEandSingleCellMasks.zip?download=1",
+        "singlecell_locations.zip": "https://zenodo.org/records/4607374/files/singlecell_locations.zip?download=1",
+        "singlecell_cluster_labels.zip": "https://zenodo.org/records/4607374/files/singlecell_cluster_labels.zip?download=1",
+        "SingleCell_and_Metadata.zip": "https://zenodo.org/records/4607374/files/SingleCell_and_Metadata.zip?download=1",
+    }
 
-    def __init__(self, factory: DatasetPathFactory):
-        self.factory = factory
-        self.sample_path = self.factory.processed_dir / "samples.parquet"
-        self.sample_names = []
+    # user fields, optional, additional
+    sample_names: list[str] | set[str] = []
 
-        # create all parents of the sample paths
-        paths = self.factory.get_sample_paths("test_sample", [])
-        for k, v in paths.items():
-            v.parent.mkdir(exist_ok=True, parents=True)
-        self.factory.processed_samples_dir.mkdir(exist_ok=True, parents=True)
+    @property
+    def processed_files(self) -> list[Path]:
+        # adding this property enables caching
+        if not self.info_path.exists():
+            return []
+        paths = pd.read_parquet(self.info_path)
+        return paths.name.map(
+            lambda x: self.processed_samples_dir / f"{x}.json"
+        ).tolist()
 
-    def download(self):
-        raise NotImplementedError("Download not implemented")
+    def load_cache(self) -> list[Sample]:
+        paths = pd.read_parquet(self.info_path)
+        samples = [Sample(**data) for data in paths.reset_index().to_dict("records")]
+        return samples
+
+    def save_cache(self, samples: list[Sample]) -> None:
+        for sample in samples:
+            file_path = self.samples_dir / f"{sample.name}.json"
+            with file_path.open("w", encoding="utf-8") as file:
+                file.write(sample.model_dump_json(indent=4))
 
     @staticmethod
     def harmonize_indices(df_samples: pd.DataFrame):
@@ -43,81 +65,73 @@ class Jackson:
                 spat_path=df_samples.loc[sample].spatial_url,
             )
 
-    def process(self, force=False):
-        if not self.factory.info_path.exists() or force:
-            self.extract_metadata()
-            self.extract_sample_labels()
-            self.extract_observation_labels()
-            self.extract_observation_locations()
-            self.extract_observation_features()
-            self.extract_masks()
+    def load(self):
+        self.create_folder_hierarchy()
 
-            # for each observed sample, we create all potential the paths
-            self.sample_names = set(self.sample_names)
-            paths = [
-                {
-                    "sample_name": sample_name,
-                    **self.factory.get_sample_paths(sample_name, []),
-                }
-                for sample_name in self.sample_names
-            ]
+        self.extract_metadata()
+        self.extract_sample_labels()
+        self.extract_observation_labels()
+        self.extract_observation_locations()
+        self.extract_observation_features()
+        self.extract_masks()
 
-            paths = pd.DataFrame(paths).set_index("sample_name")
-            paths = paths.map(lambda x: str(x) if x.exists() else None)
-            paths.to_parquet(self.factory.info_path)
+        self.sample_names = set(self.sample_names)
+        paths = [
+            {
+                "name": sample_name,
+                **self.get_sample_paths(sample_name),
+            }
+            for sample_name in self.sample_names
+        ]
 
-            # TODO: we can only harmonize indices if we have all the data
-            cols = [
-                "mask_url",
-                "expression_url",
-                "labels_url",
-                "location_url",
-                "spatial_url",
-            ]
-            self.harmonize_indices(paths[cols].dropna())
-        else:
-            paths = pd.read_parquet(self.factory.info_path)
+        paths = pd.DataFrame(paths).set_index("name")
+        paths = paths.map(lambda x: str(x) if x.exists() else None)
 
-        paths.index.name = "name"
-        samples = [Sample(**data) for data in paths.reset_index().to_dict("records")]
+        # TODO: we can only harmonize indices if we have all the data
+        cols = [
+            "mask_url",
+            "expression_url",
+            "labels_url",
+            "location_url",
+            "spatial_url",
+        ]
+        self.harmonize_indices(paths[cols].dropna())
 
-        self.factory.processed_samples_dir.mkdir(exist_ok=True, parents=True)
+        paths = paths.reset_index()
+        paths.to_parquet(self.info_path)
 
-        for sample in samples:
-            file_path = self.factory.processed_samples_dir / f"{sample.name}.json"
-            with file_path.open("w", encoding="utf-8") as file:
-                file.write(sample.model_dump_json(indent=4))
+        samples = [Sample(**data) for data in paths.to_dict("records")]
 
         return samples
 
     def extract_masks(self):
         logger.info("Extracting masks")
         with zipfile.ZipFile(
-            self.factory.raw_dir / "OMEandSingleCellMasks.zip", "r"
+            self.raw_dir / "OMEandSingleCellMasks.zip", "r"
         ) as zip_ref:
             with zip_ref.open("OMEnMasks/Basel_Zuri_masks.zip") as zip_ext:
                 zip_ext_content = zip_ext.read()
                 zip_ext_buffer = BytesIO(zip_ext_content)
 
         with zipfile.ZipFile(zip_ext_buffer) as zip_ref_inner:
-            zip_ref_inner.extractall(self.factory.mask_dir)
+            zip_ref_inner.extractall(self.mask_dir)
 
         return self.rename_masks()
 
     def rename_masks(self):
         # TODO: this only moves cores which are present in the samples metadata (there are masks that are not listed there)
-        df = pd.read_parquet(self.factory.metadata_dir / "samples")
+        df = pd.read_parquet(self.metadata_dir / "samples")
 
         mask_file_name = [f"{Path(f).stem}_maks.tiff" for f in df["FileName_FullStack"]]
         df = df.assign(mask_file_name=mask_file_name)
 
         for sample_name, mask_file_name in zip(df.index, df["mask_file_name"]):
-            mask_path_old = self.factory.mask_dir / "Basel_Zuri_masks" / mask_file_name
-            mask_path_new = self.factory.get_sample_paths(sample_name)["mask_url"]
+            mask_path_old = self.mask_dir / "Basel_Zuri_masks" / mask_file_name
+            mask_path_new = self.get_sample_paths(sample_name)["mask_url"]
             mask_path_old.rename(mask_path_new)
             self.sample_names.append(sample_name)
 
-        shutil.rmtree(self.factory.mask_dir / "Basel_Zuri_masks")
+        shutil.rmtree(self.mask_dir / "Basel_Zuri_masks")
 
     def extract_observation_locations(self):
         logger.info("Extracting observation locations")
@@ -127,9 +141,7 @@ class Jackson:
             "zh_sc_locations.csv": "Zurich_SC_locations.csv",
         }
         locs = {}
-        with zipfile.ZipFile(
-            self.factory.raw_dir / "singlecell_locations.zip", "r"
-        ) as zip_ref:
+        with zipfile.ZipFile(self.raw_dir / "singlecell_locations.zip", "r") as zip_ref:
             for file_name, filepath in files_to_extract.items():
                 if filepath in zip_ref.namelist():
                     buffer = zip_ref.read(filepath)
@@ -139,7 +151,7 @@ class Jackson:
         df = pd.concat(locs.values())
         for sample_name, grp_data in df.groupby("core"):
             grp_data = grp_data.assign(core=sample_name)
-            filepath = self.factory.get_sample_paths(sample_name)["location_url"]
+            filepath = self.get_sample_paths(sample_name)["location_url"]
             grp_data.to_parquet(filepath, index=False)
             self.sample_names.append(sample_name)
 
@@ -153,7 +165,7 @@ class Jackson:
             "bs_meta_clusters.csv": "Cluster_labels/Basel_metaclusters.csv",
         }
         with zipfile.ZipFile(
-            self.factory.raw_dir / "singlecell_cluster_labels.zip", "r"
+            self.raw_dir / "singlecell_cluster_labels.zip", "r"
         ) as zip_ref:
             labels = {}
             for file_name, filepath in files_to_extract.items():
@@ -201,7 +213,7 @@ class Jackson:
         df = df.rename(columns={"Cell type": "cell_type", "Class": "cell_class"})
         for sample_name, grp_data in df.groupby("core"):
             grp_data = grp_data.assign(core=sample_name)
-            filepath = self.factory.get_sample_paths(sample_name)["labels_url"]
+            filepath = self.get_sample_paths(sample_name)["labels_url"]
             grp_data.to_parquet(filepath, index=False)
             self.sample_names.append(sample_name)
 
@@ -211,14 +223,12 @@ class Jackson:
             "staining_panel.csv": "Data_publication/Basel_Zuri_StainingPanel.csv",
         }
         with zipfile.ZipFile(
-            self.factory.raw_dir / "SingleCell_and_Metadata.zip", "r"
+            self.raw_dir / "SingleCell_and_Metadata.zip", "r"
         ) as zip_ref:
             for file_name, filepath in files_to_extract.items():
                 if filepath in zip_ref.namelist():
                     buffer = zip_ref.read(filepath)
-                    pd.read_csv(BytesIO(buffer)).to_csv(
-                        self.factory.metadata_dir / file_name
-                    )
+                    pd.read_csv(BytesIO(buffer)).to_csv(self.metadata_dir / file_name)
 
     def extract_sample_labels(self):
         logger.info("Extracting sample labels")
@@ -229,7 +239,7 @@ class Jackson:
 
         cont = {}
         with zipfile.ZipFile(
-            self.factory.raw_dir / "SingleCell_and_Metadata.zip", "r"
+            self.raw_dir / "SingleCell_and_Metadata.zip", "r"
         ) as zip_ref:
             for file_name, filepath in files_to_extract.items():
                 if filepath in zip_ref.namelist():
@@ -275,14 +285,12 @@ class Jackson:
         labels = df[list(intx - metadata_cols)]
         labels = labels.astype(str).set_index("core")
         for sample_name in labels.index:
-            labels_path = self.factory.get_sample_paths(sample_name)[
-                "sample_labels_url"
-            ]
+            labels_path = self.get_sample_paths(sample_name)["labels_sample_url"]
             labels.loc[[sample_name]].to_parquet(labels_path)
             self.sample_names.append(sample_name)
 
         for sample_name in labels.index:
-            filepath = self.factory.get_sample_paths(sample_name)["metadata_url"]
+            filepath = self.get_sample_paths(sample_name)["metadata_url"]
             metadata.loc[[sample_name]].to_parquet(filepath)
             self.sample_names.append(sample_name)
 
@@ -296,7 +304,7 @@ class Jackson:
         }
         cont = {}
         with zipfile.ZipFile(
-            self.factory.raw_dir / "SingleCell_and_Metadata.zip", "r"
+            self.raw_dir / "SingleCell_and_Metadata.zip", "r"
         ) as zip_ref:
             for file_name, filepath in files_to_extract.items():
                 if filepath in zip_ref.namelist():
@@ -353,10 +361,10 @@ class Jackson:
             x_expr = grp_x.drop(columns=spatial_feat)
             x_expr = x_expr[valid_channels].rename(columns=map_channels)
 
-            expr_path = self.factory.get_sample_paths(sample_name)["expression_url"]
+            expr_path = self.get_sample_paths(sample_name)["expression_url"]
             x_expr.reset_index(drop=False).to_parquet(expr_path)
 
-            spatial_path = self.factory.get_sample_paths(sample_name)["spatial_url"]
+            spatial_path = self.get_sample_paths(sample_name)["spatial_url"]
             x_spatial.reset_index(drop=False).to_parquet(spatial_path)
 
             self.sample_names.append(sample_name)

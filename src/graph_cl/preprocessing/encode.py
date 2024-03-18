@@ -22,6 +22,6 @@ def encode_target(
 
 def encode_target_from_paths(samples_dir: Path, data_config_path: Path):
     samples = [Sample.from_pickle(p) for p in samples_dir.glob("*.pkl")]
-    data_config = DataConfig.from_yaml(data_config_path)
+    data_config = DataConfig.model_validate_from_json(data_config_path)
     samples = encode_target(samples, data_config)
     return samples

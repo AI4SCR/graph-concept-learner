@@ -1,5 +1,5 @@
 from pydantic import BaseModel, field_validator
-from .MixIns import FromYamlMixIn
+from .MixIns import YAMLMixIN
 
 
 class Filter(BaseModel):
@@ -36,7 +36,7 @@ class FeatureDict(BaseModel):
     # def include_not_false(self):
 
 
-class DataConfig(BaseModel, FromYamlMixIn):
+class DataConfig(BaseModel, YAMLMixIN):
     dataset_name: str
     target: str
     filter: Filter

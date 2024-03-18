@@ -17,7 +17,7 @@ def robust_mlflow(
     f: Callable, *args, max_tries: int = 8, delay: int = 1, backoff: int = 2, **kwargs
 ):
     """
-    This is a wrapper function for mlflow logging. It attemts to log using the ptovided
+    This is a wrapper function for mlflow logger. It attemts to log using the ptovided
     function. If it fails it tries again.
 
     Args:

@@ -13,6 +13,7 @@ readme = "README.md"
 # due to how PEP 440 defines version matching, prefer [incl, excl) definitions like below:
 requires-python = ">=3.11, <3.12"
 dependencies = [
+    "pandas",
     "click",
     "ai4bmr-core @ git+ssh://git@github.com/AI4SCR/ai4bmr-core.git@main"
 ]

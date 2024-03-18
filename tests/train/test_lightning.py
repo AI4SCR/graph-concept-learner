@@ -1,19 +1,21 @@
 from graph_cl.data_models.Train import TrainConfig
-from graph_cl.data_models.ExperimentPathFactory import ExperimentPathFactory
+from graph_cl.data_models.Experiment import GCLExperiment
 from graph_cl.train.lightning import LitGNN
 from graph_cl.data_models.Model import ModelGNNConfig
 
 import tempfile
 
-factory = ExperimentPathFactory(experiment_name="test")
+factory = GCLExperiment(experiment_name="test")
 
 
 def create_gnn_model():
     from graph_cl.data_models.Model import ModelGNNConfig
     from graph_cl.models.gnn import GNN_plus_MPL
 
-    factory = ExperimentPathFactory(experiment_name="test")
-    model_config = ModelGNNConfig.from_yaml(factory.model_gnn_config_path)
+    factory = GCLExperiment(experiment_name="test")
+    model_config = ModelGNNConfig.model_validate_from_json(
+        factory.model_gnn_config_path
+    )
     model_config.num_classes = 2
     model_config.in_channels = 28
 
@@ -22,12 +24,12 @@ def create_gnn_model():
 
 
 def test_LitGNN():
-    factory = ExperimentPathFactory(experiment_name="test")
+    factory = GCLExperiment(experiment_name="test")
 
-    model_config = ModelGNNConfig.from_yaml(
+    model_config = ModelGNNConfig.model_validate_from_json(
         factory.model_gnn_config_path, num_classes=2, in_channels=28
     )
-    train_config = TrainConfig.from_yaml(factory.pretrain_config_path)
+    train_config = TrainConfig.model_validate_from_json(factory.pretrain_config_path)
 
     module = LitGNN(model_config=model_config, train_config=train_config)
 
@@ -57,8 +59,10 @@ def test_LitGCL():
         "concept2": create_gnn_model().get_submodule("gnn"),
     }
 
-    model_config = ModelGCLConfig.from_yaml(factory.model_gnn_config_path)
-    train_config = TrainConfig.from_yaml(factory.pretrain_config_path)
+    model_config = ModelGCLConfig.model_validate_from_json(
+        factory.model_gnn_config_path
+    )
+    train_config = TrainConfig.model_validate_from_json(factory.pretrain_config_path)
 
     graph_concept_learner = GraphConceptLearner(
         concept_learners=nn.ModuleDict(gnn_models),

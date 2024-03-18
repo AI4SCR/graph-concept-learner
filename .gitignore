@@ -157,7 +157,7 @@ cython_debug/
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-.idea
+.idea/
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml
@@ -195,12 +195,6 @@ cython_debug/
 # .idea/modules
 # *.iml
 # *.ipr
-
-# VS Code
-.vscode/
-
-# Snakemake
-.snakemake
 
 # CMake
 cmake-build-*/
@@ -292,5 +286,12 @@ rsconnect/
 # Mac
 .DS_Store
 
-# lightning
+# pytorch lightning
 lightning_logs/
+
+# setuptools_scm
+_version.py
+
+# nextflow
+.nextflow.log
+.nextflow/

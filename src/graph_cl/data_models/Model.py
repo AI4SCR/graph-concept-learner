@@ -1,10 +1,10 @@
 from typing import Literal
 
 from pydantic import BaseModel
-from .MixIns import FromYamlMixIn
+from .MixIns import YAMLMixIN
 
 
-class ModelGNNConfig(BaseModel, FromYamlMixIn):
+class ModelGNNConfig(BaseModel, YAMLMixIN):
     name: str = "gnn"
     act: str
     act_first: bool
@@ -23,7 +23,7 @@ class ModelGNNConfig(BaseModel, FromYamlMixIn):
 
 
 # TODO: GCL should not be a superset of GNN, why would we need to define the gnn attribute for example?
-class ModelGCLConfig(ModelGNNConfig, FromYamlMixIn):
+class ModelGCLConfig(ModelGNNConfig, YAMLMixIN):
     name: str = "gcl"
     concepts: list[str]
     aggregator: Literal["transformer", "linear", "concat"] = "transformer"

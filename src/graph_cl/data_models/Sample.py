@@ -5,11 +5,11 @@ from torch_geometric.data import Data
 from skimage.io import imread
 import torch
 from pydantic import BaseModel, Field
-from .MixIns import PickleMixIn, ModelIOMixIn
+from .MixIns import PickleMixIn, JSONMixIn
 from pathlib import Path
 
 
-class Sample(BaseModel, PickleMixIn, ModelIOMixIn):
+class Sample(BaseModel, PickleMixIn, JSONMixIn):
     model_config = dict(arbitrary_types_allowed=True)
 
     # IDs
@@ -27,7 +27,7 @@ class Sample(BaseModel, PickleMixIn, ModelIOMixIn):
     mask_url: None | Path = None
     img_url: None | Path = None
     metadata_url: None | Path = None
-    sample_labels_url: None | Path = None
+    labels_sample_url: None | Path = None
 
     # CONCEPT DATA
     concept_graph_url: dict[str, Path] = Field(default_factory=lambda: dict())
@@ -65,8 +65,8 @@ class Sample(BaseModel, PickleMixIn, ModelIOMixIn):
     @property
     def sample_labels(self) -> pd.DataFrame:
         return (
-            pd.read_parquet(self.sample_labels_url).squeeze()
-            if self.sample_labels_url
+            pd.read_parquet(self.labels_sample_url).squeeze()
+            if self.labels_sample_url
             else None
         )
 

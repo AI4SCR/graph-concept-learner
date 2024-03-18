@@ -1,4 +1,4 @@
-from graph_cl.utils.log import logger
+from ai4bmr_core.log.log import logger
 
 
 def test_logger():

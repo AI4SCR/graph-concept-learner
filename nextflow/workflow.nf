@@ -14,18 +14,6 @@ process Setup {
     """
 }
 
-# TODO: remove
-process SymlinkRawData {
-    script:
-    """
-    mkdir -p ${params.data_dir}/datasets/${params.dataset_name}/01_raw
-    for file in /Users/adrianomartinelli/data/ai4src/graph-concept-learner/jackson/raw_data/zipped/*;
-    do
-      ln -s \$file ${params.data_dir}/datasets/${params.dataset_name}/01_raw/\$(basename \$file)
-    done
-    """
-}
-
 process ProcessDataset {
     script:
     """
@@ -68,26 +56,26 @@ process TrainGCL {
 
 workflow {
     Setup()
-    SymlinkRawData()
-    ProcessDataset()
-
-    // Prepare channels for parallel processing of concept graphs
-    sample_files_ch = Channel.fromPath("${params.data_dir}/datasets/${params.dataset_name}/02_processed/samples/*.json")
-    concept_files_ch = Channel.fromPath("${params.concepts_dir}/*.yaml").toList() // Convert to list to broadcast to each sample
-
-    // Combine each sample file with all concept files for parallel processing
-    sample_concept_comb = sample_files_ch.combine(concept_files_ch)
-
-    // Process each sample with each concept in parallel
-    sample_concept_comb.map { sample_file, concept_files ->
-        sample_name = sample_file.baseName
-        concept_files.collect { concept_file ->
-            tuple(sample_name, sample_file, concept_file)
-        }
-    }.set { graphs_to_create }
-    CreateConceptGraphs(graphs_to_create.flatten())
-
-    PreprocessExperiment()
-    PretrainConceptGraphs()
-    TrainGCL()
+//     SymlinkRawData()
+//     ProcessDataset()
+//
+//     // Prepare channels for parallel processing of concept graphs
+//     sample_files_ch = Channel.fromPath("${params.data_dir}/datasets/${params.dataset_name}/02_processed/samples/*.json")
+//     concept_files_ch = Channel.fromPath("${params.concepts_dir}/*.yaml").toList() // Convert to list to broadcast to each sample
+//
+//     // Combine each sample file with all concept files for parallel processing
+//     sample_concept_comb = sample_files_ch.combine(concept_files_ch)
+//
+//     // Process each sample with each concept in parallel
+//     sample_concept_comb.map { sample_file, concept_files ->
+//         sample_name = sample_file.baseName
+//         concept_files.collect { concept_file ->
+//             tuple(sample_name, sample_file, concept_file)
+//         }
+//     }.set { graphs_to_create }
+//     CreateConceptGraphs(graphs_to_create.flatten())
+//
+//     PreprocessExperiment()
+//     PretrainConceptGraphs()
+//     TrainGCL()
 }

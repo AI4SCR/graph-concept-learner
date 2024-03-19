@@ -36,7 +36,7 @@ class GNN(nn.Module):
         forward(x: torch.Tensor, edge_index, batch) -> torch.Tensor: Performs a forward pass through the GNN model.
     """
 
-    def __init__(self, cfg):
+    def __init__(self, gnn_config: dict):
         """
         Initializes the GNN model.
 
@@ -48,19 +48,25 @@ class GNN(nn.Module):
         # Super init
         super(GNN, self).__init__()
 
+        model_name = gnn_config["name"]
+        model_kwargs = gnn_config["kwargs"]
+        pool_strategy = gnn_config["pool"]
+
         # Get model class
-        gnn_class = models[cfg["gnn"]]
+        gnn_class = models[model_name]
 
         # If PNA then get adddtional parametes.
-        if cfg["gnn"] == "PNA":
+        if model_name == "PNA":
             raise NotImplementedError()
             get_additional_PNA_params(cfg, train_dataset)
 
         # Init GNN model
-        self.gnn = gnn_class(**cfg)
+        # cfg.pop("gnn")
+        # cfg.pop('num_classes')
+        self.gnn = gnn_class(**model_kwargs)
 
         # Define pooling strategy
-        self.pool = pool_layers[cfg["pool"]]
+        self.pool = pool_layers[pool_strategy]
 
     def forward(self, data):
         """
@@ -121,7 +127,7 @@ class GNN_plus_MPL(nn.Module):
         forward(x: torch.Tensor, edge_index, batch) -> torch.Tensor: Performs a forward pass through the GNN model and the prediction head.
     """
 
-    def __init__(self, cfg):
+    def __init__(self, cfg: dict):
         """
         Initializes the GNN model and the prediction head.
 
@@ -133,15 +139,16 @@ class GNN_plus_MPL(nn.Module):
         # Super init
         super().__init__()
 
+        gnn_config = cfg["GNN"]
+        mlp_config = cfg["MLP"]
         # TODO, move this computation to the config file via @computed_field
-        cfg["hidden_channels"] = cfg["in_channels"] * cfg["scaler"]
-
-        self.gnn = GNN(cfg)
-        self.mlp = MLP(
-            in_channels=cfg["hidden_channels"],
-            num_layers=cfg["num_layers_MLP"],
-            out_channels=cfg["num_classes"],
+        gnn_config["kwargs"]["hidden_channels"] = (
+            gnn_config["kwargs"]["in_channels"] * gnn_config["scaler"]
         )
+        mlp_config["in_channels"] = gnn_config["kwargs"]["hidden_channels"]
+
+        self.gnn = GNN(gnn_config)
+        self.mlp = MLP(**mlp_config)
 
     def forward(self, data):
         """
@@ -159,5 +166,5 @@ class GNN_plus_MPL(nn.Module):
         # Obtain graph embeddings for a batch of graphs
         x = self.gnn(data)
 
-        # Obtain predicitons
+        # Obtain predictions
         return self.mlp(x)

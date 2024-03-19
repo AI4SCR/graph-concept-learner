@@ -7,4 +7,4 @@ def test_create_project():
 def test_create_experiment():
     from graph_cl.cli.create.cmds import experiment
 
-    experiment("exp_1")
+    experiment("test")

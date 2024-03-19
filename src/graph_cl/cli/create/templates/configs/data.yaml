@@ -1,5 +1,8 @@
 dataset_name: jackson
 target: ERStatus
+concepts:
+  - concept_1
+  - concept_2
 filter:
     min_num_nodes: 10
 split:

@@ -293,5 +293,5 @@ lightning_logs/
 _version.py
 
 # nextflow
-.nextflow.log
+.nextflow.log*
 .nextflow/

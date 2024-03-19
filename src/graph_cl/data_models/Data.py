@@ -38,6 +38,7 @@ class FeatureDict(BaseModel):
 
 class DataConfig(BaseModel, YAMLMixIN):
     dataset_name: str
+    concepts: list[str]
     target: str
     filter: Filter
     split: Split

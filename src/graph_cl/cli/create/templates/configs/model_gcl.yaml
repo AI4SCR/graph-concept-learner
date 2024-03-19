@@ -16,6 +16,3 @@ mlp_num_layers: 2
 mlp_act_key: relu
 n_heads: 8
 depth: 1
-concepts:
-  - concept_1
-  - concept_2

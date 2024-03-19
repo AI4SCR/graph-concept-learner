@@ -2,11 +2,10 @@ PROJECT_BASE_DIR=/Users/adrianomartinelli/data/ai4src/graph-concept-learner
 DATASET_NAME=jackson
 DATASET_PATH=/Users/adrianomartinelli/.cache/ai4bmr/datasets/$DATASET_NAME
 CONCEPTS_DIR=$PROJECT_BASE_DIR/03_concepts
-EXPERIMENT_NAME="exp_1"
+EXPERIMENT_NAME="exp_0"
 
 # setup
 graph_cl create project
-graph_cl create dataset -d "$DATASET_NAME"
 graph_cl create experiment -e "$EXPERIMENT_NAME"
 
 # symlink raw data

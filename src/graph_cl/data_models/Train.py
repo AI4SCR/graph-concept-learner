@@ -8,6 +8,7 @@ from .MixIns import YAMLMixIN
 class Tracking(BaseModel):
     mlflow_uri: str | None = None
     checkpoint_dir: str | Path = None
+    predictions_dir: str | Path = None
 
 
 class Optimizer(BaseModel):

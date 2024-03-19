@@ -27,4 +27,4 @@ dataloader:
 trainer:
     max_epochs: 2
     limit_train_batches: 20
-    fast_dev_run: true
+    fast_dev_run: false

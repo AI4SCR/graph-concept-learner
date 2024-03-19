@@ -1,3 +1,5 @@
+import shutil
+
 import pandas as pd
 import torch
 from ai4bmr_core.log.log import logger, enable_verbose
@@ -12,6 +14,7 @@ from ...data_models.Sample import Sample
 from ...data_models.Train import TrainConfig
 from ...dataloader.ConceptDataModule import ConceptDataModule
 from ...datasets import get_dataset_by_name
+from ...preprocessing.attribute import prepare_attributes
 from ...preprocessing.encode import encode_target
 from ...preprocessing.filter import (
     filter_has_mask,
@@ -50,6 +53,7 @@ def create_concept_graph(
 
     sample_path = ds.get_sample_path_by_name(sample_name)
     sample = Sample.model_validate_from_json(sample_path)
+    # TODO: this filtering is done twice atm, also in `preprocess_samples`
     if sample.labels_url is None or sample.mask_url is None:
         # TODO: should we raise an exception here?
         logger.warn(
@@ -70,6 +74,14 @@ def create_concept_graph(
 @enable_verbose
 def preprocess_samples(experiment_name: str):
     experiment = Experiment(project=project, name=experiment_name)
+
+    # delete previous samples, attributes and datasets to avoid leakage
+    shutil.rmtree(experiment.samples_dir, ignore_errors=True)
+    shutil.rmtree(experiment.attributes_dir, ignore_errors=True)
+    shutil.rmtree(experiment.datasets_dir, ignore_errors=True)
+    experiment.split_info_path.unlink(missing_ok=True)
+    experiment.create_folder_hierarchy()
+    # TODO: do we need to delete the predictions and results as well?
 
     data_config = DataConfig.model_validate_from_json(experiment.data_config_path)
     ds = get_dataset_by_name(dataset_name=data_config.dataset_name)()
@@ -102,15 +114,7 @@ def preprocess_samples(experiment_name: str):
     )
     n_samples = len(samples)
 
-    # NOTE: this is a bit of a hack, but we need to load the model config to get the concept names
-    #   this is why we load the model config with dummy values for `num_classes` and `in_channels`
-    #   ‼️I am convinced that the concepts belong to the model config not the data config
-    #   🤔An alternative could be to have negative default values for these fields to trigger an error at model
-    #   instantiation.
-    model_config = ModelGCLConfig.model_validate_from_json(
-        experiment.model_gcl_config_path, num_classes=-1, in_channels=-1
-    )
-    concept_names = model_config.concepts
+    concept_names = data_config.concepts
     min_num_nodes = data_config.filter.min_num_nodes
     samples = filter_has_enough_nodes(
         samples, concept_names, min_num_nodes=min_num_nodes
@@ -128,7 +132,6 @@ def preprocess_samples(experiment_name: str):
             lambda x: str(ds.samples_dir / f"{x}.json")
         )
     )
-    split_info.to_parquet(experiment.split_info_path)
     for stage, samples in splits.items():
         for sample in samples:
             sample_path = experiment.get_sample_path(
@@ -136,97 +139,117 @@ def preprocess_samples(experiment_name: str):
             )
             sample_path.parent.mkdir(parents=True, exist_ok=True)
             sample.model_dump_to_json(sample_path)
+    split_info.to_parquet(experiment.split_info_path)
+
+    # precomputed_attrs = all(
+    #     map(lambda x: x in experiment.get_attribute_path(x.stage, x.sample_name).exists(), split_info))
+    logger.info(f"Computing attributes for samples.")
+    if experiment.attributes_dir.exists():
+        shutil.rmtree(experiment.attributes_dir)
+    prepare_attributes(splits, experiment, data_config)
 
 
-def load_splits(
-    split_info: pd.DataFrame, experiment: Experiment
-) -> dict[str, list[Sample]]:
-    splits = {
-        # note: here we load from the dataset samples, i.e. with undefined split attribute
-        # stage: [Sample.model_validate_from_file(x.sample_url) for _, x in split_info.loc[stage].iterrows()]
-        # note: here we load from the experiment samples, created when dataset is split for the experiment
-        stage: [
-            Sample.model_validate_from_json(experiment.get_sample_path(x.sample_name))
-            for _, x in split_info.loc[stage].iterrows()
-        ]
-        for stage in split_info.index.unique()
-    }
-
+def load_splits(experiment: Experiment) -> dict[str, list[Sample]]:
+    splits = {}
+    for stage in ["fit", "val", "test", "predict"]:
+        split_dir = experiment.samples_dir / stage
+        if split_dir.exists():
+            splits[stage] = [
+                Sample.model_validate_from_json(i) for i in split_dir.glob("*.json")
+            ]
     return splits
 
 
+# TODO: we could introduce a `model_name` to pretrain different GNN models, but probably it would be better to do that
+#  in a separate experiment
 def pretrain(experiment_name: str, concept_name: str):
-    experiment = Experiment(experiment_name=experiment_name)
+    experiment = Experiment(project=project, name=experiment_name)
     data_config = DataConfig.model_validate_from_json(experiment.data_config_path)
 
-    split_info = pd.read_parquet(experiment.split_info_path).set_index("stage")
-    splits = load_splits(split_info, experiment)
+    assert isinstance(concept_name, str)
+    assert concept_name in data_config.concepts
 
-    num_classes = split_info.target.nunique()
-    num_features = splits["fit"][0].expression.shape[1]
-    model_config = ModelGNNConfig.model_validate_from_json(
-        experiment.model_gnn_config_path,
-        num_classes=num_classes,
-        in_channels=num_features,
-    )
-    assert (
-        concept_name
-        in ModelGCLConfig.model_validate_from_json(
-            experiment.model_gcl_config_path, num_classes=-1, in_channels=-1
-        ).concepts
-    )
+    splits = load_splits(experiment=experiment)
 
     dm = ConceptDataModule(
         splits=splits,
-        model_name=model_config.name,
         concepts=concept_name,
-        config=data_config,
-        factory=experiment,
-        force_attr_computation=True,
+        datasets_dir=experiment.datasets_dir / "gnn" / concept_name,
     )
+
+    model_config = ModelGNNConfig.model_validate_from_yaml(
+        experiment.model_gnn_config_path
+    )
+    model_config.MLP.out_channels = dm.num_classes
+    model_config.GNN.kwargs.in_channels = dm.num_features
 
     train_config = TrainConfig.model_validate_from_json(experiment.pretrain_config_path)
     train_config.tracking.checkpoint_dir = experiment.get_concept_model_dir(
-        concept_name
+        model_name="gnn", concept_name=concept_name
     )
+    train_config.tracking.checkpoint_dir = None
 
-    module = LitGNN(model_config=model_config, train_config=train_config)
+    module = LitGNN(model_config=model_config.dict(), train_config=train_config)
     train_model(module, dm, train_config)
 
 
 def train(experiment_name: str):
-    factory = Experiment(experiment_name=experiment_name)
-    data_config = DataConfig.model_validate_from_json(factory.data_config_path)
+    experiment = Experiment(project=project, name=experiment_name)
+    data_config = DataConfig.model_validate_from_json(experiment.data_config_path)
 
-    split_info = pd.read_parquet(factory.split_info_path).set_index("stage")
-    splits = load_splits(split_info, factory)
-
-    num_features = splits["fit"][0].expression.shape[1]
-    num_classes = split_info.target.nunique()
-    model_config = ModelGCLConfig.model_validate_from_json(
-        factory.model_gcl_config_path, num_classes=num_classes, in_channels=num_features
-    )
+    splits = load_splits(experiment=experiment)
 
     dm = ConceptDataModule(
         splits=splits,
-        model_name=model_config.name,
-        concepts=model_config.concepts,
-        config=data_config,
-        factory=factory,
+        concepts=data_config.concepts,
+        datasets_dir=experiment.datasets_dir / "gcl",
     )
 
+    model_config = ModelGCLConfig.model_validate_from_yaml(
+        experiment.model_gcl_config_path
+    )
+    model_config.num_classes = dm.num_classes
+    model_config.in_channels = dm.num_features
+
     concept_graph_ckpts = {
-        concept_name: factory.get_concept_model_dir(concept_name) / "best_model.ckpt"
-        for concept_name in model_config.concepts
+        concept_name: experiment.get_concept_model_dir("gnn", concept_name)
+        / "best_model.ckpt"
+        for concept_name in data_config.concepts
     }
 
-    train_config = TrainConfig.model_validate_from_json(factory.train_config_path)
-    train_config.tracking.checkpoint_dir = factory.get_model_dir("gcl")
+    train_config = TrainConfig.model_validate_from_json(experiment.train_config_path)
+    train_config.tracking.checkpoint_dir = experiment.get_model_dir("gcl")
+    train_config.tracking.predictions_dir = None
 
     gcl = LitGCL(
         concept_graph_ckpts=concept_graph_ckpts,
-        model_config=model_config,
+        model_config=model_config.dict(),
         train_config=train_config,
     )
 
     train_model(gcl, dm, train_config)
+
+
+def test(experiment_name: str):
+    experiment = Experiment(project=project, name=experiment_name)
+    data_config = DataConfig.model_validate_from_json(experiment.data_config_path)
+
+    splits = load_splits(experiment=experiment)
+
+    (experiment.datasets_dir / "gcl").mkdir(parents=True, exist_ok=True)
+    dm = ConceptDataModule(
+        splits=splits,
+        concepts=data_config.concepts,
+        datasets_dir=experiment.datasets_dir / "gcl",
+    )
+
+    gcl = LitGCL.load_from_checkpoint(
+        experiment.get_model_dir("gcl") / "best_model.ckpt"
+    )
+    gcl.config.tracking.predictions_dir = experiment.predictions_dir / "gcl"
+    (experiment.predictions_dir / "gcl").mkdir(parents=True, exist_ok=True)
+
+    import lightning as L
+
+    trainer = L.Trainer(**gcl.config.trainer.dict())
+    trainer.test(model=gcl, datamodule=dm)

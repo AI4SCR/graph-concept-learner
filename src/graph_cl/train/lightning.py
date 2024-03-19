@@ -1,12 +1,12 @@
+from pathlib import Path
+
 import lightning as L
+import pandas as pd
 import torch
 import torch.nn as nn
 from torchmetrics import Accuracy
-from pathlib import Path
 
 from ..data_models.Train import TrainConfig
-from ..data_models.Model import ModelGNNConfig
-from ..data_models.Model import ModelGCLConfig
 from ..models.gnn import GNN_plus_MPL
 
 
@@ -75,8 +75,8 @@ class LitBase(L.LightningModule):
 class LitGNN(LitBase):
     name = "LitGNN"
 
-    def __init__(self, model_config: ModelGNNConfig, train_config: TrainConfig):
-        model = GNN_plus_MPL(model_config.dict())
+    def __init__(self, model_config: dict, train_config: TrainConfig):
+        model = GNN_plus_MPL(model_config)
         super().__init__(model=model, config=train_config)
         self.save_hyperparameters()
 
@@ -110,11 +110,29 @@ class LitGNN(LitBase):
         loss = self.criterion(out, batch.y)
         self.log("test_loss", loss)
 
+        self.save_prediction(out, batch, batch_idx)
+
+    def save_prediction(self, predictions, batch, batch_idx):
+        yhat = predictions.argmax(dim=1)
+        predictions = yhat.detach().cpu().numpy()
+
+        df = pd.DataFrame(
+            {
+                "prediction": predictions,
+                "target": batch.y.cpu().numpy(),
+                "sample_id": batch.sample_id,
+                "sample_name": batch.sample_name,
+                "batch_idx": batch_idx,
+            }
+        )
+
+        for grp_name, grp in df.groupby("sample_name"):
+            grp.to_parquet(self.config.tracking.predictions_dir / f"{grp_name}.parquet")
+
 
 def load_concept_models(concept_graph_ckpts) -> dict[str, nn.Module]:
     model_dict = {}
     for concept_name, path_chkpt in concept_graph_ckpts.items():
-
         # # Load model
         # model = GNN_plus_MPL(model_gnn_config.dict())
         # state_dict = torch.load(concept_model_chkpt)["state_dict"]
@@ -141,10 +159,12 @@ def load_concept_models(concept_graph_ckpts) -> dict[str, nn.Module]:
 
 
 class LitGCL(LitBase):
+    name = "LitGCL"
+
     def __init__(
         self,
         concept_graph_ckpts: dict[str, Path],
-        model_config: ModelGCLConfig,
+        model_config: dict,
         train_config: TrainConfig,
     ):
         from ..models.graph_concept_learnerV2 import GraphConceptLearner
@@ -152,7 +172,7 @@ class LitGCL(LitBase):
         concept_models = load_concept_models(concept_graph_ckpts=concept_graph_ckpts)
         model = GraphConceptLearner(
             concept_learners=nn.ModuleDict(concept_models),
-            config=model_config.dict(),
+            config=model_config,
         )
 
         super().__init__(model=model, config=train_config)
@@ -195,6 +215,27 @@ class LitGCL(LitBase):
 
         loss = self.criterion(out, y)
         self.log("test_loss", loss)
+
+        self.save_prediction(out, batch, batch_idx)
+
+    def save_prediction(self, predictions, batch, batch_idx):
+        concept = self.model.concept_names[0]
+        concept_batch = batch[concept]
+        yhat = predictions.argmax(dim=1)
+        predictions = yhat.detach().cpu().numpy()
+
+        df = pd.DataFrame(
+            {
+                "prediction": predictions,
+                "target": concept_batch.y.cpu().numpy(),
+                "sample_id": concept_batch.sample_id,
+                "sample_name": concept_batch.sample_name,
+                "batch_idx": batch_idx,
+            }
+        )
+
+        for grp_name, grp in df.groupby("sample_name"):
+            grp.to_parquet(self.config.tracking.predictions_dir / f"{grp_name}.parquet")
 
     def configure_optimizers(self):
         optimizer_layers = self.config.optimizer.layers

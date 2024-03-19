@@ -4,3 +4,4 @@ torch
 lightning
 scikit-image
 pyarrow
+einops

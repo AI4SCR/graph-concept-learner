@@ -1,81 +1,102 @@
 #!/usr/bin/env nextflow
 
-params.data_dir = '/Users/adrianomartinelli/data/ai4src/graph-concept-learner-test-2'
-params.dataset_name = 'jackson'
-params.concepts_dir = "$params.data_dir/concepts"
-params.experiment_name = "exp_1"
+nextflow.enable.dsl=2
 
+params.EXPERIMENT_NAME = 'test'
+params.BASE_DIR = '/Users/adrianomartinelli/data/ai4src/graph-concept-learner-test/'
+params.devRun = true
+
+// Process Definitions
 process Setup {
+    publishDir "results", mode: 'copy'
+
+    output:
+    path "setup_done.txt" // Dummy output to signify the process completion
+
     script:
     """
     graph_cl create project
-    graph_cl create dataset -d "${params.dataset_name}"
-    graph_cl create experiment -e "${params.experiment_name}"
-    """
-}
-
-process ProcessDataset {
-    script:
-    """
-    graph_cl dataset process -d "${params.dataset_name}"
+    graph_cl create experiment -e ${params.EXPERIMENT_NAME}
+    touch setup_done.txt
     """
 }
 
 process CreateConceptGraphs {
+    publishDir "results", mode: 'copy'
+
     input:
-    tuple val(sample_name), path(sample_file), path(concept_file)
+    tuple val(sample_name), val(concept_name)
+
+    output:
+    path "${sample_name}_${concept_name}_graph.txt" // Dummy output for demonstration
 
     script:
     """
-    concept_name=\$(basename \$concept_file .yaml)
-    graph_cl concept-graph create -d "${params.dataset_name}" -s "\$sample_name" -c "\$concept_name"
+    graph_cl experiment create-concept-graph -e ${params.EXPERIMENT_NAME} -s "$sample_name" -c "$concept_name"
+    touch ${sample_name}_${concept_name}_graph.txt
     """
 }
 
-process PreprocessExperiment {
+process Preprocess {
+    publishDir "results", mode: 'copy'
+
+    output:
+    path "preprocess_done.txt"
+
     script:
     """
-    graph_cl experiment preprocess -e "${params.experiment_name}"
+    graph_cl experiment preprocess -e ${params.EXPERIMENT_NAME}
+    touch preprocess_done.txt
     """
 }
 
-process PretrainConceptGraphs {
+process Pretrain {
+    publishDir "results", mode: 'copy'
+
+    output:
+    path "pretrain_done.txt"
+
     script:
     """
-    graph_cl experiment pretrain -e "${params.experiment_name}" -c "concept_1"
-    graph_cl experiment pretrain -e "${params.experiment_name}" -c "concept_2"
+    graph_cl experiment pretrain -e ${params.EXPERIMENT_NAME} -c concept_1
+    graph_cl experiment pretrain -e ${params.EXPERIMENT_NAME} -c concept_2
+    touch pretrain_done.txt
     """
 }
 
-process TrainGCL {
+process Train {
+    publishDir "results", mode: 'copy'
+
+    output:
+    path "train_done.txt"
+
     script:
     """
-    graph_cl experiment train -e "${params.experiment_name}"
+    graph_cl experiment train -e ${params.EXPERIMENT_NAME}
+    touch train_done.txt
     """
 }
 
+// Main workflow definition
 workflow {
-    Setup()
-//     SymlinkRawData()
-//     ProcessDataset()
-//
-//     // Prepare channels for parallel processing of concept graphs
-//     sample_files_ch = Channel.fromPath("${params.data_dir}/datasets/${params.dataset_name}/02_processed/samples/*.json")
-//     concept_files_ch = Channel.fromPath("${params.concepts_dir}/*.yaml").toList() // Convert to list to broadcast to each sample
-//
-//     // Combine each sample file with all concept files for parallel processing
-//     sample_concept_comb = sample_files_ch.combine(concept_files_ch)
-//
-//     // Process each sample with each concept in parallel
-//     sample_concept_comb.map { sample_file, concept_files ->
-//         sample_name = sample_file.baseName
-//         concept_files.collect { concept_file ->
-//             tuple(sample_name, sample_file, concept_file)
-//         }
-//     }.set { graphs_to_create }
-//     CreateConceptGraphs(graphs_to_create.flatten())
-//
-//     PreprocessExperiment()
-//     PretrainConceptGraphs()
-//     TrainGCL()
+    // Define and collect sample and concept names
+    def sample_names = Channel.fromPath("/Users/adrianomartinelli/data/ai4src/graph-concept-learner/01_datasets/jackson/04_samples/*.json")
+                            .map { file -> file.baseName.replace(".json", "") }
+                            .view { "Sample names: $it" }
+
+    def concept_names = Channel.fromPath("/Users/adrianomartinelli/data/ai4src/graph-concept-learner/03_concepts/*.yaml")
+                            .map { it.baseName.replace(".yaml", "") }
+                            .view { "Concept names: $it" }
+
+    // Combine sample names and concept names
+    sample_concept_pairs = sample_names.combine(concept_names)
+
+    // Workflow steps
+    setup_done = Setup()
+
+    sample_concept_pairs | CreateConceptGraphs
+
+    preprocess_done = Preprocess()
+    pretrain_done = Pretrain()
+    train_done = Train()
 }

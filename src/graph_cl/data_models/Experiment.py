@@ -13,12 +13,17 @@ class GCLExperiment(Experiment):
     @computed_field
     @property
     def attributes_dir(self) -> Path:
-        return self.experiment_dir / "010_attributes"
+        return self.experiment_dir / "011_attributes"
 
     @computed_field
     @property
     def samples_dir(self) -> Path:
-        return self.experiment_dir / "011_samples"
+        return self.experiment_dir / "010_samples"
+
+    @computed_field
+    @property
+    def datasets_dir(self) -> Path:
+        return self.experiment_dir / "012_datasets"
 
     @computed_field
     @property
@@ -45,11 +50,13 @@ class GCLExperiment(Experiment):
     def train_config_path(self) -> Path:
         return self.configs_dir / "train.yaml"
 
-    def get_attribute_dir(self, stage: str, mkdir=True) -> Path:
-        path = self.attributes_dir / stage
-        if mkdir:
-            path.mkdir(parents=True, exist_ok=True)
-        return path
+    def get_attribute_path(
+        self, stage: str, sample_name: str, suffix: str = ".parquet"
+    ) -> Path:
+        return self.attributes_dir / stage / f"{sample_name}{suffix}"
+
+    def get_dataset_path(self, stage: str) -> Path:
+        return self.datasets_dir / f"{stage}.pt"
 
     def get_concept_model_dir(self, model_name: str, concept_name: str) -> Path:
         return self.get_model_dir(model_name) / concept_name

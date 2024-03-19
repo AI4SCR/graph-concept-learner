@@ -51,17 +51,20 @@ Start exploring the CLI by running `graph_cl --help`
 
 ### Nextflow
 
+#### Installation
 ```bash
 wget -qO- https://get.nextflow.io | bash
 chmod +x nextflow
 mv nextflow /usr/local/bin
 ```
 
+#### Execution
+Assuming you are in `<PROJECT_ROOT>/nextflow`
+
 ```bash
-nextflow run workflow.nf \
---data_dir "/new/data/dir" \
---dataset_name "new_dataset" --experiment_name "exp_2" \
--log "nextflow/logs/nextflow.log"
+nextflow run workflow.nf -entry Setup --experiment_name "exp_2"
+nextflow run your_workflow.nf -config nextflow.config -profile dev
+#-log "nextflow/logs/nextflow.log"
 ```
 
 ### SnakeMake

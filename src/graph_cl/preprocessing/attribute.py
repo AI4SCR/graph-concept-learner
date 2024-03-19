@@ -1,10 +1,11 @@
-from pathlib import Path
 import pandas as pd
-from torch_geometric.data import Data
 import torch
+from torch_geometric.data import Data
 
+from .normalize import Normalizer
+from ..data_models.Data import FeatureDict, DataConfig
+from ..data_models.Experiment import GCLExperiment
 from ..data_models.Sample import Sample
-from ..data_models.Data import FeatureDict
 
 
 def collect_sample_features(
@@ -64,3 +65,41 @@ def attribute_graph(graph: Data, feat: pd.DataFrame) -> Data:
     graph.x_names = feat.columns.tolist()
 
     return graph
+
+
+def prepare_attributes(
+    splits: dict[str, list[Sample]], experiment: GCLExperiment, config: DataConfig
+):
+    normalize = Normalizer(**config.normalize.kwargs)
+
+    feats = collect_features(samples=splits["fit"], feature_dicts=config.features)
+
+    # fit the normalizer once on the fit data
+    normalize.fit(feats)
+
+    for stage in ["fit", "val", "test", "predict"]:
+        if stage not in splits:
+            continue
+
+        (experiment.attributes_dir / stage).mkdir(parents=True, exist_ok=True)
+
+        samples = splits[stage]
+        for s in samples:
+            # enforce that samples are labelled with the correct stage they belong to
+            assert s.stage == stage
+            if s.attributes is None:
+                # collect all features of the given samples
+                sample_feats = collect_sample_features(s, feature_dicts=config.features)
+                # normalize the features
+                attributes = normalize.transform(sample_feats)
+
+                # save the attributes
+                attributes_url = experiment.get_attribute_path(stage, s.name)
+                s.attributes_url = attributes_url
+                attributes.to_parquet(s.attributes_url)
+
+                # update the sample
+                sample_path = experiment.get_sample_path(
+                    stage=stage, sample_name=s.name
+                )
+                s.model_dump_to_json(sample_path)
